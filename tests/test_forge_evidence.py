@@ -47,7 +47,7 @@ class TranscriptEvidenceTests(unittest.TestCase):
 
     def test_missing_library_deckout_elimination_is_still_rejected(self):
         raw = RAW.replace(
-            "Game Outcome: Ai(3)-Tazri has lost because life total reached 0\\n", "")
+            "Game Outcome: Ai(3)-Tazri has lost because life total reached 0\n", "")
         self.assertTrue(any("four individual Game Outcome" in issue for issue in self.check(raw)))
 
     def test_unrecognized_loss_reason_is_not_silently_accepted(self):
