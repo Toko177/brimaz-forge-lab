@@ -17,6 +17,8 @@ on:
       - tests/test_balanced_commander_campaign.py
       - tests/test_same_seed_campaign.py
       - tests/test_brimaz_combat.py
+      - tests/test_missing_ai_handlers.py
+      - scripts/audit_missing_ai_handlers.py
       - scripts/audit_brimaz_combat.py
       - scripts/audit_same_seed_campaign.py
       - scripts/audit_balanced_commander_campaign.py
