@@ -1,0 +1,28 @@
+name: Audit Forge AI decision traces
+on:
+  push:
+    paths:
+      - ".github/workflows/ai-audit.yml"
+      - "scripts/audit_ai.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: brimaz-playgroup-rotated-four-games
+          run-id: 37952882248
+          github-token: ${{ github.token }}
+          path: results/batch/aristo/
+      - run: python3 scripts/audit_ai.py --logs results/batch/aristo --out results/audit/ai_audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-ai-audit
+          path: results/audit/
