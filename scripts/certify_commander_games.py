@@ -69,7 +69,7 @@ for record_path in sorted(root.rglob("games.json")):
           "transcript_sha256":hashlib.sha256(raw.encode("utf-8")).hexdigest() if raw else None,
           "engine_natural_and_consistent":not local,
           "rejection_reasons":local,
-          "caveat":"This audit verifies raw Forge actions/outcome and Scryfall legality, not a formal MTG rules proof or human-equivalent AI."
+          "caveat":"This audit verifies raw Forge outcomes and Scryfall legality, not a formal MTG rules proof. The Forge JAR may include disclosed bugfix or policy patches."
         }
         games.append(report)
         print("CERTIFIED_GAME" if not local else "REJECTED_GAME",json.dumps(report,ensure_ascii=False),flush=True)
@@ -78,7 +78,7 @@ summary={
     "accepted_natural_games":sum(x["engine_natural_and_consistent"] for x in games),
     "accepted_brimaz_wins":sum(x["engine_natural_and_consistent"] and x["brimaz_win"] is True for x in games),
     "excluded_games":sum(not x["engine_natural_and_consistent"] for x in games),
-    "acceptance_standard":"Scryfall deck legalities + unmodified Forge rules engine + four seats + single verified natural winner + raw log hash; no claim of universal rule coverage.",
+    "acceptance_standard":"Scryfall legal deck manifest + Forge 2.0.15 (original or disclosed patched build) + four seats + a natural winner + raw log hash. Audit does not prove full Oracle rule fidelity.",
 }
 (target/"certificate.json").write_text(json.dumps({"summary":summary,"games":games},indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("GAME_CERTIFICATION_SUMMARY",json.dumps(summary,ensure_ascii=False),flush=True)
