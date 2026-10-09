@@ -1,0 +1,43 @@
+name: Diagnose V9 Forge AI timeouts in real four-player logs
+on:
+  push:
+    paths:
+      - .github/workflows/forge-v9-combat-hotspots.yml
+      - scripts/audit_ai_eval_hotspots.py
+      - tests/test_ai_eval_hotspots.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  historical-hotspots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check seven V10 timeout / opening parser regression cases
+        run: python3 -m unittest discover -s tests -p 'test_ai_eval_hotspots.py' -v
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-v9-mulligan-*
+          run-id: 37998385269
+          github-token: ${{ github.token }}
+          path: v9/
+      - name: Reclassify actual Forge timeout call stacks from all V9 games
+        run: |
+          python3 scripts/audit_ai_eval_hotspots.py --input v9/ \
+            --output results/forensics/v9-combat-timeouts.json
+          python3 - <<'PY'
+          import json,pathlib
+          d=json.loads(pathlib.Path("results/forensics/v9-combat-timeouts.json").read_text())
+          assert d["summary"]["games"]==4
+          assert d["summary"]["ai_timeout_exceptions"]==7
+          assert d["summary"]["stack_classes"]["deep_combat_and_block_prediction"]>=6
+          print("V9_ROOT_CAUSE_COMBAT_DECISION_HOTSPOT_CONFIRMED",d["summary"])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forge-four-ai-timeout-root-cause
+          path: results/forensics/
+          if-no-files-found: ignore
