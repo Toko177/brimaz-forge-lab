@@ -1,0 +1,149 @@
+name: Matched Forge AI thinking-budget pilot (5s versus 10s)
+on:
+  push:
+    paths:
+      - .github/workflows/brimaz-ai-timeout-pilot.yml
+      - scripts/patch_forge_ai_budget.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  ai-match:
+    name: "${{ matrix.pod }} / AI budget ${{ matrix.ai_seconds }}s"
+    runs-on: ubuntu-latest
+    timeout-minutes: 26
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - {pod: aristo, rotation: 3, seed_base: 20261010, ai_seconds: 5}
+          - {pod: aristo, rotation: 3, seed_base: 20261010, ai_seconds: 10}
+          - {pod: artifact, rotation: 2, seed_base: 20261009, ai_seconds: 5}
+          - {pod: artifact, rotation: 2, seed_base: 20261009, ai_seconds: 10}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-seven-decks-canonical-verified
+          run-id: 37966009166
+          github-token: ${{ github.token }}
+          path: canonical/
+      - name: Verify seven hash-pinned 100-card Commander decks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p forge_decks
+          cp canonical/forge_normalized/*.dck forge_decks/
+          python3 - <<'PY'
+          import pathlib,hashlib,json
+          d=json.loads(pathlib.Path('canonical/results/forge_normalization/report.json').read_text())
+          assert len(d['decks'])==7 and not d['errors'],d
+          for x in d['decks']:
+              p=pathlib.Path('forge_decks')/(x['deck']+'.dck')
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==x['normalized_sha256']
+          PY
+      - uses: actions/cache/restore@v4
+        with:
+          path: forge-dist/
+          key: forge-2.0.15-linux-shared-20261009
+      - name: Restore SHA-256 authenticated official Forge release
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Apply disclosed Charm NPE rules bugfix equally to all four players
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+      - name: Apply higher decision time budget for all four AI controllers
+        if: matrix.ai_seconds == 10
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/patch_forge_ai_budget.py --jar "$JAR" --seconds 10
+      - name: Run genuine headless EDH, preserve incomplete games
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/batch.py --jar "$JAR" --require-canonical-decks \
+            --pod "${{ matrix.pod }}" --rotation ${{ matrix.rotation }} --seed-base ${{ matrix.seed_base }} \
+            --policy-label "stock-charm-ai-${{ matrix.ai_seconds }}" --out-tag "stock-charm-ai-${{ matrix.ai_seconds }}" \
+            --clock 600 --timeout 750 --games-per-rotation 1
+          python3 - <<'PY'
+          import pathlib,json
+          log=list(pathlib.Path('results/batch').rglob('game_*.log'))
+          assert len(log)==1,log
+          raw=log[0].read_text()
+          n=raw.count('java.util.concurrent.TimeoutException')
+          g=json.loads(next(pathlib.Path('results/batch').rglob('games.json')).read_text())[0]
+          print('DECISION_BUDGET_GAME',json.dumps({
+              'policy':g['policy'],'winner':g['winner_deck'],'status':g['status'],
+              'game_ms':g['game_milliseconds'],'AI_future_timeouts':n}))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "brimaz-ai-budget-${{ matrix.pod }}-${{ matrix.ai_seconds }}"
+          path: results/batch/
+          if-no-files-found: ignore
+  compare-ai-budgets:
+    needs: ai-match
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-ai-budget-*
+          path: games/
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: legality/
+      - name: Validate all four outcomes before drawing conclusions
+        shell: bash
+        run: |
+          python3 scripts/certify_commander_games.py --input games --legality legality/report.json --out results/ai-budget/
+      - name: Report AI timeouts and genuine results without claiming superiority
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          out=[]
+          for manifest in pathlib.Path('games').rglob('games.json'):
+              for g in json.loads(manifest.read_text()):
+                  log=(manifest.parent/pathlib.Path(g['log']).name).read_text()
+                  out.append({'policy':g['policy'],'pod':g['pod'],'seed':g['seed'],
+                     'status':g['status'],'winner':g.get('winner_deck'),
+                     'timeout_exceptions':log.count('java.util.concurrent.TimeoutException'),
+                     'wall_seconds':g['wall_seconds']})
+          output=pathlib.Path('results/ai-budget/observations.json')
+          output.parent.mkdir(parents=True,exist_ok=True)
+          output.write_text(json.dumps(out,indent=2)+'\n')
+          print('AI_BUDGET_MATCHED_RESULTS',json.dumps(out))
+          assert len(out)==4,len(out)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-ai-decision-budget-comparison
+          path: results/ai-budget/
+          if-no-files-found: ignore
