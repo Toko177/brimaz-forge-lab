@@ -26,6 +26,7 @@ p.add_argument("--seed-base",type=int,default=20261009,
 p.add_argument("--profile-brimaz",choices=["Default","Experimental","Cautious","Reckless"],default="Default")
 p.add_argument("--profile-opponents",choices=["Default","Experimental","Cautious","Reckless"],default="Default")
 p.add_argument("--out-tag",default="baseline",help="Distinct output group to isolate A/B profiles")
+p.add_argument("--policy-label",default="stock",help="Exact AI code variant; distinguishes patched from stock games")
 
 args=p.parse_args()
 assert 0 < args.clock < args.timeout
@@ -110,6 +111,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         record={
             "game":num,"pod":args.pod,"rotation":shift,"repeat":repeat,
             "seed":seed,"profiles":profiles,"brimaz_profile":args.profile_brimaz,
+            "policy":args.policy_label,"planner_decisions":raw.count("BRIMAZ_PLANNER:"),
             "seats":seats,"brimaz_seat":br_index,
             "status":status,"winner_seat":winner_index,
             "winner_deck":seats[winner_index-1] if winner_index else None,
@@ -129,7 +131,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
 
 valid=[x for x in summary if x["status"]=="complete"]
 stats={
-  "pod":args.pod,"profile":args.profile_brimaz,"rotation":args.rotation,"seed_base":args.seed_base,
+  "pod":args.pod,"profile":args.profile_brimaz,"policy":args.policy_label,"rotation":args.rotation,"seed_base":args.seed_base,
   "games_total":len(summary),"games_complete":len(valid),
   "brimaz_wins":sum(x["brimaz_win"] for x in valid),
   "brimaz_win_rate":round(sum(x["brimaz_win"] for x in valid)/len(valid),4) if valid else None,
