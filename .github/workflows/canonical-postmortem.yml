@@ -1,0 +1,41 @@
+name: Canonical Commander postmortem and corrected report
+on:
+  push:
+    paths:
+      - .github/workflows/canonical-postmortem.yml
+      - scripts/diagnose_canonical.py
+      - scripts/aggregate_batch.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  postmortem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: canonical-match-*
+          run-id: 37966298484
+          github-token: ${{ github.token }}
+          path: artifacts/
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: legality/
+      - name: Aggregate 32 matches with policy included in unique game key
+        run: python3 scripts/aggregate_batch.py --input artifacts/ --expected-groups 4 --expected-per-group 8 --output results/postmortem/aggregate.json
+      - name: Inspect raw match logs and clock-censored behavior
+        run: python3 scripts/diagnose_canonical.py --source artifacts/ --output results/postmortem/forensics.json
+      - name: Certify unforced Commander outcomes and reject runtime exceptions
+        run: python3 scripts/certify_commander_games.py --input artifacts/ --legality legality/report.json --out results/postmortem/certification/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canonical-postmortem-all32
+          path: results/postmortem/
+          if-no-files-found: ignore
