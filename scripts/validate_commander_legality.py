@@ -39,7 +39,7 @@ def post_collection(names):
     cards={};not_found=[]
     for start in range(0,len(names),70):
         batch=names[start:start+70]
-        body=json.dumps({"identifiers":[{"name":n} for n in batch]}).encode()
+        body=json.dumps({"identifiers":[{"name":n.split(" // ")[0]} for n in batch]}).encode()
         req=urllib.request.Request("https://api.scryfall.com/cards/collection",data=body,headers={
             "Content-Type":"application/json","Accept":"application/json",
             "User-Agent":"BrimazForgeLab/1.0 (noncommercial Commander deck legality audit)"
@@ -58,6 +58,17 @@ def post_collection(names):
         not_found.extend(payload.get("not_found",[]))
         if start+70<len(names):time.sleep(0.18)
     return cards,not_found
+def lookup(cards,name):
+    card=cards.get(name) or cards.get(name.split(" // ")[0])
+    if card is None:return None
+    if " // " in name:
+        faces=card.get("card_faces",[])
+        oracle_name=card.get("name","")
+        if name.casefold()!=oracle_name.casefold() and (
+            " // ".join(f.get("name","") for f in faces).casefold()!=name.casefold()):
+            return None
+    return card
+
 def main():
     decks=[]
     for path in args.deck:
@@ -79,11 +90,11 @@ def main():
         for n,q in entries.items():
             if q>1 and n not in BASICS and n not in ALLOWED_MULTIPLES and q>LIMITED.get(n,1):
                 errors.append(f"Too many copies ({q}) of {n}")
-            if n not in cards:
+            if lookup(cards,n) is None:
                 errors.append("Unknown or unsupported card name: "+n)
         commander_color=set()
         for n in commanders:
-            c=cards.get(n)
+            c=lookup(cards,n)
             if c:
                 commander_color.update(c.get("color_identity",[]))
                 if "Legendary Creature" not in c.get("type_line","") and "can be your commander" not in c.get("oracle_text","").lower():
