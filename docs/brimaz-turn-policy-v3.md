@@ -47,3 +47,20 @@ Potential outlets: Arcbound Ravager, Bartolomé del Presidio, Spawning Pit, Thro
 3. Extend controlled actions to Phyrexian Tower, Ashnod's Altar, Phyrexian Altar and Yawgmoth, whose *mana/other costs* require careful opportunity-cost and response analysis.
 4. Investigate card AI limitations involving Incubate and Spawning Pit's charge-counter token ability without blindly mapping `Incubate` to an always-play handler.
 5. Prototype true four-player evaluation on copies of the Forge game state with explicit legal opponent actions and bounded search; benchmark CPU, timeouts, and decision quality.
+
+## Completed 16-game V3 experiment and audit
+
+Date: 2026-10-09.
+
+- 16 independent Forge games, 15 naturally complete, one clock-censored; **0 wins for Brimaz**.
+- V3 generated four proposals across three games, using Arcbound Ravager.
+- The original action-audit script wrongly searched for an activation after each real-time `System.out` proposal, while Forge **buffers its game log and prints it later**.
+- Corrected audit `scripts/audit_planner_resolution.py` groups Forge entries by the exact in-game turn number. It verified that **all four proposals had a corresponding Arcbound Ravager activation on that turn**, and a Brimaz end-step trigger was logged on each of those four turns. This is strong evidence the hook is really integrated; it does **not** prove no other death could have triggered Brimaz.
+- Of all V3 game transcripts, 17 Brimaz end-step triggers and 45 Incubator transforms (including censored games) were found. Comparisons against stock and V1/V2 were run on matched pods/seats/seeds; no win-rate advantage demonstrated.
+- Known limitation: user-defined live diagnostic log records are not in chronological order with the buffered match log. Use in-game turn IDs when correlating actions; never assume adjacent log lines are temporal neighbors.
+
+Runs:
+- [Java tests and actual match](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37962352232)
+- [16-game campaign](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37962437566)
+- [True phase audit](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37963424131)
+- [Turn-indexed correction](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37963707613)
