@@ -1298,3 +1298,56 @@ Ne pas conclure avant le job de certification
 indépendant et le rapport CPU/timeout. Un
 changement de vainqueur avec la même seed
 peut venir de la non-détermination du moteur.
+
+
+## 25. Vérification indépendante de V13, sans relancer les 16 parties
+
+Workflow
+[brimaz-v13-16-independent-certification.yml](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38003422030)
+déclenché avec le code consolidé et les **88 tests
+de régression Python** existants. Il attend
+le statut terminal des **16 jeux** V13 du run
+**38002838904**, puis télécharge les artefacts
+des **8 jobs déjà exécutés**, sans rejouer.
+La matrice de 16 parties est
+aristo seeds \`20710000 + 10000*rotation + repeat\`
+et artifact seeds \`20810000 + 10000*rotation + repeat\`,
+4 rotations par pod, 2 repeats, horloge 360s.
+
+Il utilise les 16 vrais journaux Forge et :
+- \`certify_commander_games.py\` : états 4 joueurs
+  distincts, Scryfall, vainqueur, partie naturelle,
+  délais, motifs de pertes y compris 21 blessures
+  de commandant ;
+- \`audit_balanced_commander_campaign.py\` :
+  SHA256 réel du log égale certificat, 8 groupes,
+  16 graines distinctes et 4 positions Brimaz
+  équilibrées, Wilson 95%, listes de censures,
+  résultats par pod/siège, victoire « sans
+  avertissement IA » séparée du résultat naturel ;
+- \`audit_adaptive_ai_budget.py\` : confirme
+  chaque passage global 5→10→15 seconds
+  déclenché UNIQUEMENT par un timeout, pour les
+  quatre sièges ;
+- \`audit_ai_eval_hotspots.py\` et
+  \`audit_missing_ai_handlers.py\` :
+  cartes candidates, coût AI, API non supportées ;
+- \`audit_brimaz_combat.py\` : comptabilise
+  uniquement les déclarations et dégâts
+  directement attribuables aux attaquants
+  sur le même tour (jamais des kills inférés).
+
+Artefact à relire :
+\`brimaz-v13-independent-16-game-certification\`
+(\`balanced-games.json\`, \`adaptive-decisions.json\`,
+\`ai-hotspots.json\`, \`missing-ai-apis.json\`,
+\`brimaz-combat.json\`, \`certification/certificate.json\`).
+**À la rédaction, le travail V13 était encore
+en cours (6/8 shards terminés), pas de verdict
+final enregistré**. Toute victoire vue dans
+\`FINISH\` doit être recertifiée avant annonce.
+La comparaison V12/V13 sur les mêmes graines
+n'a pas encore eu lieu : des jeux à graine
+identique peuvent diverger spontanément, et
+V12/32 seed cohort précédent est distinct
+de celui utilisé en V13/16.
