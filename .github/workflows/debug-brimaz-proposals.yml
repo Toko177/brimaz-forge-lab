@@ -1,0 +1,22 @@
+name: Investigate unmatched Brimaz V3 proposals
+on:
+  push:
+    paths: [".github/workflows/debug-brimaz-proposals.yml", "scripts/debug_brimaz_proposals.py"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-planner-v3-*
+          run-id: 37962437566
+          github-token: ${{ github.token }}
+          path: artifacts/
+      - name: Print annotated real Forge lines near AI decisions
+        run: python3 scripts/debug_brimaz_proposals.py --dir artifacts
