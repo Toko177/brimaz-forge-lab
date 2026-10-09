@@ -1,7 +1,7 @@
 name: Certify historical Forge Commander outcomes
 on:
   push:
-    paths: [".github/workflows/realism-certification.yml", "scripts/certify_commander_games.py"]
+    paths: [".github/workflows/realism-certification.yml", "scripts/certify_commander_games.py", "scripts/forge_result_evidence.py"]
   workflow_dispatch:
 permissions:
   contents: read
