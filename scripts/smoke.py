@@ -18,7 +18,7 @@ assert sum(q for q,n in cards if n=='Brimaz, Blight of Oreskos')==1
 out=pathlib.Path('forge_decks');out.mkdir(exist_ok=True)
 dck=out/'Brimaz_V3.dck'
 dck.write_text('[metadata]\nName=Brimaz V3\n[Main]\n'+''.join(f'{q} {n}\n' for q,n in cards if n!='Brimaz, Blight of Oreskos')+'[Commander]\n1 Brimaz, Blight of Oreskos\n')
-cmd=['java','-Xmx4g','-jar',str(pathlib.Path(args.jar).resolve()),'sim','-d','Brimaz_V3','Brimaz_V3','Brimaz_V3','Brimaz_V3','-f','commander','-n',str(args.games)]
+cmd=['java','-Xmx4g','-jar',str(pathlib.Path(args.jar).resolve()),'sim','-d','Brimaz_V3.dck','Brimaz_V3.dck','Brimaz_V3.dck','Brimaz_V3.dck','-D',str(out.resolve()),'-f','Commander','-n',str(args.games),'-c','120']
 pathlib.Path('results').mkdir(exist_ok=True)
 print('Command:',cmd,flush=True)
 print('Deck:',dck,flush=True)
