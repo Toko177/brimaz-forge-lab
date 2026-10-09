@@ -1,4 +1,4 @@
-name: Commander evidence gate and real V6 AI action audit
+name: Commander regression suite and V6 real-action certification
 on:
   push:
     paths:
@@ -7,6 +7,14 @@ on:
       - scripts/certify_commander_games.py
       - scripts/analyze_ai_gameplay.py
       - tests/test_forge_evidence.py
+      - tests/test_matched_replay.py
+      - tests/test_edh_pacing.py
+      - tests/test_brimaz_mulligan_audit.py
+      - tests/test_compare_pacing_experiments.py
+      - scripts/audit_matched_replay.py
+      - scripts/audit_edh_pacing.py
+      - scripts/audit_brimaz_mulligan.py
+      - scripts/compare_pacing_experiments.py
   workflow_dispatch:
 permissions:
   contents: read
@@ -17,8 +25,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Run deterministic no-Forge outcome and AI audit tests
-        run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
+      - name: Run all deterministic Python regression tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - uses: actions/download-artifact@v4
         with:
           pattern: brimaz-v6-*
