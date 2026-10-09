@@ -12,6 +12,7 @@ p = argparse.ArgumentParser()
 p.add_argument("--deck", default="decks/Brimaz_V3.txt")
 p.add_argument("--jar", required=True)
 p.add_argument("--games", type=int, default=1)
+p.add_argument("--opponents", nargs="*", default=[], help="Three opponent deck filenames without .dck")
 p.add_argument("--clock", type=int, default=360,
                help="Forge per-game clock limit in seconds")
 p.add_argument("--timeout", type=int, default=450,
@@ -40,8 +41,14 @@ dck.write_text("[metadata]\nName=Brimaz V3\n[Main]\n"
                + "".join(f"{q} {n}\n" for q, n in cards if n != "Brimaz, Blight of Oreskos")
                + "[Commander]\n1 Brimaz, Blight of Oreskos\n", encoding="utf-8")
 jar = pathlib.Path(args.jar).resolve()
+if args.opponents and len(args.opponents) != 3:
+    p.error("--opponents requires exactly three deck names")
+seats = ["Brimaz_V3.dck"] + ([name + ".dck" for name in args.opponents] if args.opponents else ["Brimaz_V3.dck"] * 3)
+for name in seats:
+    if not (out / name).is_file():
+        raise FileNotFoundError(out / name)
 cmd = ["java", "-Xmx4g", "-jar", str(jar), "sim", "-d",
-       "Brimaz_V3.dck", "Brimaz_V3.dck", "Brimaz_V3.dck", "Brimaz_V3.dck",
+       *seats,
        "-D", str(out), "-f", "Commander", "-n", str(args.games),
        "-c", str(args.clock)]
 results = pathlib.Path("results")
@@ -85,6 +92,7 @@ summary = {
     "elapsed_seconds": round(time.monotonic() - start, 2),
     "clock_seconds": args.clock,
     "requested_games": args.games,
+    "seats": seats,
     "games_with_result_lines": len(game_results),
     "clock_censored": clock_censored,
     "multiple_winner_outcomes": all_players_won,
