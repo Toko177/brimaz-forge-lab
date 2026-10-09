@@ -13,7 +13,7 @@ CARDS={
                 "legalities":{"commander":"legal"}},
     "Brimaz, Blight of Oreskos":{"object":"card","type_line":"Legendary Creature — Phyrexian Cat","cmc":4,
                                  "legalities":{"commander":"legal"}},
-    "Malakir Rebirth":{"object":"card","type_line":"Instant // Land","cmc":1,
+    "Malakir Rebirth":{"object":"card","layout":"modal_dfc","type_line":"Instant // Land","cmc":1,
                        "card_faces":[
                            {"type_line":"Instant","cmc":1},
                            {"type_line":"Land"}],
@@ -43,6 +43,11 @@ class FactualScryfallDeckTests(unittest.TestCase):
             self.assertEqual(r["land_capable_cards"],98)
             self.assertEqual(r["non_front_land_cards"],3)
             self.assertEqual(r["mana_value_distribution"],{"1":2,"4":1})
+
+    def test_transform_back_land_does_not_count_as_playable_land_source(self):
+        transform={"layout":"transform","card_faces":[
+            {"type_line":"Legendary Creature"},{"type_line":"Land"}]}
+        self.assertFalse(has_land_back(transform))
 
     def test_full_reference_and_candidate_mana_curve_delta(self):
         with tempfile.TemporaryDirectory() as d:
