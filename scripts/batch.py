@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 import time
+from forge_result_evidence import inspect_ai_quality_signatures
 
 p=argparse.ArgumentParser()
 p.add_argument("--jar",required=True)
@@ -139,6 +140,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
             "incubator_transforms":len(re.findall(r"\bactivated Incubator Token\b",stdout)),
             "end_step_mentions":len(re.findall(r"Phase: .* End step",stdout)),
             "ai_incubate_warning":"No AI assigned for API: Incubate" in stderr,
+            "ai_quality_signatures":inspect_ai_quality_signatures(raw),
             "log":str(logfile.relative_to(root)),
         }
         summary.append(record)
