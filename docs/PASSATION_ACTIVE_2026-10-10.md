@@ -456,3 +456,31 @@ UNIQUEMENT car son snapshot était antérieur à la création
 du script \`audit_brimaz_mulligan.py\`; 4 parties certifiées
 dans ce run mais ne pas utiliser ce vieux run en point
 d'entrée. Utiliser **37998385269 SUCCESS**.
+
+
+## 13. Comparaison V8/V9 CI finalement VALIDÉE (4 parties appariées, sans causalité)
+
+**Workflow 37999007185 SUCCESS** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999007185
+
+Tests purs : 4 du comparateur, 5 du pacing, 5 du parser
+mulligan réussis. 4 paires (pod + seed) réelles; les
+8 parties (4 V8 + 4 V9) ont toutes une fin naturelle.
+Dans les deux cas de mulligan V9 (\`aristo/20281009\` et
+\`artifact/20281009\`) :
+- meilleure progression vers huitième tour personnel :
+  +4 terrains joués (3 → 7) en aristo, +3 (3 → 6) en artifact;
+- premier cast Brimaz : aristo tour personnel 9 → 4,
+  artifact jamais → tour personnel 5.
+Dans les deux cas sans mulligan forcé, terrains jusqu'au
+tour 8 inchangés à 7, premier cast au tour personnel 4.
+**0 victoire Brimaz en V8 et V9.**
+
+Échantillon 4 paires trop petit + Forge non déterministe :
+**la politique semble améliorer le développement du mana sur
+ces deux mains ciblées, MAIS l'inférence causale et l'amélioration
+du winrate ne sont pas démontrées.** Il faut ensuite faire des
+tests de mulligan sur davantage de distributions d'ouvertures
+et progresser sur l'interaction / le combat / le moteur de
+sacrifice. Conserver la V9 comme politique expérimentale,
+pas l'adopter par défaut avant des échantillons plus larges.
