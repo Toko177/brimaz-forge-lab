@@ -61,6 +61,8 @@ for (pod,profile,policy), rows in sorted(grouped.items()):
       "wilson_95_interval":wilson(wins,len(good)),
       "winners":dict(collections.Counter(x.get("winner_deck") for x in good)),
       "brimaz_triggers_per_game":round(sum(x["brimaz_triggered"] for x in good)/len(good),2) if good else None,
+      "planner_decisions_total":sum(x.get("planner_decisions",0) for x in rows),
+      "planner_decisions_games":sum(bool(x.get("planner_decisions",0)) for x in rows),
       "incubator_transforms_per_game_all_players":round(sum(x["incubator_transforms"] for x in good)/len(good),2) if good else None,
       "mean_game_seconds":round(sum(x["game_milliseconds"] for x in good)/len(good)/1000,2) if good else None,
       "incubate_ai_warning_games":sum(bool(x.get("ai_incubate_warning")) for x in rows),
