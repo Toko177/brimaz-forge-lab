@@ -14,7 +14,7 @@ from deckbuild_cache import FILES,OPPONENTS,stamp,require_match,validate_referen
 
 def build_fixture(root,repeats=1):
     root=Path(root)
-    d=root/"forge_decks";d.mkdir(parents=True)
+    d=root/"forge_decks";d.mkdir(parents=True,exist_ok=True)
     for f in FILES:
         path=root/f;path.parent.mkdir(parents=True,exist_ok=True)
         path.write_text("Code for "+f)
