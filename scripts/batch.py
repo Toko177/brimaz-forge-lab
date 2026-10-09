@@ -19,6 +19,14 @@ p.add_argument("--pod",choices=["aristo","artifact"],default="aristo")
 p.add_argument("--clock",type=int,default=360)
 p.add_argument("--timeout",type=int,default=445)
 p.add_argument("--games-per-rotation",type=int,default=1)
+p.add_argument("--rotation",type=int,choices=[0,1,2,3],default=None,
+               help="Run only one seat rotation; enables distributed job matrix")
+p.add_argument("--seed-base",type=int,default=20261009,
+               help="Forge -s base RNG seed (per-rotation and repeat offset)")
+p.add_argument("--profile-brimaz",choices=["Default","Experimental","Cautious","Reckless"],default="Default")
+p.add_argument("--profile-opponents",choices=["Default","Experimental","Cautious","Reckless"],default="Default")
+p.add_argument("--out-tag",default="baseline",help="Distinct output group to isolate A/B profiles")
+
 args=p.parse_args()
 assert 0 < args.clock < args.timeout
 assert 1 <= args.games_per_rotation <= 10
@@ -55,19 +63,23 @@ assert sum(q for q,n in entries if n=="Brimaz, Blight of Oreskos")==1
     "[Commander]\n1 Brimaz, Blight of Oreskos\n",encoding="utf-8"
 )
 jar=pathlib.Path(args.jar).resolve()
-out=root/"results"/"batch"/args.pod
+out=root/"results"/"batch"/args.pod/args.out_tag
 out.mkdir(parents=True,exist_ok=True)
 summary=[]
 start=time.monotonic()
 
-for shift in range(4):
+for shift in ([args.rotation] if args.rotation is not None else range(4)):
     seats=decks[shift:]+decks[:shift]
     br_index=seats.index("Brimaz_V3")+1
     for repeat in range(args.games_per_rotation):
         num=len(summary)+1
+        seed=args.seed_base + 10000*shift + repeat
+        profiles=[args.profile_brimaz if d=="Brimaz_V3" else args.profile_opponents for d in seats]
         cmd=["java","-Xmx4g","-jar",str(jar),"sim","-d",
              *[x+".dck" for x in seats],"-D",str(directory),
-             "-f","Commander","-n","1","-c",str(args.clock)]
+             "-f","Commander","-n","1","-c",str(args.clock),
+             "-s",str(seed),"-a",*profiles]
+
         print("START",num,"seats",seats,"Brimaz seat",br_index,flush=True)
         st=time.monotonic()
         proc_timeout=False
@@ -83,7 +95,7 @@ for shift in range(4):
             rc=None
         elapsed=round(time.monotonic()-st,2)
         raw=stdout+"\n[STDERR]\n"+stderr
-        logfile=out/f"game_{num:03d}_seat{br_index}.log"
+        logfile=out/f"game_rot{shift}_rep{repeat:03d}_seat{br_index}.log"
         logfile.write_text(raw,encoding="utf-8")
         winners=re.findall(r"Game Result: Game\s+\d+\s+ended in\s+(\d+)\s*ms\.\s*Ai\((\d+)\)-(.+?) has won!",stdout)
         outcomes=re.findall(r"^Game Outcome: (.+)$",stdout,re.M)
@@ -91,12 +103,13 @@ for shift in range(4):
         clock_cutoff=any(int(ms)>=args.clock*1000-2500 for ms,_,_ in winners)
         if proc_timeout:status="process_timeout"
         elif rc!=0:status="engine_failed"
-        elif clock_cutoff or multiple_winners:status="clock_censored"
+        elif clock_cutoff or multiple_winners or "Stopping slow match as draw" in stdout:status="clock_censored"
         elif len(winners)!=1:status="unparsed"
         else:status="complete"
         winner_index=int(winners[-1][1]) if status=="complete" else None
         record={
             "game":num,"pod":args.pod,"rotation":shift,"repeat":repeat,
+            "seed":seed,"profiles":profiles,"brimaz_profile":args.profile_brimaz,
             "seats":seats,"brimaz_seat":br_index,
             "status":status,"winner_seat":winner_index,
             "winner_deck":seats[winner_index-1] if winner_index else None,
@@ -116,13 +129,14 @@ for shift in range(4):
 
 valid=[x for x in summary if x["status"]=="complete"]
 stats={
-  "pod":args.pod,"games_total":len(summary),"games_complete":len(valid),
+  "pod":args.pod,"profile":args.profile_brimaz,"rotation":args.rotation,"seed_base":args.seed_base,
+  "games_total":len(summary),"games_complete":len(valid),
   "brimaz_wins":sum(x["brimaz_win"] for x in valid),
   "brimaz_win_rate":round(sum(x["brimaz_win"] for x in valid)/len(valid),4) if valid else None,
   "wins_by_deck":dict(collections.Counter(x["winner_deck"] for x in valid)),
   "status_counts":dict(collections.Counter(x["status"] for x in summary)),
   "elapsed_total_seconds":round(time.monotonic()-start,2),
-  "method":"4 independent Forge processes, one Brimaz per pod, one rotation per seat",
+  "method":"Independent Forge JVM processes, deterministic -s seeds, isolated by GitHub Actions matrix jobs",
   "caveat":"Small pilot sample. AI quality, card support and bracket legality not completely audited."
 }
 (out/"summary.json").write_text(json.dumps(stats,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
