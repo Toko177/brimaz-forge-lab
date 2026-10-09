@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Correlate custom Brimaz AI proposals with actions and subsequent end-step triggers.
+"""Correlate V3 planner decisions with ACTUAL Forge actions by TURN NUMBER.
 
-This is observational replay from ACTUAL Forge logs. Does not claim causal
-attribution without a counterfactual game-state transition.
+Forge prints System.out diagnostics in real-time but flushes the in-game event
+log only after the simulation. Therefore file line order is NOT chronological.
+Do not search adjacent lines for the action; index by Turn: Turn N instead.
 """
 import argparse
 import collections
@@ -17,43 +18,62 @@ args=p.parse_args()
 events=[]
 for logfile in sorted(pathlib.Path(args.logs).rglob("game_*.log")):
     lines=logfile.read_text(encoding="utf-8",errors="replace").splitlines()
-    for i,line in enumerate(lines):
-        if "BRIMAZ_PLANNER:" not in line:
+    turn_events={}
+    turn=None
+    for line in lines:
+        m=re.match(r"^Turn: Turn\s+(\d+)\s+\((.+?)\)",line)
+        if m:
+            turn=int(m.group(1))
+            turn_events[turn]=[line]
+        elif turn is not None:
+            turn_events[turn].append(line)
+    for line in lines:
+        if "BRIMAZ_PLANNER:" not in line:continue
+        round_m=re.search(r"\bturn=(\d+)\b",line)
+        outlet_m=re.search(r"\boutlet=(.+?)\s*$",line)
+        active_m=re.search(r"\bactive=(.+?)\s+outlet=",line)
+        if not (round_m and outlet_m and active_m):
+            events.append({"file":str(logfile),"proposal":line,"status":"unparseable_proposal"})
             continue
-        outlet=re.search(r"outlet=(.+?)(?:\s*$)",line)
-        if outlet: name=outlet.group(1).strip()
-        else:
-            older=re.search(r"via (.+?) / active turn",line)
-            name=older.group(1).strip() if older else "unknown"
-        # One priority window is bounded by the start of the next turn.
-        next_turn=next((j for j in range(i+1,len(lines)) if lines[j].startswith("Turn: Turn ")),len(lines))
-        window=lines[i+1:next_turn]
-        activation=[z for z in window if "Add To Stack:" in z and "activated " in z and name in z]
-        death=[z for z in window if "sacrificed" in z.lower() and "phyrexian" in z.lower()]
-        # This records a trigger on the stack, not proof of its resolution.
-        end_phase=False
+        turn_no=int(round_m.group(1))
+        outlet=outlet_m.group(1).strip()
+        actor=active_m.group(1).strip()
+        turn_log=turn_events.get(turn_no,[])
+        activations=[
+            item for item in turn_log
+            if item.startswith("Add To Stack: ") and
+               item.startswith("Add To Stack: "+actor+" activated ") and
+               outlet in item
+        ]
+        phase=""
         triggered=0
-        for text in window:
-            if text.startswith("Phase: "):
-                end_phase=text.rsplit("'s ",1)[-1]=="End step"
-            if end_phase and "Add To Stack:" in text and "triggered Brimaz, Blight of Oreskos" in text:
+        for event in turn_log:
+            if event.startswith("Phase: "):
+                phase=event.rsplit("'s ",1)[-1]
+            if (phase=="End step" and "Add To Stack:" in event and
+                    "triggered Brimaz, Blight of Oreskos" in event):
                 triggered+=1
         events.append({
-            "file":str(logfile),"outlet":name,
-            "proposal":line,"activation_lines":len(activation),
-            "observed_phyrexian_sacrifice_text_lines":len(death),
-            "brimaz_end_step_triggers_before_next_turn":triggered,
-            "activation_observed":bool(activation),
-            "reached_endstep_with_trigger":triggered>0,
-            "caveat":"Observed trigger might result from other qualifying death; cannot prove this proposal caused it."
+            "file":str(logfile),"outlet":outlet,"turn":turn_no,
+            "actor":actor,"proposal":line,
+            "turn_found":bool(turn_log),
+            "activation_count":len(activations),
+            "activation_observed":bool(activations),
+            "end_step_trigger_observed":triggered>0,
+            "brimaz_end_step_triggers":triggered,
+            "note":"One turn's end-step trigger can have another death cause; observed association does not establish causation."
         })
 agg={
     "proposals":len(events),
     "games_with_proposal":len({x["file"] for x in events}),
-    "activation_observed":sum(x["activation_observed"] for x in events),
-    "end_step_trigger_observed":sum(x["reached_endstep_with_trigger"] for x in events),
-    "proposals_by_outlet":dict(collections.Counter(x["outlet"] for x in events)),
+    "turn_found":sum(bool(x.get("turn_found")) for x in events),
+    "activation_observed":sum(bool(x.get("activation_observed")) for x in events),
+    "end_step_trigger_observed":sum(bool(x.get("end_step_trigger_observed")) for x in events),
+    "proposals_by_outlet":dict(collections.Counter(x.get("outlet","unknown") for x in events)),
 }
-dest=pathlib.Path(args.out);dest.parent.mkdir(parents=True,exist_ok=True)
+dest=pathlib.Path(args.out)
+dest.parent.mkdir(parents=True,exist_ok=True)
 dest.write_text(json.dumps({"summary":agg,"events":events},indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("PLANNER_RESOLUTION_AUDIT",json.dumps(agg,ensure_ascii=False),flush=True)
+for e in events:
+    print("PLANNER_RESOLUTION_EVENT",json.dumps(e,ensure_ascii=False),flush=True)
