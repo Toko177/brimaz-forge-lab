@@ -18,7 +18,7 @@ def inputs(count=1):
                 seat=seats.index("Brimaz_V3")+1
                 g={"pod":pod,"seed":seed,"rotation":rotation,"brimaz_seat":seat,
                    "seats":seats,"policy":"V12-incubate","status":"complete",
-                   "winner_deck":"Brimaz_V3" if repeat==0 else seats[0],
+                   "winner_deck":"Brimaz_V3" if repeat==0 else next(d for d in seats if d!="Brimaz_V3"),
                    "brimaz_win":repeat==0}
                 c={k:g[k] for k in ("pod","seed","brimaz_seat","policy","status","winner_deck","brimaz_win")}
                 c.update(engine_natural_and_consistent=True,legal_deck_gate=True,
@@ -47,19 +47,19 @@ class CampaignAuditTests(unittest.TestCase):
     def test_missing_games_fail_before_claiming_winrate(self):
         ms,cs=inputs()
         with self.assertRaisesRegex(ValueError,"expected"):
-            summarize(ms[:-1],cs)
+            summarize(ms[:-1],cs,games_per_rotation=1)
 
     def test_duplicate_seed_cannot_be_passed_off_as_independent(self):
         ms,cs=inputs()
         ms[1]["seed"]=ms[0]["seed"]
         with self.assertRaisesRegex(ValueError,"Duplicated global seed"):
-            summarize(ms,cs)
+            summarize(ms,cs,games_per_rotation=1)
 
     def test_invalid_natural_result_cannot_be_counted_as_win(self):
         ms,cs=inputs()
         cs["games"][0]["engine_natural_and_consistent"]=False
         cs["games"][0]["rejection_reasons"]=["Illegal game"]
-        r=summarize(ms,cs)
+        r=summarize(ms,cs,games_per_rotation=1)
         self.assertEqual(r["summary"]["certified"],7)
         self.assertEqual(r["summary"]["wins"],7)
         self.assertEqual(r["summary"]["censored_or_rejected"],1)
@@ -68,7 +68,7 @@ class CampaignAuditTests(unittest.TestCase):
         ms,cs=inputs()
         cs["games"][0]["ai_warning_free"]=False
         cs["games"][0]["ai_quality_signatures"]["evaluation_timeouts"]=2
-        r=summarize(ms,cs)
+        r=summarize(ms,cs,games_per_rotation=1)
         self.assertEqual(r["summary"]["wins"],8)
         self.assertEqual(r["summary"]["warning_free_wins"],7)
 
@@ -76,26 +76,26 @@ class CampaignAuditTests(unittest.TestCase):
         ms,cs=inputs()
         ms[0]["brimaz_seat"]=4
         with self.assertRaisesRegex(ValueError,"seat mismatch"):
-            summarize(ms,cs)
+            summarize(ms,cs,games_per_rotation=1)
 
     def test_mixed_policy_rejected(self):
         ms,cs=inputs()
         ms[0]["policy"]="Other"
         with self.assertRaisesRegex(ValueError,"Mixed AI variant"):
-            summarize(ms,cs)
+            summarize(ms,cs,games_per_rotation=1)
 
     def test_illegal_natural_certificate_is_rejected(self):
         ms,cs=inputs()
         cs["games"][0]["legal_deck_gate"]=False
         with self.assertRaisesRegex(ValueError,"illegal/censored"):
-            summarize(ms,cs)
+            summarize(ms,cs,games_per_rotation=1)
 
     def test_censored_game_keeps_denominator_honest(self):
         ms,cs=inputs()
         ms[0].update(status="clock_censored",winner_deck=None,brimaz_win=None)
         cs["games"][0].update(status="clock_censored",winner_deck=None,brimaz_win=None,
                              engine_natural_and_consistent=False,rejection_reasons=["clock cutoff"])
-        r=summarize(ms,cs)
+        r=summarize(ms,cs,games_per_rotation=1)
         self.assertEqual(r["summary"]["scheduled"],8)
         self.assertEqual(r["summary"]["certified"],7)
         self.assertEqual(r["summary"]["censored_or_rejected"],1)
