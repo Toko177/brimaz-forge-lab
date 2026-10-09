@@ -12,6 +12,22 @@ Documentation spécialisée :
 - [Qualité de l'IA et parallélisme](docs/ai-quality-and-parallelism.md)
 - [Architecture du futur lookahead à quatre joueurs](docs/multiplayer-lookahead-roadmap.md)
 
+## Mise à jour du 9 octobre 2026 : victoire historique non reproduite
+
+**Attention :** la première victoire Brimaz (seed `20291010`, seuil moteur 360 s)
+a satisfait la certification de sortie naturelle et de légalité, mais une
+relecture avec seuil 900 s, IA Forge Default, mêmes cartes et sièges, a donné
+**Radha vainqueur** (437 493 ms). La première divergence est au tour Forge 33,
+sur un choix de donjon effectué par une IA adverse. L'horloge seule n'est
+pas une cause démontrée ; la seed Forge n'assure pas ici une trace déterministe.
+Ne pas compter la victoire historique comme résultat reproduit ni comme
+preuve de performance de Brimaz.
+
+[Comparaison forensique des journaux](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37994894861).
+[V7 observateur : 4 parties certifiées, 0 victoire Brimaz](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37992540124).
+V8 expérimente des transformations défensives d'Incubateurs, toujours
+sous le moteur de règles Forge.
+
 ## Résultat actuel à ne pas mal interpréter
 
 - 32 parties canoniques avant correction moteur : 29 naturelles certifiées, 3 censurées ; Brimaz 0/29.
