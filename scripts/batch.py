@@ -107,7 +107,14 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         outcomes=re.findall(r"^Game Outcome: (.+)$",stdout,re.M)
         multiple_winners=sum("has won because all opponents have lost" in x for x in outcomes)>1
         clock_cutoff=any(int(ms)>=args.clock*1000-2500 for ms,_,_ in winners)
-        if proc_timeout:status="process_timeout"
+        # Forge may print a winner despite earlier repeated Java exceptions.
+        # Such games are never evidence of valid Commander outcomes.
+        engine_fault = any(x in raw for x in (
+            "java.lang.NullPointerException", "Exception in thread",
+            "java.lang.IllegalStateException", "StackOverflowError",
+            "OutOfMemoryError", "Simulation: Couldn't play land"))
+        if engine_fault:status="engine_fault"
+        elif proc_timeout:status="process_timeout"
         elif rc!=0:status="engine_failed"
         elif clock_cutoff or multiple_winners or "Stopping slow match as draw" in stdout:status="clock_censored"
         elif len(winners)!=1:status="unparsed"
@@ -118,7 +125,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
             "seed":seed,"profiles":profiles,"brimaz_profile":args.profile_brimaz,
             "policy":args.policy_label,"planner_decisions":raw.count("BRIMAZ_PLANNER:"),
             "seats":seats,"brimaz_seat":br_index,
-            "status":status,"winner_seat":winner_index,
+            "status":status,"engine_fault_detected":engine_fault,"winner_seat":winner_index,
             "winner_deck":seats[winner_index-1] if winner_index else None,
             "brimaz_win":winner_index==br_index if winner_index else None,
             "game_milliseconds":int(winners[-1][0]) if winners else None,
@@ -150,5 +157,5 @@ stats={
 print("POD SUMMARY",json.dumps(stats,ensure_ascii=False),flush=True)
 # Timeout/clock cutoff is an expected censored observation, not a failed CI job.
 # Engine exceptions, process timeouts and unparseable matches remain failures.
-bad={"engine_failed","process_timeout","unparsed"}
+bad={"engine_failed","engine_fault","process_timeout","unparsed"}
 sys.exit(2 if any(x["status"] in bad for x in summary) else 0)
