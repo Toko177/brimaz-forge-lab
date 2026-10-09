@@ -11,6 +11,7 @@ Labels are intentionally conservative:
 Neither a truncated game nor absent/full data may produce a certified win.
 """
 import argparse,collections,hashlib,json,pathlib,re,sys
+from forge_result_evidence import verify_result_evidence
 
 p=argparse.ArgumentParser()
 p.add_argument("--input",required=True)
@@ -55,8 +56,9 @@ for record_path in sorted(root.rglob("games.json")):
             if "No AI assigned for API: Incubate" in raw:
                 # This is a real warning about AI quality, not a rule error.
                 pass
-            if wins and int(wins[0][0]) >= 357500:
-                local.append("Possible artificial clock win; reject")
+            # Full four-seat evidence and per-game clock cross-check.
+            # This supersedes the old hard-coded 360s-only 357500ms threshold.
+            local.extend(verify_result_evidence(raw, g, seats))
         if g.get("status")!="complete":local.append("Game was not naturally complete: "+g.get("status",""))
         if g.get("process_exit")!=0:local.append("Forge subprocess exit was nonzero")
         if g.get("brimaz_win") is True and g.get("winner_deck")!="Brimaz_V3":
