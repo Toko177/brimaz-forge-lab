@@ -1057,3 +1057,47 @@ les divergences aux timeouts. Les tests correspondants
 Le fait de re-jouer les MÊMES 32 graines n'autorise
 **pas** à annoncer un intervalle de confiance calculé
 sur 64 réalisations indépendantes.
+
+
+## 22. Test empirique des doubles campagnes (vraies 32 graines rejouées)
+
+Le comparateur \`scripts/audit_same_seed_campaign.py\` est
+maintenant associé au workflow
+[\`brimaz-v12-32-same-seed-audit.yml\`](https://github.com/Toko177/brimaz-forge-lab/actions/runs?query=workflow%3A%22Audit+32+identical-seed+Forge+game+replays%22).
+
+Ce job attend les statuts terminaux des deux
+vrais runs **38001496914** et **38001534517**,
+télécharge les 16 artefacts de chaque côté et
+compare les **32 mêmes seed/pod/rotation/repeat** :
+- état naturel / censuré pour chacun ;
+- même gagnant ou gagnant différent (seulement si
+  les deux parties sont naturelles) ;
+- même séquence d'événements sélectionnés par
+  \`audit_matched_replay.py\`
+  (pile, terrain, vie, mana, blessures) ou divergence ;
+- première divergence observée et son tour global,
+  nombre de \`TimeoutException\` dans chaque run ;
+- empreintes SHA256 des deux traces Forge complètes.
+
+Le comparateur refuse la moindre différence de
+decks, profiles, pod, sièges, seed et horloge, ainsi
+que les matrices incomplètes. Il publie distinctement
+accord sur le vainqueur et concordance des séquences
+d'événements. Les séquences comparées sont un
+**sous-ensemble choisi d'événements**, pas la
+trajectoire complète de tous les objets Forge;
+un hash de transcript mesure la concordance
+exacte du texte brut.
+
+**Aucune donnée de ce double run ne doit être
+additionnée à l'estimation indépendante 32 jeux
+comme si on avait testé 64 graines différentes.**
+La divergence de Forge doit être étudiée comme
+un défaut potentiel de reproductibilité / qualité
+du simulateur, sans attribuer automatiquement
+la cause au seul \`AI_TIMEOUT\`.
+
+Le workflow et sa publication d'artefacts
+sont indépendants de l'audit principal de résultats
+32 jeux. Lire ses logs GitHub et vérifier
+le statut complet avant d'en rapporter les chiffres.
