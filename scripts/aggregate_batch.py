@@ -14,6 +14,8 @@ import sys
 p=argparse.ArgumentParser()
 p.add_argument("--input",default="artifacts")
 p.add_argument("--output",default="results/parallel/aggregate.json")
+p.add_argument("--expected-per-group",type=int,default=8,
+               help="Expected matches in each pod/profile group (4 seats x repeats)")
 args=p.parse_args()
 files=sorted(pathlib.Path(args.input).rglob("games.json"))
 if not files:
@@ -76,7 +78,16 @@ for key,group in by_seed.items():
         if a["status"]=="complete" and b["status"]=="complete":
             pairs.append({"pod":key[0],"rotation":key[1],"seed":key[3],
                           "default_win":a["brimaz_win"],"experimental_win":b["brimaz_win"]})
+expected_total=args.expected_per_group*4
+complete_matrix=(
+    len(grouped)==4 and len(games)==expected_total
+    and all(len(group)==args.expected_per_group and
+            set(x["rotation"] for x in group)=={0,1,2,3}
+            for group in grouped.values())
+)
 out={
+  "quality_gate_complete_matrix":complete_matrix,
+  "expected_games":expected_total,
   "games":len(games),"groups":report,"matched_seed_pairs":len(pairs),
   "profile_comparison_notes":"Default vs Experimental are existing Forge heuristics, not stronger AI by default. No causality or definitive ranking from small samples.",
   "limitations":["Actual rules engine; decisions are Forge heuristics, not expert human play",
@@ -90,4 +101,6 @@ out={
 path=pathlib.Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
 path.write_text(json.dumps(out,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("AGGREGATED",json.dumps({"games":len(games),"groups":len(report),"matched_seed_pairs":len(pairs)},ensure_ascii=False),flush=True)
-sys.exit(0 if all(len(g)==4 for g in grouped.values()) else 0)
+if not complete_matrix:
+    print("INCOMPLETE MATRIX: some seat/pod/profile shards are missing",flush=True)
+sys.exit(0 if complete_matrix else 2)
