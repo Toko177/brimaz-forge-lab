@@ -1,0 +1,57 @@
+name: Verify Commander deck legality before benchmark
+on:
+  push:
+    paths: [".github/workflows/commander-legality.yml", "scripts/validate_commander_legality.py"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: kaal-playgroup-deck-snapshots
+          run-id: 37952122924
+          github-token: ${{ github.token }}
+          path: .
+      - name: Prepare exact Brimaz V3 deck file
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          src=pathlib.Path('decks/Brimaz_V3.txt')
+          entries=[]
+          for line in src.read_text().splitlines():
+              if not line.strip():continue
+              m=re.fullmatch(r'(\d+)\s+(.+)',line)
+              assert m,line
+              entries.append((int(m[1]),m[2]))
+          assert sum(x for x,_ in entries)==100
+          out=pathlib.Path('forge_decks/Brimaz_V3.dck')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text('[metadata]\nName=Brimaz V3\n[Main]\n'+
+              ''.join(f'{q} {n}\n' for q,n in entries if n!='Brimaz, Blight of Oreskos')+
+              '[Commander]\n1 Brimaz, Blight of Oreskos\n')
+          PY
+      - name: Validate real Scryfall Oracle, bans, color identity and singleton rules
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/validate_commander_legality.py \
+            --deck forge_decks/Brimaz_V3.dck \
+            --deck forge_decks/Kaal_9594008.dck \
+            --deck forge_decks/Kaal_10347090.dck \
+            --deck forge_decks/Kaal_21930525.dck \
+            --deck forge_decks/Kaal_23328062.dck \
+            --deck forge_decks/Kaal_11485202.dck \
+            --deck forge_decks/Kaal_22193355.dck
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: legality-audit-all-playgroup-pods
+          path: results/legality/
+          if-no-files-found: ignore
