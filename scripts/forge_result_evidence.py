@@ -119,3 +119,30 @@ def inspect_ai_quality_signatures(raw):
         "incubate_handler_warnings": raw.count("No AI assigned for API: Incubate"),
         "decision_thread_timeout_samples": raw.count("AI eval thread at timeout:"),
     }
+
+
+def describe_outcome_modes(raw):
+    """Classify *reported* Forge elimination modes without attributing kills.
+
+    A survivor winning when all opponents have lost does not imply that the
+    survivor inflicted every lethal hit. Never promote that inference into
+    'lethal combat' or a deck's ability to close the game.
+    """
+    result = []
+    for seat_text, name, state_text, reason in _OUTCOME.findall(raw):
+        status = state_text.split(" ", 1)[0]
+        r = reason.strip()
+        full = (state_text + " " + r).lower()
+        if status == "won":
+            mode = "survivor_won"
+        elif "empty library" in full:
+            mode = "library_depletion"
+        elif "life total reached 0" in full:
+            mode = "life_total_zero"
+        elif "poison" in full:
+            mode = "poison"
+        else:
+            mode = "other_reported_elimination"
+        result.append({"seat": int(seat_text), "player": name.strip(),
+                       "state": status, "mode": mode, "raw_reason": state_text + " " + r})
+    return result
