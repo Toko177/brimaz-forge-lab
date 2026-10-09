@@ -1,0 +1,47 @@
+name: Compare Brimaz V3 planner against stock and V2
+on:
+  workflow_run:
+    workflows:
+      - Brimaz tactical V3 parallel benchmark
+    types:
+      - completed
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch verified baseline Forge logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: forge-parallel-*
+          run-id: 37955082304
+          github-token: ${{ github.token }}
+          path: stock/
+      - name: Fetch all modified Forge logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-planner-v3-*
+          run-id: 37962437566
+          github-token: ${{ github.token }}
+          path: candidate/
+      - name: Fetch V1 experimental AI logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-planner-v1-*
+          run-id: 37959185948
+          github-token: ${{ github.token }}
+          path: v1/
+      - name: Compare V3 against V1 directly
+        run: python3 scripts/compare_policy.py --baseline v1 --candidate candidate --output results/policy/v3_vs_v1.json
+      - name: Compare reproducible matched pods seats seeds and game outcomes
+        run: python3 scripts/compare_policy.py --baseline stock --candidate candidate --output results/policy/pairwise_v3.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-stock-vs-v3-matched-comparison
+          path: results/policy/
