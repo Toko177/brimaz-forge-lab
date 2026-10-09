@@ -484,3 +484,83 @@ tests de mulligan sur davantage de distributions d'ouvertures
 et progresser sur l'interaction / le combat / le moteur de
 sacrifice. Conserver la V9 comme politique expérimentale,
 pas l'adopter par défaut avant des échantillons plus larges.
+
+
+## 14. Reprise V10 : profiler *tous* les sièges et isoler les lenteurs de combat
+
+La campagne V9 a laissé **7 TimeoutException** sur 2/4
+parties (aristo) et une correction d'attaque invalide.
+Inspection directe des sept \`AI eval thread at timeout:\` du
+run V9 \`37998385269\` : **7/7 traversent les calculs de combat
+\`ComputerUtilCombat\`, \`AiBlockController\`, ou
+\`ComputerUtil.predictNextCombatsRemainingLife\`**. Les premiers
+frames varient : \`Card.updateStaticAbilities\`, \`Card.getName\`,
+\`ReplacementHandler.getReplacementList\`,
+\`Card.updateSpellAbilities\`, etc. Il s'agit de recalculs
+d'évaluation des bloqueurs, des dégâts prévisionnels ou des
+capacités statiques/règles, et PAS de preuves d'erreur
+dans une carte en particulier.
+
+### Code V10 créé
+- \`scripts/patch_forge_brimaz_v10.py\` : reprend l'intégralité
+  des décisions V9 (dont mulligan gratuit ciblé Brimaz) ;
+  instrumente le \`FutureTask\` interne au
+  \`AiController.chooseSpellAbilityToPlayFromList\` officiel,
+  **sans changer le budget 5s, l'ordre des sorts, les décisions,
+  ni le traitement des timeouts** ;
+  journaux \`AI_EVAL_SLOW_V10\` pour décisions >=1s, et
+  \`AI_EVAL_TIMEOUT_V10\` pour dépassements, avec joueur,
+  tour global, phase, temps, budget, candidats analysés,
+  carte examinée au moment du timeout.
+- \`PlayerControllerAi.mulliganKeepHand\` : télémétrie
+  \`AI_OPENING_V10\` des **4 sièges** (nombre de cartes,
+  vrais terrains, sorts de faible coût), sans transmettre
+  la main des adversaires à une autre IA ; la stratégie
+  V9 Brimaz est préservée.
+- \`scripts/audit_ai_eval_hotspots.py\` et
+  \`tests/test_ai_eval_hotspots.py\` : parser/diagnostic des
+  lenteurs et stacks, attribution du joueur/siège, carte
+  en cours d'évaluation et type de point chaud. Tester
+  la concordance des compteurs de timeout instrumentés
+  avec les vraies \`TimeoutException\` du moteur.
+- \`.github/workflows/brimaz-v10-ai-hotspot-pilot.yml\` :
+  4 parties EDH réelles, 2 pods, siège/rotation2,
+  graine 20261009, horloge360s, 2 matchs par pod.
+  **Run initial 37999502125** :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999502125.
+  Contrôler le statut réel : à la création il était
+  \`in_progress\`, ne pas présumer du résultat.
+- \`.github/workflows/commander-evidence-and-ai-audit.yml\`
+  déclenche aussi les nouveaux tests V10 pour éviter
+  une régression silencieuse.
+
+### Travail à faire après cette phase
+1. Valider compilation Java V10, tests Python, 4 parties
+   naturelles et contrôle de 4 \`Game Outcome\`.
+2. Examiner \`AI_EVAL_TIMEOUT_V10\` :
+   **quelle carte ? quel joueur ? combien de candidats ?
+   quel sous-système exact ?** Un timeout avant que
+   la liste de décisions soit consommée peut faire passer
+   toute l'IA alors qu'elle aurait eu une bonne réponse.
+3. Identifier un calcul redondant avec une preuve
+   d'équivalence de comportement ; optimiser sans
+   surestimer les menaces, sans désactiver les bloqueurs,
+   et sans modifier les règles Magic.
+4. Faire un A/B benchmark avec la politique V9 inchangée,
+   mesurer temps de décision / fréquence des timeouts,
+   temps total, légalité et si possible robustesse de RNG.
+5. Documenter tous les correctifs et résultats ici ;
+   ne pas prétendre que V10 augmente le winrate : il est
+   **instrumentation**, pas encore nouveau moteur tactique.
+
+### Précautions à conserver
+Dans le code officiel \`AiController\` :
+\`future.get(game.getAITimeout(), TimeUnit.SECONDS)\`
+attend jusqu'à 5s, puis tente \`future.cancel(true)\`,
+\`t.join(2000)\`, et en dernier recours \`t.stop()\`
+(lorsqu'il est disponible). Forcer la terminaison d'un
+thread pendant des mutations du jeu est dangereux;
+il faut auditer ce phénomène avant de l'« optimiser ».
+Ne JAMAIS augmenter artificiellement le winrate par
+suppression d'une phase de combat, choix aléatoire de
+bloqueurs ou limites de tours arbitraires.
