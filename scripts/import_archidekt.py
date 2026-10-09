@@ -60,7 +60,7 @@ def parse_deck(data):
             names = {str(c.get("name", "")).lower() for c in category_objs}
             if names and names <= {"sideboard", "maybeboard", "considering", "acquireboard"}:
                 continue
-            if all(c.get("includedInDeck") is False for c in category_objs):
+            if any(c.get("includedInDeck") is False for c in category_objs):
                 continue
         name = get_name(entry)
         qty = int(entry.get("quantity", entry.get("qty", 1)))
