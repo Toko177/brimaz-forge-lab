@@ -1613,3 +1613,167 @@ Résultat \`DECKBUILD_CERTIFIED_RESULTS\` :
    Les options de campagne 32/64/96
    sont déjà en place, sans changement
    de version du moteur.
+
+
+## 28. ACCÉLÉRATION STRUCTURELLE DU DECKBUILDING : CACHE VÉRIFIÉ + TOURNOI DE VARIANTES
+
+**Objectif prioritaire demandé le 10 octobre 2026 :**
+ne plus consacrer des dizaines de versions du moteur à de
+simples changements de cartes. Accélérer le cycle
+« modifier -> jouer de vraies parties -> certifier ->
+comparer -> classer quelques bons candidats ».
+
+### A. Cache de parties de référence vérifiables
+
+Fichiers :
+- \`scripts/deckbuild_cache.py\`,
+  \`tests/test_deckbuild_cache.py\` (9 tests),
+  \`.github/workflows/deckbuild-ab.yml\`.
+- \`forge_decks/reference-cache-key.json\` est généré
+  **après** la vérification Scryfall des deux candidats.
+
+L'identité de référence prend **SHA256** sur :
+- source et .dck Forge du deck de référence ;
+- chaque deck des six adversaires dans les deux pods ;
+- scripts \`patch_forge_charm_context.py\`,
+  \`patch_forge_brimaz_v13.py\`,
+  \`deckbuild_run.py\`, \`forge_result_evidence.py\` ;
+- installeur officiel Forge 2.0.15 fixé par SHA256 ;
+- profils, règle de délai, politique IA, horloge et
+  limites de processus, pod, seat, rotation,
+  TOUTES les graines déclarées, nombre de repeats.
+
+Le workflow recherche **automatiquement** une exécution
+antérieure **conclue SUCCESS**, avec artefact
+\`deckbuild-verified-inputs\` et empreinte
+\`reference-cache-key.json\`. Une référence sans
+attestation, avec un seul paramètre différent
+ou un log malformé est refusée.
+
+- Cache absent : **16 runners, 16 vraies JVM** pour
+  les répétitions=1 (8 référence+8 candidate).
+- Cache exact : **8 runners, 8 nouvelles JVM**
+  pour le nouveau candidat. Téléchargement des
+  **8 journaux Forge originaux** de l'exécution
+  antérieure (16 si repeats=2, etc.), vérification
+  de chaque SHA256, seed, seat, profil, statut,
+  liste de decks et politique IA. 
+- IMPORTANT : même après vérification du cache,
+  \`scripts/deckbuild_certify.py\` **recertifie tous
+  les résultats à partir de leur transcription
+  réelle** contre le deck de référence, les autres
+  decks et la Scryfall légalité. Aucune issue
+  censurée n'est convertie en victoire.
+- Le nombre effectif de **JVM nouvelles** est diminué
+  de moitié, mais l'effectif statistique
+  **n'augmente pas**. Les résultats réutilisés
+  sont strictement les mêmes jeux de référence,
+  non des nouvelles parties indépendantes.
+- Si \`reference_run_id\` est renseigné en lancement
+  manuel, le workflow échoue explicitement si
+  l'ancienne campagne n'est pas compatible.
+- Lors d'un push \`decks/Challenger.txt\`, le workflow
+  récupère les exécutions terminées précédentes
+  via l'API GitHub, avec permission actions:read.
+  Tout artifact sans clé de provenance (les
+  anciens contrôles A/A par exemple) est rejeté,
+  sans inventer une compatibilité.
+
+### B. Classement de plusieurs modifications de cartes
+
+Fichiers :
+- \`scripts/deckbuild_compare.py\` inclut désormais
+  \`reference_environment_fingerprint\`, la clé
+  de référence complète, ainsi que
+  \`reference_transcript_sha256\` et
+  \`candidate_transcript_sha256\` pour chaque paire ;
+- \`scripts/deckbuild_rank.py\` et
+  \`tests/test_deckbuild_rank.py\` (8 tests) ;
+- \`.github/workflows/deckbuild-leaderboard.yml\`
+  (déclenchement manuel avec plusieurs IDs de runs,
+  à utiliser lorsque GitHub expose ce workflow
+  depuis la branche par défaut) ;
+- Mode d'emploi détaillé :
+  [DECKBUILDING_QUICKSTART.md](DECKBUILDING_QUICKSTART.md).
+
+Les comparaisons multi-variantes n'acceptent
+**QUE** les candidats partageant **les mêmes
+SHA256 des huit vrais journaux de référence**,
+le même patch, les mêmes graines, pods, profils,
+commandant de référence et tailles de campagne.
+Ils refusent un candidat dupliqué ou des traces
+incomplètes. Résultat : \`candidates.json\`,
+\`candidates.md\`, changement de cartes,
+winrate, Wilson 95 %, censures et avertissements
+IA. Le rang est un ordre de **présélection**,
+jamais une preuve de supériorité statistique :
+le tri de nombreux candidats introduit un
+biais de sélection qu'il faut réévaluer sur
+**de nouvelles graines**.
+
+### C. Tests de régression
+
+[CI PASS 59 tests](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006243468) :
+- 14 tests parsing/prep/certification A/B ;
+- 6 tests substitutions une ligne ;
+- 9 tests sécurité du cache ;
+- 8 tests du classement multi-candidats ;
+- 22 tests historiques issues Forge.
+Tous les tests tournent sans Scryfall, Forge, ni
+action de fond et échouent sur incohérences.
+
+### D. Expérience réelle de qualification du cache
+
+Nouveau A/A (Brimaz vs clone identique,
+**aucun changement de carte**) :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006057124
+
+À la dernière vérification, le job de préparation
+a réussi :
+- SOURCE Forge, 7 decks canoniques hachés,
+  Scryfall vérifié, la clé
+  \`REFERENCE_CACHE_CREATED
+  f7c8e3d85c430933470a7c9818f503fef47e3c9df41a815ac7e19c3173a71c1d\`
+  a été créée ;
+- ancienne campagne 38004900250 détectée mais
+  refusée à juste titre car sans clé provenance ;
+- 16 jobs de simulation réels déclenchés ;
+  15/17 jobs complets (prepare + 14 shards),
+  les rotations 2 du pod aristo en cours ;
+- n'annoncer ni résultats certifiés ni taux
+  jusqu'au passage du dernier job \`report\`.
+
+**Action suivante indispensable :** vérifier le
+run 38006057124. S'il est SUCCESS et l'artefact
+\`deckbuild-verified-inputs\` contient bien
+\`reference-cache-key.json\`, faire un second
+push (simple commentaire de suivi dans
+\`decks/Challenger.txt\`, sans changer les cartes)
+et vérifier empiriquement :
+\`REFERENCE_CACHE_HIT from run 38006057124\`,
+matrice de **8 jobs candidats** (contre 16
+au premier run), huit logs d'origine recertifiés,
+huit nouvelles JVM candidates, rapport final
+\`natural_certified_matches=16\`. 
+NE PAS AFFIRMER QUE LA RÉUTILISATION EST
+VALIDÉE DE BOUT EN BOUT AVANT CET ESSAI.
+Si un autre membre du dépôt modifie un script
+de patch Forge ou les decks avant l'essai,
+le cache doit refuser et les 16 jeux doivent
+être rejoués, ce qui est attendu.
+
+### E. Suites réellement importantes
+
+- Optimiser les simulations de calcul de combat
+  de TOUS les adversaires sur situations
+  déterministes (sans modifier règles Magic
+  ni forcer un résultat), et comparer CPU,
+  comportement tactique et qualité de l'IA ;
+- réaliser des présélections structurées de
+  3 à 10 candidats (même ligne de base),
+  puis confirmation sur nouvelles graines ;
+- élargir les pods adversaires réalistes et
+  les styles de joueurs une fois le moteur
+  stable ; ne pas promettre le véritable
+  winrate humain de Brimaz basé uniquement
+  sur sept decks fixes et les heuristiques Forge.
