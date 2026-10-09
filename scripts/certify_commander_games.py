@@ -64,6 +64,9 @@ for record_path in sorted(root.rglob("games.json")):
         if g.get("brimaz_win") is True and g.get("winner_deck")!="Brimaz_V3":
             local.append("Brimaz claimed win but different winning deck")
         quality=inspect_ai_quality_signatures(raw)
+        # Separate rules/outcome validity from AI quality. No source proves a
+        # warning-free game has expert AI, but warnings are objective red flags.
+        warning_free_ai=all(v==0 for v in quality.values())
         report={
           "pod":g.get("pod"),"policy":g.get("policy"),"seed":g.get("seed"),
           "seat":g.get("brimaz_seat"),"winner_deck":g.get("winner_deck"),
@@ -73,6 +76,7 @@ for record_path in sorted(root.rglob("games.json")):
           "engine_natural_and_consistent":not local,
           "rejection_reasons":local,
           "ai_quality_signatures":quality,
+          "ai_warning_free":warning_free_ai,
           "outcome_modes":describe_outcome_modes(raw),
           "victory_causality_verified":False,
           "caveat":"This audit verifies raw Forge outcomes and Scryfall legality, not a formal MTG rules proof. The Forge JAR may include disclosed bugfix or policy patches."
@@ -86,6 +90,8 @@ summary={
     "games_with_invalid_ai_attack_fallbacks":sum(x["ai_quality_signatures"]["invalid_attack_fallbacks"]>0 for x in games),
     "accepted_natural_games":sum(x["engine_natural_and_consistent"] for x in games),
     "accepted_brimaz_wins":sum(x["engine_natural_and_consistent"] and x["brimaz_win"] is True for x in games),
+    "accepted_warning_free_natural_games":sum(x["engine_natural_and_consistent"] and x["ai_warning_free"] for x in games),
+    "accepted_warning_free_brimaz_wins":sum(x["engine_natural_and_consistent"] and x["ai_warning_free"] and x["brimaz_win"] is True for x in games),
     "excluded_games":sum(not x["engine_natural_and_consistent"] for x in games),
     "acceptance_standard":"Scryfall legal deck manifest + Forge 2.0.15 (original or disclosed patched build) + four seats + a natural winner + raw log hash. Audit does not prove full Oracle rule fidelity.",
 }
