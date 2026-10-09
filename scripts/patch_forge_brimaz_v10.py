@@ -35,7 +35,7 @@ future_anchor = "        FutureTask<SpellAbility> future = new FutureTask<>(() -
 future_replacement = (
     "        final long evalBeginV10 = System.nanoTime();\n"
     "        final java.util.concurrent.atomic.AtomicReference<String> evalCandidateV10 = "
-    "new java.util.concurrent.atomic.AtomicReference<>(\\"<none>\\");\n"
+    "new java.util.concurrent.atomic.AtomicReference<>(\"<none>\");\n"
     "        final java.util.concurrent.atomic.AtomicInteger evalConsideredV10 = "
     "new java.util.concurrent.atomic.AtomicInteger();\n"
     "        final int evalAvailableV10 = all.size();\n"
@@ -46,11 +46,11 @@ if controller.count(future_anchor) != 1:
 controller = controller.replace(future_anchor, future_replacement, 1)
 
 candidate_anchor = (
-    "                // Don't add Counterspells to the \\"normal\\" playcard lookups\n"
+    "                // Don't add Counterspells to the \"normal\" playcard lookups\n"
 )
 candidate_instrument = (
     "                evalCandidateV10.set(sa.getHostCard() == null "
-    "? \\"<null>\\" : sa.getHostCard().getName());\n"
+    "? \"<null>\" : sa.getHostCard().getName());\n"
     "                evalConsideredV10.incrementAndGet();\n"
 )
 if controller.count(candidate_anchor) != 1:
@@ -101,7 +101,6 @@ player_controller=fetch("forge-ai/src/main/java/forge/ai/PlayerControllerAi.java
 mulligan_anchor=(
 "    @Override\n"
 "    public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {\n"
-    + opening_telemetry
 "        return !ComputerUtil.wantMulligan(player, cardsToReturn);\n"
 "    }\n"
 )
@@ -124,6 +123,7 @@ opening_telemetry = (
 mulligan_inject=(
 "    @Override\n"
 "    public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {\n"
+    + opening_telemetry
 "        boolean stockKeep = !ComputerUtil.wantMulligan(player, cardsToReturn);\n"
 "        Boolean special = BrimazMulliganPolicy.overrideKeep(player, cardsToReturn, stockKeep);\n"
 "        return special != null ? special.booleanValue() : stockKeep;\n"
