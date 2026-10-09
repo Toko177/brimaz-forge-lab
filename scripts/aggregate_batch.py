@@ -38,7 +38,7 @@ if len(identities)!=len(set(identities)):
     raise ValueError("Duplicated game keys: artifact collision or rerun mixed into original sample")
 grouped=collections.defaultdict(list)
 for g in games:
-    grouped[(g["pod"],g.get("brimaz_profile","Default"))].append(g)
+    grouped[(g["pod"],g.get("brimaz_profile","Default"),g.get("policy","stock"))].append(g)
 
 def wilson(wins,n,z=1.96):
     if not n:return None
@@ -49,11 +49,11 @@ def wilson(wins,n,z=1.96):
     return [round(max(0,middle-half),4),round(min(1,middle+half),4)]
 
 report={}
-for (pod,profile), rows in sorted(grouped.items()):
+for (pod,profile,policy), rows in sorted(grouped.items()):
     good=[x for x in rows if x["status"]=="complete"]
     wins=sum(x["brimaz_win"] is True for x in good)
     r={
-      "pod":pod,"brimaz_profile":profile,
+      "pod":pod,"brimaz_profile":profile,"policy":policy,
       "scheduled":len(rows),"valid_games":len(good),
       "invalid_by_reason":dict(collections.Counter(x["status"] for x in rows if x["status"]!="complete")),
       "brimaz_wins":wins,
@@ -66,13 +66,13 @@ for (pod,profile), rows in sorted(grouped.items()):
       "incubate_ai_warning_games":sum(bool(x.get("ai_incubate_warning")) for x in rows),
       "seats_covered":sorted(set(x["brimaz_seat"] for x in rows)),
     }
-    report[pod+"/"+profile]=r
+    report[pod+"/"+profile+"/"+policy]=r
     print("GROUP",json.dumps(r,ensure_ascii=False),flush=True)
 
 pairs=[]
 by_seed=collections.defaultdict(dict)
 for g in games:
-    key=(g["pod"],g["rotation"],g["repeat"],g.get("seed"))
+    key=(g["pod"],g["rotation"],g["repeat"],g.get("seed"),g.get("policy","stock"))
     by_seed[key][g.get("brimaz_profile","Default")]=g
 for key,group in by_seed.items():
     if "Default" in group and "Experimental" in group:
