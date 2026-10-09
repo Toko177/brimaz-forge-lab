@@ -1,0 +1,23 @@
+name: Generic Commander Deckbuilder Fast Regression
+on:
+  push:
+    paths:
+      - .github/workflows/deckbuild-regression.yml
+      - scripts/deckbuild_prepare.py
+      - scripts/deckbuild_run.py
+      - scripts/deckbuild_certify.py
+      - scripts/deckbuild_compare.py
+      - tests/test_deckbuild_pipeline.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pure-evidence-and-swap-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate decklist serialization, independent certificates and A/B statistics
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_pipeline.py' -v
+      - name: Verify existing strict Commander evidence fixtures still pass
+        run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
