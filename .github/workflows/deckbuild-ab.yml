@@ -162,6 +162,12 @@ jobs:
               fi
               continue
             fi
+            if [[ ! -f "candidate-cache/$run_id/forge_decks/reference-cache-key.json" ]]; then
+              if [[ -n "$REQUESTED_RUN_ID" ]]; then
+                echo "Previous campaign has no provenance attestation; fail closed"; exit 2
+              fi
+              continue
+            fi
             if python3 scripts/deckbuild_cache.py --mode verify --root . \
               --decks forge_decks --manifest forge_decks/candidate-manifest.json \
               --seed-base "$SEED_BASE" --repeats "$REPEATS" \
