@@ -37,6 +37,29 @@ class TranscriptEvidenceTests(unittest.TestCase):
     def test_valid_four_outcome_result(self):
         self.assertEqual(self.check(), [])
 
+    def test_library_deckout_loss_is_valid_fourth_player_elimination(self):
+        # Actual Forge 2.0.15 prints 'lost trying to draw cards from empty library'
+        # rather than 'lost because ...'. This must NOT reject a real win.
+        raw = RAW.replace(
+            "Game Outcome: Ai(3)-Tazri has lost because life total reached 0",
+            "Game Outcome: Ai(3)-Tazri has lost trying to draw cards from empty library")
+        self.assertEqual(self.check(raw), [])
+
+    def test_missing_library_deckout_elimination_is_still_rejected(self):
+        raw = RAW.replace(
+            "Game Outcome: Ai(3)-Tazri has lost because life total reached 0\\n", "")
+        self.assertTrue(any("four individual Game Outcome" in issue for issue in self.check(raw)))
+
+    def test_unrecognized_loss_reason_is_not_silently_accepted(self):
+        raw = RAW.replace("Ai(3)-Tazri has lost because life total reached 0",
+                          "Ai(3)-Tazri has lost for unknown reasons")
+        self.assertTrue(any("four individual Game Outcome" in issue for issue in self.check(raw)))
+
+    def test_win_must_still_have_legal_winning_reason(self):
+        raw = RAW.replace("Ai(1)-Brimaz V3 has won because all opponents have lost",
+                          "Ai(1)-Brimaz V3 has won trying to draw cards from empty library")
+        self.assertTrue(any("one won outcome" in issue for issue in self.check(raw)))
+
     def test_missing_eliminations_are_rejected(self):
         self.assertIn("Expected four individual Game Outcome entries, found 3",
                       self.check(RAW.replace(
