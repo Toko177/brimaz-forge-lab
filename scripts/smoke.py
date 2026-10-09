@@ -12,6 +12,7 @@ p = argparse.ArgumentParser()
 p.add_argument("--deck", default="decks/Brimaz_V3.txt")
 p.add_argument("--jar", required=True)
 p.add_argument("--games", type=int, default=1)
+p.add_argument("--hybrid-ai", action="store_true", help="Enable opt-in four-player hybrid simulation for Brimaz")
 p.add_argument("--opponents", nargs="*", default=[], help="Three opponent deck filenames without .dck")
 p.add_argument("--clock", type=int, default=360,
                help="Forge per-game clock limit in seconds")
@@ -47,7 +48,7 @@ seats = ["Brimaz_V3.dck"] + ([name + ".dck" for name in args.opponents] if args.
 for name in seats:
     if not (out / name).is_file():
         raise FileNotFoundError(out / name)
-cmd = ["java", "-Xmx4g", "-jar", str(jar), "sim", "-d",
+cmd = ["java", "-Xmx4g"] + (["-Dbrimaz.multiplayerHybrid=true"] if args.hybrid_ai else []) + ["-jar", str(jar), "sim", "-d",
        *seats,
        "-D", str(out), "-f", "Commander", "-n", str(args.games),
        "-c", str(args.clock)]
