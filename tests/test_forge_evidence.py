@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
-from forge_result_evidence import verify_result_evidence
+from forge_result_evidence import verify_result_evidence, inspect_ai_quality_signatures
 from analyze_ai_gameplay import audit_game
 
 SEATS = ["Brimaz_V3", "Kaal_9594008", "Kaal_10347090", "Kaal_21930525"]
@@ -66,6 +66,19 @@ class TranscriptEvidenceTests(unittest.TestCase):
         raw = RAW.replace("123456 ms", "59900 ms")
         self.assertTrue(any("cutoff" in x for x in self.check(raw, clock_seconds=60,
                                                               game_milliseconds=59900)))
+
+    def test_ai_timeout_quality_flag_does_not_forge_an_outcome(self):
+        raw = (RAW + "java.util.concurrent.TimeoutException\n"
+               + "AI Attack declaration invalid, defaulting to: {}\n")
+        flags = inspect_ai_quality_signatures(raw)
+        self.assertEqual(flags["evaluation_timeouts"], 1)
+        self.assertEqual(flags["invalid_attack_fallbacks"], 1)
+        self.assertEqual(self.check(raw), [])
+
+    def test_ai_incubate_warning_is_quality_not_game_legality(self):
+        raw = RAW + "No AI assigned for API: Incubate\n"
+        self.assertEqual(inspect_ai_quality_signatures(raw)["incubate_handler_warnings"], 1)
+        self.assertEqual(self.check(raw), [])
 
     def test_forced_draw_rejected(self):
         self.assertTrue(any("artificially" in x for x in
