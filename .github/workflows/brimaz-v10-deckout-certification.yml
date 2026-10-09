@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/brimaz-v10-deckout-certification.yml
       - scripts/forge_result_evidence.py
+      - scripts/certify_commander_games.py
       - tests/test_forge_evidence.py
   workflow_dispatch:
 permissions:
@@ -43,6 +44,8 @@ jobs:
           assert data['summary']['accepted_natural_games']==4,data
           assert data['summary']['excluded_games']==0,data
           assert data['summary']['accepted_brimaz_wins']==1,data
+          assert data['summary']['accepted_warning_free_brimaz_wins']==0,data
+          assert data['summary']['accepted_warning_free_natural_games']<4,data
           assert sum(g['brimaz_win'] is True and g['engine_natural_and_consistent'] for g in data['games'])==1
           for g in data['games']:
               assert g['engine_natural_and_consistent'] and g['legal_deck_gate']
