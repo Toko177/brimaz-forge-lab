@@ -57,3 +57,17 @@ Machine-readable artifact from workflow "Audit Forge AI decision traces":
 ## Incubate AI handler first pilot
 
 The optional bytecode patch compiled and eliminated `No AI assigned for API: Incubate` in one four-player smoke game. However, that game hit the 360-second clock and was censored, so **the patch is NOT promoted to the baseline**. Removing an API warning is insufficient evidence of improved decisions. Further evaluation must compare complete-game rates, tactical decisions, and win performance before adoption.
+
+## 32-game parallel campaign (verified)
+
+- Real games scheduled: 32; naturally complete: 31; 1 clock censored.
+- Brimaz V3 wins: **0/31** across Default and Experimental Forge AI profiles.
+- Default / aristo: 0 of 7 complete, 1 censored. Experimental / aristo: 0 of 8.
+- Default / artifact: 0 of 8. Experimental / artifact: 0 of 8.
+- In all 32 logs: 22 Brimaz end-step triggers (12 on opponent end steps), 57 observed sacrifice-engine activations, and 72 Incubator transforms.
+- 32 pre-endstep opponent-turn sacrifice engine activations were observed in **7 of 32 games**, mostly during declare blockers. These should NOT be mistaken for a reliable plan to ensure proliferate before an end step.
+- Incubate API warning occurred in 29/32 games. Missing handler is confirmed in Forge 2.0.15 source; optional AlwaysPlay mapping suppressed warning in a pilot but the pilot was censored after 360 s and is not adopted.
+- Generalizing the first 4 games' zero opponent-turn sacrifices was incorrect: the bigger sample observed some, largely reactive. AI still does not reliably demonstrate strategic event planning.
+- Pairwise profile comparisons: 15 seeded pairs with naturally complete outcomes; matching seeds does not guarantee matching random stream after divergent choices.
+
+The relevant official Brimaz rule is **before the start of the end step**, not sacrificing during it.
