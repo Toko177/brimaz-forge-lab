@@ -657,3 +657,86 @@ Suivre les artefacts \`brimaz-v10-...\` et
 Poursuivre ensuite sur les véritables goulets
 d'étranglement les plus coûteux, sans handicaper
 les autres joueurs et sans gonfler le winrate.
+
+
+## 16. V10 : résultat COMPLET, vraie victoire Brimaz et faux rejet corrigé
+
+**Run V10 observation** 37999502125 : 4 parties Forge
+jouées (4 sièges, Deck V3 officiel, IA V9 inchangée
+sauf instrumentation V10).
+- le premier audit de ce run a rapporté
+  \`accepted_natural_games=3\`, \`accepted_brimaz_wins=0\`
+  et un match \`aristo/20281010\` rejeté : le parseur
+  \`_OUTCOME\` acceptait \`has lost because\` mais
+  oubliait \`has lost trying to draw cards from empty
+  library\`.
+- **BUG DU CERTIFICATEUR**, pas échec du moteur :
+  le transcript original contient bien exactement quatre
+  \`Game Outcome\`, un vainqueur Brimaz et trois vaincus.
+  À la graine \`20281010\`, sièges rotation2 :
+  - \`Ai(1)\` Dungeon Party Time : perdu, points de vie 0;
+  - \`Ai(2)\` Zimone and Dina : perdu en tentant une
+    pioche dans une bibliothèque vide;
+  - \`Ai(3)\` Brimaz : gagné, tous adversaires éliminés;
+  - \`Ai(4)\` Radha : perdu, points de vie 0.
+  \`Game Result\` vainqueur Brimaz, durée moteur
+  **164 227ms**, bien avant horloge360s.
+  **Ce compte rendu ne prouve pas que Brimaz a
+  personnellement infligé les deux dégâts létaux ni
+  provoqué le deck-out** : il est juste survivant
+  après trois éliminations.
+- \`scripts/forge_result_evidence.py\` reconnaît
+  maintenant seulement les grammaires explicites
+  \`won because\`, \`lost because\`, \`lost trying to\`,
+  en exigeant toujours quatre sièges distincts,
+  un seul vainqueur et trois vaincus. Régression
+  \`tests/test_forge_evidence.py\` inclut deckout
+  accepté et sortie inconnue rejetée.
+- **Run de re-certification 38000153841 SUCCESS** :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000153841
+  **4/4 parties naturelles validées, 1/4 Brimaz victorieux,
+  zéro exclue**.
+- Attention : le match victorieux a **4 TimeoutException**
+  dans le thread IA Brimaz et 1 attaque invalide
+  automatiquement corrigée par Forge. Il faut conserver
+  cette information de qualité IA, ne pas compter ce
+  \`1/4\` comme une estimation de winrate réel, et
+  ne pas créditer l'instrumentation V10 d'un bonus
+  tactique qu'elle n'apporte pas.
+- Plusieurs runs sur même seed sont déjà divergents :
+  pas de reproductibilité démontrée de cette victoire.
+
+### Diagnostic de V10 maintenant précis par joueur/carte
+Le premier rapport a trouvé **6 TimeoutException** au
+total : 4 dans une même partie Brimaz (\`Ai(3)\`)
+au tour global Forge47, **la carte candidate
+\`Vault of the Archangel\` à toutes les phases
+UPKEEP, DRAW, MAIN1, COMBAT_BEGIN** ; 2 chez
+Zimone and Dina (\`Ai(2)\`) devant les cartes
+\`Shore Up\` et \`Octopus Form\`.
+Les **6 échantillons de stack** se situent dans
+les calculs profonds de combat et de blockers,
+sans prouver une erreur de règle liée à ces cartes.
+Le rapport V10 observe aussi **8 décisions lentes
+terminées entre ~1 et ~4 secondes** et
+**20 évaluations de mains initiales des 4 sièges**.
+Aucune modification stratégique n'a été appliquée
+aux trois adversaires.
+
+### Audit amélioré des conditions de victoire
+\`scripts/forge_result_evidence.py\` possède désormais
+\`describe_outcome_modes\` : modes \`life_total_zero\`,
+\`library_depletion\`, \`poison\`, \`survivor_won\`
+ou \`other_reported_elimination\`.
+Le certificat \`scripts/certify_commander_games.py\`
+ajoute \`outcome_modes\` et la valeur explicite
+\`victory_causality_verified=false\`.
+Ne pas confondre victoire en étant dernier survivant
+et causalité démontrée d'un kill piloté par Brimaz.
+
+### État V11 à vérifier
+La campagne https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999839503
+était en cours (groupe artifact terminé, groupe aristo
+pas encore) au moment de cette addition. Examiner
+les journaux et l'audit de son budget adaptatif partagé
+et les risques de CPU avant de promouvoir V11.
