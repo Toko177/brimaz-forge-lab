@@ -1,0 +1,33 @@
+name: Import KaalDeagle playgroup decks
+on:
+  push:
+    paths:
+      - ".github/workflows/playgroup-import.yml"
+      - "scripts/import_playgroup.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  import-playgroup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore public deck catalog
+        uses: actions/download-artifact@v4
+        with:
+          name: kaal-playgroup-catalog
+          run-id: 37951864571
+          github-token: ${{ github.token }}
+          path: .
+      - name: Import selected decklists with validation
+        run: python3 scripts/import_playgroup.py --limit 8
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kaal-playgroup-deck-snapshots
+          path: |
+            forge_decks/
+            results/playgroup/
+          if-no-files-found: ignore
