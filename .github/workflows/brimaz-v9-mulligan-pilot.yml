@@ -20,6 +20,8 @@ jobs:
           - {pod: artifact, rotation: 2}
     steps:
       - uses: actions/checkout@v4
+      - name: Run Python tests for V9 logged mulligan evidence
+        run: python3 -m unittest discover -s tests -p 'test_brimaz_mulligan_audit.py' -v
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -113,6 +115,8 @@ jobs:
         run: |
           python3 scripts/analyze_ai_gameplay.py --input games --output results/v9/resolved-actions.json
           python3 scripts/audit_brimaz_windows.py --input games --output results/v9/decision-windows.json
+      - name: Verify offline mulligan audit invariants
+        run: python3 -m unittest discover -s tests -p 'test_brimaz_mulligan_audit.py' -v
       - name: Inspect mulligan decisions and per-seat mana development
         shell: bash
         run: |
