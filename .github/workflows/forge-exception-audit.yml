@@ -1,0 +1,21 @@
+name: Investigate Forge exceptions in real games
+on:
+  push:
+    paths: [".github/workflows/forge-exception-audit.yml", "scripts/audit_exceptions.py"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-planner-v3-*
+          run-id: 37962437566
+          github-token: ${{ github.token }}
+          path: artifacts/
+      - run: python3 scripts/audit_exceptions.py
