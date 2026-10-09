@@ -1777,3 +1777,123 @@ le cache doit refuser et les 16 jeux doivent
   stable ; ne pas promettre le véritable
   winrate humain de Brimaz basé uniquement
   sur sept decks fixes et les heuristiques Forge.
+
+
+## 29. CACHE AUTOMATIQUE RÉEL VÉRIFIÉ + Scryfall préflight LIVE
+
+### Véritable double campagne A/A avec réduction du CPU
+
+**Première source acceptée :**
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006057124
+- workflow A/B SUCCESS et fin 16/16 jeux ;
+- **14/16 jeux naturellement certifiés, 2 censurés**
+  (une référence et une candidate, en rotation2
+  du pod aristo); résultats A=0/7, B=0/7.
+- **0 TimeoutException, 0 invalid attack**,
+  14 parties certifiées sans avertissements.
+- \`reference-cache-key.json\` archivé dans
+  \`deckbuild-verified-inputs\`, empreinte
+  **f7c8e3d85c430933470a7c9818f503fef47e3c9df41a815ac7e19c3173a71c1d** ;
+  ancien A/A 38004900250 refusé car sans cette
+  attestation. Aucun deck n'a changé dans ce
+  contrôle.
+
+**Deuxième test du cache :**
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006656707
+- modification commentée de \`decks/Challenger.txt\`
+  sans changer ses 100 cartes, sur la même
+  branche expérimentale.
+- La préparation Scryfall et la construction de
+  la clé ont réussi.
+- Le job \`prepare\` a imprimé **exactement** :
+  \`REFERENCE_CACHE_IDENTICAL_INPUTS
+  f7c8e3d85c430933470a7c9818f503fef47e3c9df41a815ac7e19c3173a71c1d\` ;
+  \`REFERENCE_CACHE_HIT from run 38006057124\` ;
+  \`DECKBUILD_REQUIRED_REAL_JVMS 8\`.
+- La matrice GitHub ne contient **que 8 runners
+  candidats**, contre 16 initialement. **La
+  réduction de moitié des JVM à exécuter
+  est prouvée** sur Github Actions.
+- Le job de post-traitement doit encore
+  télécharger les 8 journaux de référence
+  d'origine, vérifier SHA256, pods, sièges,
+  graines, politique IA, puis recertifier
+  l'ensemble des 16 preuves. À la dernière
+  inspection, ce second run était encore en
+  cours. **Ne pas annoncer 16 certificats
+  valides sur ce second run sans la fin du
+  \`report\`**.
+
+### Diagnostic structurel Scryfall sans simulation
+
+\`scripts/deckbuild_preflight.py\` est intégré au
+nouveau workflow A/B **avant** les JVM Forge ;
+il produit \`results/deckbuild-preflight.json\`
+dans les artefacts de préparation et
+\`results/deckbuild-report/preflight.json\`
+dans les résultats finaux.
+Source de vérité : carte originale Scryfall via
+\`legality/candidates/scryfall-snapshot.json\`,
+pas une courbe devinée.
+
+Source d'exécution LIVE réussie :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006620330
+(original Brimaz 100 cartes, A=A).
+Résultats concrets :
+- **35 cartes terrain sur la première face** ;
+- **3 cartes spells MDFC avec terrain sur
+  la face alternative jouable** ;
+- donc **38 cartes à potentiel terrain** (ne
+  pas considérer comme 38 terrains classiques !) ;
+- **65 cartes non-terrain première face** ;
+- coût de mana moyen des spells **2,892** ;
+- répartition de valeur de mana (spells) :
+  1→8, 2→23, 3→14, 4→13, 5→4, 6→1,
+  7+→2 ;
+- compte typologique première face, catégories
+  pouvant se chevaucher : 35 créatures,
+  21 artefacts, 8 enchantements,
+  7 éphémères, 4 rituels.
+- On distingue expressément \`layout=modal_dfc\`
+  (terrain sur l'autre face **jouable**)
+  d'un transform DFC (verso Terrain
+  **non jouable** depuis la main) :
+  correctif testé par
+  \`tests/test_deckbuild_preflight.py\`.
+
+Le rapport préflight est descriptif,
+**pas un score de puissance**, ne modifie
+jamais les jeux et ne prédit aucun taux
+de victoire.
+
+### Sécurité/CI finale de cette évolution
+
+[Suite récente de deckbuilding PASS](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006603602) :
+- 14 tests préparation, certificats A/B, sièges ;
+- 6 tests swap ;
+- 9 tests de compatibilité archives ;
+- 8 tests classement multi-variantes ;
+- 6 tests Scryfall de courbe (MDFC inclus) ;
+- 22 tests Forge/outcomes historiques.
+**Total : 65 tests dans la suite rapide**.
+
+Le classement multi-variantes est accessible
+via \`.github/workflows/deckbuild-leaderboard.yml\`
+(à lancer manuellement après disponibilité
+sur branche par défaut) ou
+\`scripts/deckbuild_rank.py\` sur deux ou plus
+\`comparison.json\`. Il refuse l'absence
+de fingerprint, une source adversaire différente,
+la perte d'une seule empreinte de log de
+référence, et le double-comptage d'une
+variante identique.
+
+**Aucune nouvelle édition stratégique du deck
+Brimaz n'a été décidée** durant cette évolution :
+les deux campagnes A/A sont des tests
+d'infrastructure avec exactement les mêmes
+100 cartes. L'outil de deckbuilding est
+opérationnel, mais les heuristiques Forge
+restent limitées; classer des variantes
+requiert des résultats nouveaux et de la
+reproductibilité de la décision IA.
