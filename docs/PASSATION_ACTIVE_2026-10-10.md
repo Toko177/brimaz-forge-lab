@@ -403,3 +403,56 @@ La V9 doit être évaluée sur beaucoup plus de départs indépendants.
   dizaines de mains conservées/rejetées supplémentaires,
   idéalement des scenarios de mains dont la compétence
   peut être vérifiée indépendamment des RNG des matchs.
+
+
+## 12. Résultat DÉFINITIF de la seconde CI V9 (code complet)
+
+**Workflow V9 37998385269 = SUCCESS**, trois jobs
+\`aristo rotation 2\`, \`artifact rotation 2\`, \`audit-windows\`
+tous réussis. Résultats du job d'audit de ce run :
+
+\`\`\`json
+{
+  "checked_games": 4,
+  "accepted_natural_games": 4,
+  "accepted_brimaz_wins": 0,
+  "excluded_games": 0,
+  "games_with_ai_eval_timeouts": 2,
+  "total_ai_eval_timeouts": 7,
+  "games_with_invalid_ai_attack_fallbacks": 1
+}
+\`\`\`
+
+Mulligan réel (parser V9 + 5 tests passés) :
+\`\`\`json
+{
+  "games": 4,
+  "natural_games": 4,
+  "free_mulligan_overrides": 2,
+  "games_using_override": 2,
+  "brimaz_natural_wins": 0
+}
+\`\`\`
+
+Pacing réel V9 :
+- médiane du maximum des tours personnels : 12,5 ;
+- premier cast Brimaz **dans 4/4 parties**, médiane tour
+  personnel 4 ;
+- aucun premier cast après le sixième tour personnel.
+Contraste descriptif avec V8 : 3/4 premiers casts,
+dont 1 au tour personnel 9, médiane conditionnelle tour 4.
+Ces chiffres NE suffisent PAS à démontrer une causalité,
+un meilleur winrate ou une bonne qualité stratégique globale.
+
+**Comparateur V8/V9** \`scripts/compare_pacing_experiments.py\`
+et workflow \`.github/workflows/brimaz-v8-v9-paired-pacing.yml\` :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999007185.
+Le résultat de ce dernier workflow doit être inspecté; son
+nom annonce explicitement \`observational\` pour empêcher une
+interprétation fausse de paires de graines non déterministes.
+
+Le run de campagne initial V9 37998299819 affiche \`failure\`
+UNIQUEMENT car son snapshot était antérieur à la création
+du script \`audit_brimaz_mulligan.py\`; 4 parties certifiées
+dans ce run mais ne pas utiliser ce vieux run en point
+d'entrée. Utiliser **37998385269 SUCCESS**.
