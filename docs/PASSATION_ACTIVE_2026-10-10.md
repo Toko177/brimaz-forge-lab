@@ -1521,3 +1521,95 @@ du fichier YML.
    sièges, horloge et cohorte de graines
    ont tous des empreintes compatibles.
    Ne pas encore déclarer ce cache implémenté.
+
+
+## 27. Contrôle final de bout en bout du nouveau deckbuilder : SUCCESS
+
+Workflow A/B réel
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38004900250
+**SUCCESS**, les 16 jobs Forge et le job
+final \`report\` ont tous été exécutés (plus
+le job \`prepare\` avec Scryfall et SHA256).
+Ce premier run est un contrôle A/A :
+\`reference_file=decks/Brimaz_V3.txt\`
+et \`candidate_file=decks/Brimaz_V3.txt\` :
+les **deux listes sont identiques**, seules
+leurs identités de fichier Forge diffèrent.
+
+Résultat \`DECKBUILD_CERTIFIED_RESULTS\` :
+- **16 parties programmées, 16 naturelles
+  indépendamment certifiées, 0 exclue/censurée**.
+- **8 reference et 8 candidate certifiées**
+  dans 2 pods et 4 sièges par bras.
+- **0 victoire du deck dans chaque bras** :
+  taux A = 0/8 = 0 %, taux B = 0/8 = 0 %,
+  delta=0 ; intervalle Wilson 95% pour chaque
+  taux [0 ; 32,44 %].
+- **14/16 parties sans avertissement IA** ;
+  **0 evaluation \`TimeoutException\`**, **2 replis
+  d'attaque invalide** (1 par bras),
+  **0 warning Incubate**, 0 threads bloqués.
+- Même distribution de gagnants dans
+  les deux bras : Dungeon/Tazri 3,
+  Zimone&Dina 1, Urza 2, Lathril 2.
+  C'est **une campagne de validation technique,
+  pas une preuve que Brimaz ne peut pas gagner**
+  ni qu'une variante est meilleure.
+- Les huit couples pod/siège/graine sont tous
+  présents et naturellement terminés,
+  avec SHA256 de transcript accepté.
+- La somme des durées *wall* par bras ≈
+  1016 s et 1008 s (huit JVM parallélisées
+  sur huit runners par bras); le temps utilisateur
+  réel dépend du plus lent shard, ici les pods
+  aristocrates ont pris plusieurs minutes.
+  **Le coût Forge combat est toujours le
+  goulot**, pas le calcul d'intervalles Wilson.
+- GitHub Actions artifact à conserver :
+  \`commander-deckbuild-certified-comparison\`
+  (\`certificate.json\` et \`comparison.json\`).
+- Tous les tests « courts » continuent à passer,
+  dont run
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38005338370 :
+  **14 tests A/B +6 tests swaps +22 tests de
+  certification historique**.
+- La PR #1 reste volontairement en brouillon.
+  Pas de merge automatique sur \`main\`.
+
+### Principes à garder après la réussite A/A
+
+1. Le comparateur générique est maintenant
+   **fonctionnel de bout en bout** sur de vraies
+   parties Forge EDH; ne pas re-développer
+   le simulateur à chaque échange de carte.
+2. Pour un vrai deckbuilding, modifier
+   \`decks/Challenger.txt\` sur la branche ;
+   cela déclenche immédiatement une campagne
+   A/B à 16 parties. La fonction input
+   \`swaps\` en workflow_dispatch permettra
+   les échanges ponctuels dès que GitHub
+   autorisera le run manuel sur la branche
+   par défaut.
+3. La campagne initiale clone identique
+   a été effectuée sur un SHA antérieur
+   à l'ajout de l'option de swaps et au
+   refus explicite des partenaires non
+   vérifiés ; les unit tests couvrent
+   désormais ces deux aspects, mais
+   ils nécessiteront une vraie nouvelle
+   campagne seulement lorsqu'un candidat
+   légal différent sera testé.
+4. L'IA V13 corrige les avertissements
+   Incubate et évite certains timeouts,
+   mais n'est pas une IA experte.
+   Pour accélérer davantage, rechercher
+   des optimisations **prouvées
+   équivalentes tactiquement** du
+   \`ComputerUtilCombat\` / bloqueurs,
+   puis vérifier des situations tactiques
+   des quatre joueurs et le débit CPU.
+5. Pour évaluer un effet limité de carte,
+   16 parties ne suffisent généralement pas.
+   Les options de campagne 32/64/96
+   sont déjà en place, sans changement
+   de version du moteur.
