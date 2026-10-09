@@ -19,6 +19,7 @@ RAW = """Ai(1)-Brimaz V3 vs Ai(2)-Radha vs Ai(3)-Tazri vs Ai(4)-Zimone - one gam
 Turn: Turn 1 (Ai(1)-Brimaz V3)
 Phase: Ai(1)-Brimaz V3's Main phase, precombat
 Add To Stack: Ai(1)-Brimaz V3 cast Krark-Clan Ironworks
+Turn: Turn 2 (Ai(2)-Radha)
 Phase: Ai(2)-Radha's End step
 Add To Stack: Ai(1)-Brimaz V3 triggered Brimaz, Blight of Oreskos
 Game Outcome: Ai(1)-Brimaz V3 has won because all opponents have lost
