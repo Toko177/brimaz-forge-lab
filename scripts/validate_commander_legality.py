@@ -51,6 +51,10 @@ def post_collection(names):
             raise RuntimeError(f"Scryfall HTTP {e.code}; validation MUST FAIL CLOSED") from e
         for card in payload.get("data",[]):
             cards[card["name"]]=card
+            if " // " in card["name"]:
+                cards[card["name"].split(" // ")[0]]=card
+            for face in card.get("card_faces",[]):
+                if face.get("name"):cards[face["name"]]=card
         not_found.extend(payload.get("not_found",[]))
         if start+70<len(names):time.sleep(0.18)
     return cards,not_found
