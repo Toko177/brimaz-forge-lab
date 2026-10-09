@@ -30,6 +30,17 @@ preuve de performance de Brimaz.
 V8 expérimente des transformations défensives d'Incubateurs, toujours
 sous le moteur de règles Forge.
 
+## Comparer et améliorer rapidement ses decks Commander
+
+Le nouveau pipeline de **deckbuilding A/B** évite de créer une version Java/Forge pour chaque échange de cartes. Il prend deux listes de 100 cartes, vérifie leur légalité avec Scryfall et les confronte à trois véritables IA sur 4 sièges × 2 groupes d'adversaires. Il certifie indépendamment les journaux Forge et publie winrates, incertitude statistique, censures et erreurs de décision IA.
+
+- **[Mode d'emploi : comparer des decklists en 16, 32, 64 ou 96 parties](docs/DECKBUILDING_QUICKSTART.md)**
+- **[Modifier la liste candidate Brimaz](decks/Challenger.txt)** sur la branche expérimentale, puis commiter pour lancer automatiquement la campagne à 16 parties (sans fusionner la PR).
+- **[Workflow de deckbuilding A/B](.github/workflows/deckbuild-ab.yml)** : 16 jobs Forge parallèles, Scryfall obligatoire, option future de saisir des swaps directement en lancement manuel lorsque le workflow sera disponible sur la branche par défaut.
+- **[Tests de l'outil A/B](.github/workflows/deckbuild-regression.yml)** : contrôle du nombre de cartes, commandant, SHA256, vrais résultats et intervalles de confiance.
+
+Une comparaison A/B où les deux listes sont initialement identiques est un **test de fonctionnement**, pas un progrès du deck. Le résultat V12 1/31 reste l'échantillon indépendant de référence, et le V13 1/14 ne démontre pas une compétence supérieure de l'IA.
+
 ## Résultat certifié et expérience V13
 
 - **V12 : 31/32 parties naturelles certifiées, 1 vraie censure, 1 victoire Brimaz** ; taux observé **3,23 %**, Wilson 95 % **0,57 à 16,19 %**, sans généralisation au Commander humain. [Rapport et certificats indépendants](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002649987).
