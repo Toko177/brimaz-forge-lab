@@ -361,3 +361,45 @@ Cette observation est **un changement de décision V9 réellement exercé**,
 PAS une preuve de winrate supérieur, ni une paire de parties identiques
 (surtout lorsque le mulligan change les cartes et le flux RNG).
 La V9 doit être évaluée sur beaucoup plus de départs indépendants.
+
+
+## 11. Mise à jour V9 : première campagne de 4 parties et 33 tests vérifiés
+
+- Run **37998299819** :
+  - 4 parties **\`complete\` et acceptées par
+    \`certify_commander_games.py\`** ;
+  - Brimaz **0/4 victoires** (donc pas de gain de winrate démontré) ;
+  - **2/4 parties** ont eu un véritable
+    \`BRIMAZ_MULLIGAN: overrideFreeMulligan=true\` ;
+  - **6 exceptions d'évaluation IA** au total (sur 2 parties) ;
+  - 1 partie avec déclaration d'attaque invalide rattrapée.
+  - job final \`audit-windows\` en **failure** parce que ce
+    workflow fut déclenché AVANT la création du script
+    \`scripts/audit_brimaz_mulligan.py\` : la certification des 4
+    parties s'est néanmoins exécutée et a réussi. Ne pas
+    qualifier ce premier job \`failure\` de "parties invalides" !
+    Le run suivant inclut le script et ses tests.
+- Détails V8 → V9, mêmes seeds mais **sans reproductibilité
+  exacte des RNG**, donc comparaison descriptive :
+
+| Pod/seed | V8 terrains joués | V9 terrains joués | V8 1er cast Brimaz | V9 1er cast Brimaz | V9 mulligan forcé |
+|---|---:|---:|---|---|---|
+| artifact / 20281009 | 3 (7 tours perso) | 6 (7 tours perso) | jamais | tour perso 5 | oui |
+| artifact / 20281010 | 7 (8 tours perso) | 7 (8 tours perso) | tour perso 4 | tour perso 4 | non |
+| aristo / 20281009 | 5 (15 tours perso) | 10 (11 tours perso) | tour perso 9 | tour perso 4 | oui |
+| aristo / 20281010 | 9 (13 tours perso) | 9 (13 tours perso) | tour perso 4 | tour perso 4 | non |
+
+- Run \`37998385269\` est **la reproduction correcte V9**
+  avec l'analyseur inclus et 5 unit tests Python du
+  mulligan. Sa progression était encore en cours au dernier
+  contrôle. **RECONSULTER les jobs** avant de conclure.
+- Run **37998822473 SUCCESS** : la CI centrale exécute
+  **33 unit tests Python réussis**, incluant le parseur
+  du mulligan, le comparateur V8/V9 et les validations
+  anciennes, puis **4/4 V6 recertifiées**.
+- Ne pas confondre les meilleures sorties de mana observées
+  à seed donnée avec une amélioration statistiquement
+  démontrée du pilotage ou du winrate. Il faudra des
+  dizaines de mains conservées/rejetées supplémentaires,
+  idéalement des scenarios de mains dont la compétence
+  peut être vérifiée indépendamment des RNG des matchs.
