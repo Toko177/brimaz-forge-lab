@@ -13,6 +13,8 @@ on:
       - tests/test_compare_pacing_experiments.py
       - tests/test_ai_eval_hotspots.py
       - tests/test_adaptive_ai_budget.py
+      - tests/test_incubate_support.py
+      - scripts/audit_incubate_support.py
       - scripts/audit_adaptive_ai_budget.py
       - scripts/audit_ai_eval_hotspots.py
       - scripts/audit_matched_replay.py
