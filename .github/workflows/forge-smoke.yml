@@ -3,7 +3,7 @@ on:
   push:
     paths:
       - ".github/workflows/forge-smoke.yml"
-      - "scripts/**"
+      - "scripts/smoke.py"
       - "decks/**"
   workflow_dispatch:
 jobs:
