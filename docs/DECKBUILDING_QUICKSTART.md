@@ -172,3 +172,89 @@ pas une amélioration de deck.
 
 Pour l'état courant des campagnes Forge et la passation du chat :
 [PASSATION ACTIVE](PASSATION_ACTIVE_2026-10-10.md).
+
+
+## Accélération majeure : les parties de référence sont réutilisables
+
+Après une première campagne complète, les **8 parties de référence**
+(2 groupes x 4 sièges x une répétition) peuvent être réemployées
+lorsqu'on modifie seulement la variante. Le workflow parcourt
+automatiquement les anciennes campagnes GitHub Actions *terminées
+avec succès* et sélectionne une référence admissible.
+
+La réutilisation n'est **pas** une fiction statistique ni une
+simulation simplifiée : ce sont de vraies parties Forge
+déjà jouées, dont chaque transcription d'origine est conservée
+puis **recertifiée par le certificateur de la nouvelle campagne**.
+
+L'empreinte de compatibilité couvre :
+- le SHA256 du deck de référence, son contenu source et son commandant ;
+- le SHA256 de chacun des six vrais decks adversaires ;
+- la version officielle Forge 2.0.15 et le SHA256 de l'installeur ;
+- les SHA256 des scripts de patch Java, du runner et des contrôles
+  du moteur de résultats ;
+- la version de politique IA, le profil des quatre sièges,
+  l'horloge de jeu, le délai d'exécution ;
+- tous les pods, rotations de sièges, graines et répétitions.
+
+Le contrôle final exige aussi **les huit journaux complets SHA256**
+(et, pour 2/4/6 répétitions, respectivement 16/32/48 journaux)
+avant de réutiliser quoi que ce soit. Les anciennes
+campagnes sans provenance vérifiable **ne sont pas admises**.
+
+| Nombre de répétitions | Première campagne | Variantes suivantes avec cache compatible |
+|---|---:|---:|
+| 1 | 16 vraies parties | **8 nouvelles parties** |
+| 2 | 32 | **16 nouvelles** |
+| 4 | 64 | **32 nouvelles** |
+| 6 | 96 | **48 nouvelles** |
+
+Les jeux d'origine ne sont pas ajoutés plusieurs fois au
+dénominateur : il s'agit des **mêmes références** réexaminées
+contre chacune des variantes. Comparer deux variantes utilisant
+des références différentes n'est pas autorisé pour un classement
+commun.
+
+Le workflow propose aussi le champ \`reference_run_id\` si
+l'on veut **forcer** la référence d'une campagne précise.
+Si celle-ci ne correspond pas exactement à l'empreinte actuelle,
+le workflow **échoue plutôt que d'utiliser un faux cache**.
+Quand ce champ reste vide, il recherche de manière automatique
+une campagne compatible ; en cas d'absence il rejoue la référence.
+
+**Limite importante :** un changement dans un fichier de patch Forge,
+dans le deck de référence, le niveau de répétitions, les graines,
+un des adversaires ou les profils invalide la réutilisation.
+Une évolution de l'IA reste nécessaire lorsqu'une nouvelle
+capacité est mal gérée ; elle impose alors de régénérer des références.
+
+## Classement exploratoire de plusieurs variantes
+
+Lorsqu'on dispose de plusieurs fichiers \`comparison.json\`
+issus de campagnes différentes, le script
+\`scripts/deckbuild_rank.py\` sait les réunir :
+
+\`\`\`bash
+python3 scripts/deckbuild_rank.py \
+  --reports result_variant_A/comparison.json result_variant_B/comparison.json \
+  --output results/deckbuild-ranking.json \
+  --markdown results/deckbuild-ranking.md
+\`\`\`
+
+Il vérifie **l'égalité de l'empreinte complète et de chacun
+des journaux originaux de référence**, la couverture des
+graines et les identifiants différents des variantes. En cas
+de désaccord, il refuse le classement.
+
+Le rapport rassemble les changements de cartes, les victoires,
+les parties non certifiables, les anomalies IA et l'intervalle
+de Wilson de chaque variante. L'ordre sert uniquement à
+**sélectionner les modifications à retester** : avoir examiné
+beaucoup de candidats crée un biais de sélection. Un résultat
+prometteur doit être confirmé sur un **nouveau groupe de graines**.
+
+Les fichiers et tests correspondants sont
+\`scripts/deckbuild_cache.py\`,
+\`scripts/deckbuild_rank.py\`,
+\`tests/test_deckbuild_cache.py\` et
+\`tests/test_deckbuild_rank.py\`.
