@@ -13,7 +13,7 @@ import urllib.request
 PANEL = [
     ("Krenko_B3", 10174296, "Krenko, Mob Boss"),
     ("Muldrotha_B3", 3732210, "Muldrotha, the Gravetide"),
-    ("Yuriko_B3", 5411992, "Yuriko, the Tiger's Shadow"),
+    # Yuriko source 5411992 is excluded: archived deck validates to only 96 cards.
 ]
 options=argparse.ArgumentParser()
 options.add_argument("--offline", action="store_true", help="Use previously archived JSON snapshots only")
