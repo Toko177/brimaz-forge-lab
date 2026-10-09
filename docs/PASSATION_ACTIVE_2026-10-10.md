@@ -1351,3 +1351,173 @@ n'a pas encore eu lieu : des jeux à graine
 identique peuvent diverger spontanément, et
 V12/32 seed cohort précédent est distinct
 de celui utilisé en V13/16.
+
+
+## 26. CHANGEMENT D'ARCHITECTURE — deckbuilding rapide A/B générique (10 octobre)
+
+### Motivation : ARRÊTER les dizaines de versions Forge
+
+L'utilisateur souhaite avant tout **deckbuilder rapidement ses propres decks**.
+Il ne veut pas que chaque remplacement de carte déclenche une
+suite interminable de V14, V15, etc. Le nouveau chemin principal est
+**un moteur de benchmark A/B stable et paramétrable**, conservant
+Forge 2.0.15 + le correctif Charm et la politique IA V13
+actuelle pour les quatre joueurs. Les correctifs moteur doivent
+dorénavant être motivés par des bugs factuels,
+pas par un incrément de numéro pour son propre intérêt.
+
+**Mode d'emploi canonique** :
+[docs/DECKBUILDING_QUICKSTART.md](DECKBUILDING_QUICKSTART.md).
+
+### Implémentation effectuée dans la PR draft #1
+
+- \`decks/Challenger.txt\` : clone initial strictement identique
+  au \`decks/Brimaz_V3.txt\` canonique; **c'est le fichier
+  à modifier** sur la branche
+  \`improve/realism-and-ai-diagnostics\` pour tester un
+  remplacement. Un commit de ce seul fichier déclenche
+  le workflow même avant le merge (via \`on.push.paths\`).
+  Ne JAMAIS interpréter un A/A initial comme une
+  amélioration de deck. Ne pas écraser la source canonique.
+- \`scripts/deckbuild_prepare.py\` : accepte liste complète
+  (Moxfield \`1 Card\` / Forge \`.dck\`) pour référence et
+  candidate avec commandant explicite, produit
+  \`Deck_Reference.dck\` et \`Deck_Candidate.dck\`, contrôles
+  100 cartes, SHA256, différence carte par carte et
+  \`candidate-manifest.json\`.
+- \`scripts/deckbuild_swaps.py\` : substitutions en une
+  seule ligne \`1 Out -> 1 In; 2 Other -> 2 Another\`,
+  total strictement conservé, commandant protégé.
+  Le workflow \`workflow_dispatch\` permet l'option
+  \`swaps\` et des fichiers alternatifs, lorsque la
+  fonctionnalité Run workflow devient disponible.
+  Attention : les actions manuelles d'un **nouveau
+  workflow GitHub Actions** requièrent généralement
+  que la définition soit sur la branche **par défaut**.
+  Ne PAS fusionner la PR draft de force ; utiliser
+  le chemin push/Challenger en attendant.
+- \`scripts/deckbuild_run.py\` : pilote **générique**
+  de quatre vraies IA Forge, 2 pods fixes, 4 sièges,
+  2 bras A/B et graines appariées. Toute partie garde
+  son transcript original, son statut et ses timeouts.
+  Le launcher ne déclare pas qu'un win manifest =
+  win certifié.
+- \`scripts/deckbuild_certify.py\` : **nouveau
+  certificateur** sans hypothèse sur le commandant
+  (contrairement à des scripts anciens hardcodés
+  sur \`Brimaz_V3\`). Accepte les pertes à 0 PV,
+  deck-out et 21 commandant; exige quatre issues,
+  Scryfall pour les 8 labels de decks et SHA256
+  du log et du candidat, horloge naturelle.
+- \`scripts/deckbuild_compare.py\` :
+  résultats par bras, pod, siège et graine;
+  Wilson 95%, bornes incluant les censures,
+  avertissements IA, paires comparées sans
+  prétendre que la RNG identique prouve une
+  causalité A/B. \`comparison.json\` et
+  \`certificate.json\`.
+- \`.github/workflows/deckbuild-ab.yml\` :
+  **un seul workflow de référence**.
+  Job préparation : hash vérifier 7 decks canoniques
+  existants, générer A/B, appel LIVE à Scryfall
+  **pour les 2 candidats uniquement**, fail closed
+  si carte illégale, identité couleur interdite
+  ou Game Changer (Bracket 3 sans GC);
+  réutilise audit légal historique des six adversaires.
+  Ensuite **16 runners GitHub Actions parallèles**
+  (2 bras x 2 pods x 4 positions), chacun joue
+  \`repeats\` vraies parties JVM Forge.
+  Réglage 1/2/4/6 répétitions : **16/32/64/96
+  parties**. Une étape finale publie les métriques
+  et téléverse un rapport certifié.
+- \`.github/workflows/deckbuild-regression.yml\`,
+  \`tests/test_deckbuild_pipeline.py\`,
+  \`tests/test_deckbuild_swaps.py\` : vérif. hors-ligne
+  des quantités, commanders, sièges, empreintes,
+  vrais résultats et gestion honnête des censures.
+- Pour les références Magic dont une carte
+  est représentée comme une double-face
+  \`Card A // Card B\`, vérifier la compatibilité
+  avec la sérialisation Forge (le moteur peut
+  ne connaître que la première face). La
+  normalisation est déjà résolue dans les anciens
+  scripts \`normalize_forge_decks.py\`.
+
+### Première campagne de contrôle A/A (identiques)
+
+Le workflow
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38004900250
+a été lancé **automatiquement** lors de la création
+initiale du workflow (quand sa définition incluait
+un trigger push). Il utilise \`decks/Brimaz_V3.txt\`
+dans les DEUX bras (mêmes 100 cartes), 16 parties
+au total, 16 jobs en parallèle. Il s'agit d'un
+**test de bout en bout de l'architecture**, pas
+d'une amélioration de deck. Préparation,
+SHA des 7 decks, et validation LIVE Scryfall
+des deux candidats ont réussi. Les parties
+étaient en cours au dernier contrôle.
+**Il faut lire le job final \`report\` et
+\`commander-deckbuild-certified-comparison\`
+pour confirmer les certificats**. Attention :
+les deux bras ont des identités de fichier et
+noms de joueur différents, et le moteur Forge
+n'est pas parfaitement déterministe; même
+une différence de winrate A/A ne démontre
+pas de changement de puissance.
+Le workflow a ensuite été ajusté pour :
+- réagir au **push de \`decks/Challenger.txt\`**,
+  donc utilisable sur la branche draft actuelle ;
+- accepter via \`workflow_dispatch\` un chemin
+  candidat, un commander et des substitutions
+  de cartes sans reconstruire une liste à la main
+  (disponibilité UI conditionnée par GitHub).
+Il ne se relance plus à chaque modification
+du fichier YML.
+
+### Résultat le plus récent de V13 (avant le comparateur)
+
+[Run indépendant V13 38003422030 SUCCESS](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38003422030)
+- 16 parties programmées, **14 naturellement
+  certifiées**, **2 censurées**, 1 victoire Brimaz,
+  **1 victoire sans avertissement IA**.
+- Winrate observé **1/14 = 7,14 %**, Wilson 95 %
+  **[1,27 % ; 31,47 %]** ; l'échantillon est
+  trop petit pour donner un classement précis.
+- **9 AI TimeoutException**, 0 attaque invalide,
+  5 parties utilisant un budget adaptatif;
+  5 hausses globales à 10 secondes, dont
+  3 ont atteint 15 secondes. Ce résultat
+  n'établit pas que V13 est plus intelligente que
+  V12; les deux cohortes de graines sont différentes.
+- Ne jamais fusionner les V12 31 parties et V13
+  14 parties comme si toutes étaient soumises
+  à une seule politique IA inchangée.
+
+### Points de vigilance immédiats pour le prochain chat
+
+1. Récupérer le run A/A \`38004900250\` et
+   corriger toute faille révélée par le vrai
+   workflow (artefacts, statut, noms, certificats),
+   puis mettre à jour ce document.
+2. Lancer une **vraie variante non identique**
+   quand un changement de carte a été défini
+   par l'utilisateur : modifier \`decks/Challenger.txt\`
+   sur la branche; Scryfall gate obligatoire.
+   Ne pas inventer la variante juste pour
+   afficher une amélioration.
+3. Prioriser les mécanismes qui font avancer
+   la qualité du moteur pour **TOUS** les joueurs,
+   surtout les calculs profonds de combat,
+   avant des campagnes de centaines de parties.
+4. Le nombre de parties prévu peut être augmenté
+   via \`repeats\` et 16 runners ; tenir compte du
+   coût GitHub Actions, de la censure et de la
+   précision Wilson.
+5. Le gain rapide à terme sera un cache de
+   références réutilisable sur de multiples
+   échanges de cartes UNIQUEMENT lorsque decks,
+   Forge version, patch SHA, pods, profils,
+   sièges, horloge et cohorte de graines
+   ont tous des empreintes compatibles.
+   Ne pas encore déclarer ce cache implémenté.
