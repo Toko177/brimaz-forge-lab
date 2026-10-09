@@ -1101,3 +1101,144 @@ Le workflow et sa publication d'artefacts
 sont indépendants de l'audit principal de résultats
 32 jeux. Lire ses logs GitHub et vérifier
 le statut complet avant d'en rapporter les chiffres.
+
+
+## 23. Résultat définitif V12 sur 32 vrais matchs et V13 créée
+
+### V12 : certification RECONSTRUITE sur les transcriptions réelles
+
+**Source de vérité finale** (remplace le premier
+rapport 28/32, qui contenait 3 faux rejets) :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002649987
+
+- **32 matchs V12** réellement exécutés sur 16 shards
+  avec 2 pods ×4 positions ×4 parties/pod-siège ;
+- **31 parties naturelles certifiées**, **1 vraie
+  \`clock_censored\`** à 360 s, 0 autre rejet ;
+- **1 victoire Brimaz / 31 naturelles = 3,23 %** ;
+  Wilson 95 % **[0,57 % ; 16,19 %]** ;
+- 21/31 parties naturelles **sans aucun avertissement
+  des quatre signatures IA actuellement surveillées** ;
+  cette unique victoire Brimaz est également
+  sans avertissement IA ;
+- Pod aristo : 15 certifiées, 0 Brimaz,
+  23 timeouts IA, 3 repli(s) d'attaque ; podium :
+  Tazri (Dungeon) 10, Zimone&Dina 3, Radha 2 ;
+- Pod artifact : 16 certifiées, 1 Brimaz,
+  10 timeouts IA, 0 repli attaque ;
+  Amalia 8, Urza 4, Lathril 3, Brimaz 1 ;
+- Nombre total de \`java.util.concurrent.TimeoutException\`
+  **33** (10 parties touchées) ;
+  281 décisions terminées mais lentes >1000 ms.
+  **32/33** échantillons de stack attribués au
+  calcul profond des combats/bloqueurs,
+  1 au recalcul de capacités statiques ;
+- 4 usages du mulligan gratuit spécifique V9 ;
+  Brimaz a été joué **dans 31/31 jeux naturels**,
+  médiane de premier cast tour personnel **4**,
+  seulement deux casts après tour personnel 6 ;
+- 118 textes d'effets Incubate **résolus**
+  (principalement triggers), 123 activations
+  de transformation d'Incubateurs ; **0 warning
+  \`No AI assigned for API: Incubate\`** ;
+  aucun lien de causalité de winrate attribuable
+  à la simple disparition du warning ;
+- médiane de 12 tours personnels du joueur
+  le plus actif, source humaine médiane ~9
+  rotations : les unités ne sont PAS égales
+  après élimination / tours supplémentaires.
+
+### Faux rejets par blessures de commandant — corrigés
+
+En relisant les 4 anciens « rejets » du premier
+rapport, on a trouvé que 3 avaient **quatre**
+\`Game Outcome\` Forge parfaitement légales :
+les perdants étaient notés
+\`has lost due to accumulation of 21 damage from generals\`.
+\`scripts/forge_result_evidence.py\` accepte
+maintenant **strictement cette formulation précise**
+et refuse toute cause \`due to\` inconnue.
+\`describe_outcome_modes\` distingue désormais
+\`commander_damage_21\` des \`life_total_zero\`,
+\`library_depletion\`, \`poison\`.
+5 pertes par blessures de commandant dans les
+31 jeux certifiés. La seule partie véritablement
+exclue est \`aristo/seed 20310001\` : arrêt
+à 360 s avec vainqueurs contradictoires.
+**Ne jamais attribuer de victoire à une partie
+arrêtée artificiellement.**
+
+81 tests Python réussis :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002628580
+
+### Victoire Brimaz « propre » V12, mais pas une preuve de 20 %
+
+Graine \`20610001\`, pod artifact, rotation0,
+siège Brimaz1, durée 139570ms :
+- Brimaz \`Ai(1)\` gagnant naturel ;
+- Lathril, Urza, Amalia perdent tous à 0 PV
+  selon Forge ;
+- **0 TimeoutException, 0 déclaration d'attaque
+  invalide, 0 avertissement Incubate,
+  aucune signature fatale surveillée** ;
+- nombreuses attaques de créatures Phyrexian
+  en fin de match, incubes transformés,
+  attaques Brimaz et autres tokens. Ne PAS
+  affirmer qu'il a causé directement chacune
+  des 3 morts sans attribution détaillée.
+- Source : artefact
+  \`brimaz-v12-32-artifact-r0-s20610000\`
+  du run 38001534517. La certification finale
+  accepte explicitement cette victoire,
+  y compris dans \`warning_free_wins\`.
+
+### Répétabilité du moteur (mêmes graines 32 fois rejouées)
+
+Rapport https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002258622 :
+- 32 paires pod/graines/sièges identiques,
+  30 paires de matchs naturels dans les deux runs ;
+- 25/32 **mêmes séquences d'événements sélectionnés**,
+  7/32 divergences d'actions ;
+- parmi les 30 paires doublement naturelles :
+  **29 mêmes vainqueurs, 1 vainqueur différent**.
+C'est un progrès de mesure, **PAS 64 graines
+indépendantes**, ni une preuve de déterminisme
+complet. Les événements retenus sont pile,
+terrains, vie, mana, dégâts. Les logs bruts
+restent disponibles pour analyses détaillées.
+
+### Prochaine direction technique : V13 fair adaptive timeout
+
+Puisque Brimaz est maintenant joué dans
+31/31 sorties naturelles et que les timeouts
+se concentrent sur le combat, l'expérience
+V13 superpose à V12 (Incubate AI + V9
+mulligan et déploiement) la gestion de délai
+**commune aux 4 IA** déjà pilote V11 :
+\`Game.AI_TIMEOUT=5\` par décision au départ,
+puis 10s après premier vrai timeout, 15s
+après le second, toujours global pour tous
+les sièges. Pas de règles Magic ou de cartes
+modifiées ; une décision déjà expirée
+reste abandonnée, et le CPU peut augmenter.
+Le code est dans
+\`scripts/patch_forge_brimaz_v13.py\`,
+trace \`AI_ADAPTIVE_BUDGET_V13\`.
+\`scripts/audit_adaptive_ai_budget.py\` reconnaît
+maintenant V11 et V13, avec vérification
+anti-régression et anti-mélange de versions.
+
+**Pilote V13** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002838904
+8 jobs GitHub simultanés (2 pods ×4 rotations),
+2 matchs par job = **16 jeux**,
+bases aristo \`20710000\`, artifact
+\`20810000\`, graine +=10000*rotation+repeat,
+horloge 360s, délai process 445s,
+résultats toujours contrôlés via les vrais logs.
+Il était \`in_progress\` au dernier contrôle.
+V13 peut réduire les interruptions,
+mais **ne doit PAS être déclarée supérieure**
+avant audit des décisions, règles et coûts CPU.
+Test Java IncubateV12 + V9 Mulligan et tests
+Python de budget adaptatif.
