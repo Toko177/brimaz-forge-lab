@@ -105,3 +105,13 @@ def verify_result_evidence(raw, game, seats):
     if "Stopping slow match as draw" in raw:
         issues.append("Forge ended game artificially at its simulation cutoff")
     return issues
+
+
+def inspect_ai_quality_signatures(raw):
+    """Warnings indicate AI quality or responsiveness, not rules illegality."""
+    return {
+        "evaluation_timeouts": raw.count("java.util.concurrent.TimeoutException"),
+        "invalid_attack_fallbacks": raw.count("AI Attack declaration invalid"),
+        "incubate_handler_warnings": raw.count("No AI assigned for API: Incubate"),
+        "decision_thread_timeout_samples": raw.count("AI eval thread at timeout:"),
+    }
