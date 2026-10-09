@@ -88,8 +88,8 @@ def verify_result_evidence(raw, game, seats):
             issues.append("Missing or invalid configured simulation-clock seconds")
         elif int(milliseconds) >= clock * 1000 - 2500:
             issues.append("Game Result lies within 2.5 s of configured simulation cutoff")
-    if declared:
-        if len(seats) == 4 and game.get("brimaz_seat") != seats.index("Brimaz_V3") + 1 if "Brimaz_V3" in seats else False:
+    if "Brimaz_V3" in seats and len(seats) == 4:
+        if game.get("brimaz_seat") != seats.index("Brimaz_V3") + 1:
             issues.append("Brimaz seat differs from canonical deck order")
     if winner is not None and "Brimaz_V3" in seats and len(seats) == 4:
         expected = winner == seats.index("Brimaz_V3") + 1
