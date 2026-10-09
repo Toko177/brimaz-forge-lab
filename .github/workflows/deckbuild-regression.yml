@@ -10,6 +10,8 @@ on:
       - scripts/deckbuild_cache.py
       - tests/test_deckbuild_cache.py
       - scripts/deckbuild_rank.py
+      - scripts/deckbuild_preflight.py
+      - tests/test_deckbuild_preflight.py
       - tests/test_deckbuild_rank.py
       - scripts/deckbuild_swaps.py
       - tests/test_deckbuild_swaps.py
@@ -31,5 +33,7 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_cache.py' -v
       - name: Check cross-candidate deck leaderboard does not mix differing baseline log histories
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_rank.py' -v
+      - name: Validate land and multi-face factual Scryfall preflight data
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_preflight.py' -v
       - name: Verify existing strict Commander evidence fixtures still pass
         run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
