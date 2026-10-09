@@ -124,7 +124,7 @@ mulligan_inject=(
 "    @Override\n"
 "    public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {\n"
     + opening_telemetry
-"        boolean stockKeep = !ComputerUtil.wantMulligan(player, cardsToReturn);\n"
++ "        boolean stockKeep = !ComputerUtil.wantMulligan(player, cardsToReturn);\n"
 "        Boolean special = BrimazMulliganPolicy.overrideKeep(player, cardsToReturn, stockKeep);\n"
 "        return special != null ? special.booleanValue() : stockKeep;\n"
 "    }\n"
