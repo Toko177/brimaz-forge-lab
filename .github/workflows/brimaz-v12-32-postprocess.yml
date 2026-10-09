@@ -1,0 +1,92 @@
+name: V12 verified 32-game postprocessing without replaying matches
+on:
+  push:
+    paths:
+      - .github/workflows/brimaz-v12-32-postprocess.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  recertify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regress independently checked four-player evidence and balanced statistics
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Wait for all original 16 match runners to finish and upload artifacts
+        shell: bash
+        env:
+          GH_${{ github.token }}: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          complete=0
+          for n in $(seq 1 36); do
+            status="$(gh api "repos/${{ github.repository }}/actions/runs/38001534517" --jq '.status')"
+            echo "32-game source GitHub run: $status (poll $n)"
+            if [[ "$status" == "completed" ]]; then complete=1; break; fi
+            sleep 30
+          done
+          [[ "$complete" == 1 ]] || { echo "Game artifact source is not finished; refuse partial postprocessing"; exit 2; }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-v12-32-*
+          run-id: 38001534517
+          github-token: ${{ github.token }}
+          path: all-games/
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: legality/
+      - name: Count all 16 shard manifests and preserve every scheduled game
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          m=list(pathlib.Path("all-games").rglob("games.json"))
+          games=[g for p in m for g in json.loads(p.read_text())]
+          print("V12_POSTPROCESS_INPUT", {"shards":len(m),"games":len(games)})
+          assert len(m)==16 and len(games)==32
+          PY
+      - name: Certify independently against four original game outcomes and legality manifests
+        run: |
+          python3 scripts/certify_commander_games.py \
+            --input all-games/ --legality legality/report.json \
+            --out results/v12-32-independent/certification/
+      - name: Reconcile certificate fingerprints, seats, pre-registered seeds and Wilson intervals
+        run: |
+          python3 scripts/audit_balanced_commander_campaign.py \
+            --input all-games/ \
+            --certificate results/v12-32-independent/certification/certificate.json \
+            --output results/v12-32-independent/balanced-campaign.json \
+            --per-pod-rotation 4 --policy V12-incubate
+      - name: Inspect real Incubate actions and all-seat AI decision quality
+        run: |
+          python3 scripts/audit_incubate_support.py --input all-games/ \
+            --output results/v12-32-independent/incubate-actions.json
+          python3 scripts/audit_ai_eval_hotspots.py --input all-games/ \
+            --output results/v12-32-independent/ai-decision-hotspots.json
+          python3 scripts/audit_edh_pacing.py --input all-games/ \
+            --output results/v12-32-independent/per-seat-pacing.json
+          python3 scripts/audit_brimaz_mulligan.py --input all-games/ \
+            --output results/v12-32-independent/mulligans.json
+      - name: Display honest game outcomes including censures and warning-free subset
+        run: |
+          python3 - <<'PY'
+          import pathlib,json
+          r=json.loads(pathlib.Path("results/v12-32-independent/balanced-campaign.json").read_text())
+          print("V12_32_INDEPENDENTLY_CERTIFIED", json.dumps(r["summary"],ensure_ascii=False))
+          print("V12_32_BY_POD",json.dumps(r["by_pod"],ensure_ascii=False))
+          print("V12_32_BY_SEAT",json.dumps(r["by_brimaz_seat"],ensure_ascii=False))
+          assert r["summary"]["scheduled"]==32
+          assert r["summary"]["groups_pod_rotation"]==8
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v12-32-independent-certification-and-stats
+          path: results/v12-32-independent/
+          if-no-files-found: ignore
