@@ -985,3 +985,75 @@ exécuteront de nombreuses parties même si un
 job échoue; lire tous les logs, les artefacts,
 la correction du décompte, et distinguer
 \`winner_deck\` du certificat indépendant.
+
+
+## 21. Correctifs tests et post-traitement des 32 vrais matchs
+
+### État vérifié de la CI au 10 octobre 2026
+
+- [CI de régression **73/73 tests SUCCESS**](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38001973864).
+  56 tests de la période précédente + 10 tests
+  \`test_balanced_commander_campaign.py\` + 7 tests
+  \`test_same_seed_campaign.py\`.
+- Les précédentes CI 38001591893 et 38001804497
+  ont échoué à cause des **fixtures de test synthétiques** :
+  les tests à 8 jeux utilisaient par erreur la valeur
+  par défaut \`games_per_rotation=4\` (=32 requis),
+  et un adversaire était parfois simulé comme
+  vainqueur alors que la case était celle de Brimaz.
+  Correctif \`tests/test_balanced_commander_campaign.py\`
+  commit \`06e79f290fd3f0c2e5da8910730675798237d228\`.
+  La CI 38001973864 (nouveau commit) est VERTE.
+  Il ne s'agit **pas** de corrections apportées au
+  déroulement des parties réelles.
+- \`scripts/batch.py\` explicite maintenant que
+  \`-s <seed>\` fixe une graine Forge mais ne garantit
+  PAS le déterminisme des décisions (commit
+  \`845e704eed288d8384861d9e6ac7081f05048f57\`).
+  Les premiers shards 32 ont été déclenchés avant
+  ce changement cosmétique ; leurs résumés
+  \`method\` peuvent donc encore indiquer à tort
+  \`deterministic -s seeds\`. Référer à la passation
+  et aux vraies expériences de relecture de graines.
+
+### Post-traitement SANS rejouer les jeux
+
+La campagne V12/32 **38001534517** a été
+déclenchée alors que les nouvelles fixtures n'étaient
+pas encore corrigées. Son job final peut donc
+échouer aux tests, même si les **16 shards de
+parties et leurs journaux bruts sont authentiques**.
+Un job séparé a été ajouté, qui attend la fin de ce
+run et réutilise ses artefacts :
+
+[Workflow \`brimaz-v12-32-postprocess.yml\`](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002112497)
+- attend le statut terminal du run 38001534517 ;
+- récupère les **16 artefacts et 32 \`games.json\`** ;
+- vérifie les **73 tests** ;
+- recertifie les **32 journaux Forge** avec
+  \`certify_commander_games.py\` et manifeste
+  légal Scryfall original ;
+- \`audit_balanced_commander_campaign.py\` contrôle
+  le SHA256 de chaque transcription, l'unicité
+  des 32 seeds, la matrice 2 pods x4 sièges
+  et les comptes; rapporte victoire, Wilson 95%,
+  jeux censurés, temps de réflexion IA et
+  victoires sans avertissement de pilotage ;
+- analyse les tours personnels, le mulligan et
+  la couverture Incubate ;
+- stocke \`v12-32-independent-certification-and-stats\`.
+Le premier run de post-traitement 38002068419
+a échoué en raison d'une erreur de variable d'env
+\`GH_TOKEN\` ; le correctif est dans le run
+**38002112497**. Ne pas rapporter de statistiques
+32/32 avant sa fin et celle des shards.
+
+### Réplications techniques (ne PAS doubler la taille d'échantillon)
+\`scripts/audit_same_seed_campaign.py\` compare les
+deux runs 38001496914 et 38001534517 sur leurs
+32 graines identiques, sans attribuer automatiquement
+les divergences aux timeouts. Les tests correspondants
+\`tests/test_same_seed_campaign.py\` passent en CI.
+Le fait de re-jouer les MÊMES 32 graines n'autorise
+**pas** à annoncer un intervalle de confiance calculé
+sur 64 réalisations indépendantes.
