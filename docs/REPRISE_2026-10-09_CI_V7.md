@@ -76,3 +76,63 @@ reserve specifique.
 
 Ne revendiquer aucune amelioration de winrate sans comparaison controlee
 et sans certification des vraies parties.
+
+
+## Addendum 9 octobre : audit de reproductibilite et pilote V8
+
+### Partie Brimaz historique
+Graine 20291010, pod aristo, Brimaz siege 2, Forge stock + Charm corrige :
+- horloge 360 s : Brimaz gagne au moteur a 356476 ms ;
+- horloge 900 s : Radha gagne a 437493 ms ;
+- premiere divergence de trace au tour Forge 33, choix de Dungeon of the
+  Mad Mage (premiere partie) vs Tomb of Annihilation (seconde) ;
+- exceptions java.util.concurrent.TimeoutException dans la voie
+  AiController.chooseSpellAbilityToPlayFromList : 2 et 6 respectivement.
+
+Le moteur source utilise MyRandom.setRandom(new Random(seed)) pour l'option
+CLI -s, mais la meme graine n'a PAS suffi a reproduire cette partie. Les
+exceptions de deadline IA et les choix de donjon ne permettent pas, a ce
+stade, de designer la cause exacte. Ne pas ajouter cette victoire historique
+au numerateur d'un winrate mesure apres correction. Etablir d'abord une
+reproductibilite adaptee et documenter la censure.
+
+Preuve et tests forensiques :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37994894861
+
+### V8 / defence des Incubateurs
+V8 intervient uniquement en deuxieme phase principale du joueur actif
+pour transformer un Incubateur ayant >=2 marqueurs si le joueur dispose de
+peu de bloqueurs et fait face a une menace. La vraie action est toujours
+verifiee par les mecanismes de timing et de paiement de Forge. V8 n'accorde
+pas de capacites gratuites et n'annule pas l'invocation du commander.
+
+Huit tests Java dans le JAR Forge modifie : reussis. Quatre parties :
+toutes certifiees, Brimaz 0/4. **Aucun message BRIMAZ_DEFENSE de choix
+prioritaire n'est apparu dans ces quatre matchs.** On ne peut donc pas
+affirmer que le nouveau comportement a ete exerce dans les parties.
+Les differents nombres de triggers Brimaz ne suffisent pas a prouver un
+gain. Prochaine priorite : des tests avec des etats Forge precis qui rendent
+une transformation defensivement utile et payable ; ne pas forcer des
+activations arbitraires pour produire des nombres.
+
+Run :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37995083458
+
+### Nouveau diagnostic du temps de reflexion
+Dans Forge 2.0.15, Game.AI_TIMEOUT vaut 5 secondes.
+AiController.chooseSpellAbilityToPlayFromList attend le resultat de son
+FutureTask a l'aide de game.getAITimeout(); le depassement annule la recherche.
+La version experimentale patch_forge_ai_budget.py releve le budget a 10 s
+pour les quatre joueurs, sans toucher aux regles Magic ou aux decks.
+Le protocole compare 5 s vs 10 s sur memes graines et memes sieges et mesure
+temps total, timeout IA et issue naturelle. Un gain de competence n'est
+pas encore demontre, et la depense de CPU doit etre quantifiee.
+
+Pilote :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37995525927
+
+### Etude avec horloge identique
+Deux JVM differents, memes quatre decks canoniques, seed 20291010,
+clock 600 s et IA stock+Charm. Le workflow compare les transcripts et
+les issues, sans exiger une victoire de Brimaz :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37995223230
