@@ -12,7 +12,7 @@ p=argparse.ArgumentParser()
 p.add_argument("--logs",default="results/batch/aristo")
 p.add_argument("--out",default="results/audit/ai_audit.json")
 args=p.parse_args()
-files=sorted(pathlib.Path(args.logs).glob("game_*.log"))
+files=sorted(pathlib.Path(args.logs).rglob("game_*.log"))
 if not files: p.error("No Forge log files available")
 engines=("Ashnod's Altar","Phyrexian Altar","Spawning Pit","Krark-Clan Ironworks",
          "Yawgmoth, Thran Physician","Arcbound Ravager","Bartolomé del Presidio",
