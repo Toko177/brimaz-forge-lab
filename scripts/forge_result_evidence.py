@@ -35,7 +35,7 @@ def verify_result_evidence(raw, game, seats):
     else:
         # Forge declares players with '[Default]'/'[Experimental]' profile
         # suffixes; Game Outcome / Game Result omit these suffixes.
-        declared = tuple(re.sub(r" \\[(?:Default|Experimental|Cautious|Reckless)\\]$", "", name)
+        declared = tuple(re.sub(r" \[(?:Default|Experimental|Cautious|Reckless)\]$", "", name)
                          for name in declarations[0])
 
     results = _RESULT.findall(raw)
