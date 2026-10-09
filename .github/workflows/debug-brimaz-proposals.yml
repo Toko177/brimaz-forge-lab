@@ -18,5 +18,5 @@ jobs:
           run-id: 37962437566
           github-token: ${{ github.token }}
           path: artifacts/
-      - name: Print annotated real Forge lines near AI decisions
-        run: python3 scripts/debug_brimaz_proposals.py --dir artifacts
+      - name: Correlate actual activation to planner by turn instead of buffered log order
+        run: python3 scripts/audit_planner_resolution.py --logs artifacts --out results/audit/planner-fixed.json
