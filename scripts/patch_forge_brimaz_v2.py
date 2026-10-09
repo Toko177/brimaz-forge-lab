@@ -112,7 +112,8 @@ public final class BrimazTurnPlanner {
         // Spawning Pit has AI:RemoveDeck:All in Forge card script.
         // Allow ONLY its eligible one-sacrifice ability, not arbitrary other use.
         if (sa == null || sa.getHostCard() == null
-                || !sa.getHostCard().getName().equals("Spawning Pit")
+                || !(sa.getHostCard().getName().equals("Spawning Pit")
+                      || sa.getHostCard().getName().equals("Throne of Geth"))
                 || !needEndStepDeath(ai) || !isOutlet(sa)) return false;
         CostSacrifice sac = sa.getPayCosts().getCostPartByType(CostSacrifice.class);
         return sac != null && selectToken(ai, sac.getType(), sa, sac.getAbilityAmount(sa)) != null;
