@@ -815,3 +815,52 @@ https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000469712
   **4 timeouts + 1 attaque corrigée**.
 - Ne pas supposer les sorties 4/4 de V12 avant
   résultats des jobs.
+
+
+## 18. Nouvelle double certification : issue naturelle ≠ IA sans avertissements
+
+Le certificat \`scripts/certify_commander_games.py\` comprend
+désormais \`ai_warning_free\` calculé séparément à partir
+des \`evaluation_timeouts\`, \`invalid_attack_fallbacks\`,
+\`incubate_handler_warnings\` et
+\`decision_thread_timeout_samples\`.
+Il publie :
+- \`accepted_natural_games\` :
+  seulement les jeux à issue cohérente 4 joueurs ;
+- \`accepted_brimaz_wins\` :
+  vraies issues naturelles Brimaz ;
+- \`accepted_warning_free_natural_games\` :
+  parties naturelles sans ces avertissements IA ;
+- \`accepted_warning_free_brimaz_wins\` :
+  Brimaz victorieux et aucune anomalie IA surveillée.
+  Même une partie sans avertissement ne prouve PAS
+  que les quatre IA jouent au niveau humain.
+
+**V10 re-certifié selon ces deux niveaux** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000704526
+\`\`\`json
+{
+  "checked_games": 4,
+  "accepted_natural_games": 4,
+  "accepted_brimaz_wins": 1,
+  "accepted_warning_free_natural_games": 1,
+  "accepted_warning_free_brimaz_wins": 0,
+  "total_ai_eval_timeouts": 6,
+  "excluded_games": 0
+}
+\`\`\`
+Donc la première victoire V10 EST une vraie issue
+Forge complète, mais **PAS** une victoire du sous-échantillon
+sans avertissements. Ne pas afficher \`1/4=25%\`
+comme compétence Brimaz démontrée.
+
+### V12 côté artefacts
+Le pilote Forge V12 a compilé, réussi le test Java
+\`V12_INCUBATE_TESTS_OK\`, joué au moins 2 jeux
+\`artifact\` avec Amalia gagnante dans les deux.
+Leurs logs affichent **0 avertissement**
+\`No AI assigned for API: Incubate\`.
+Le pod \`aristo\` et l'audit indépendant doivent
+encore être vérifiés : ne pas confondre absence
+d'avertissement et preuve d'activation stratégique
+pertinente.
