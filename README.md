@@ -32,7 +32,7 @@ sous le moteur de règles Forge.
 
 ## Comparer et améliorer rapidement ses decks Commander
 
-Le nouveau pipeline de **deckbuilding A/B** évite de créer une version Java/Forge pour chaque échange de cartes. Il prend deux listes de 100 cartes, vérifie leur légalité avec Scryfall et les confronte à trois véritables IA sur 4 sièges × 2 groupes d'adversaires. Il certifie indépendamment les journaux Forge et publie winrates, incertitude statistique, censures et erreurs de décision IA.
+Le nouveau pipeline de **deckbuilding A/B** évite de créer une version Java/Forge pour chaque échange de cartes. Il recherche désormais automatiquement une référence Forge certifiée compatible : **après un premier test de 16 parties, les comparaisons suivantes peuvent n'exécuter que 8 nouvelles parties**, sans modifier les règles ni réinventer les résultats. Chaque archive doit correspondre aux SHA256 des decks, du moteur, des pods, des graines et aux traces brutes. Un nouveau script permet aussi de classer plusieurs modifications sur **la même référence**. Il prend deux listes de 100 cartes, vérifie leur légalité avec Scryfall et les confronte à trois véritables IA sur 4 sièges × 2 groupes d'adversaires. Il certifie indépendamment les journaux Forge et publie winrates, incertitude statistique, censures et erreurs de décision IA.
 
 - **[Mode d'emploi : comparer des decklists en 16, 32, 64 ou 96 parties](docs/DECKBUILDING_QUICKSTART.md)**
 - **[Modifier la liste candidate Brimaz](decks/Challenger.txt)** sur la branche expérimentale, puis commiter pour lancer automatiquement la campagne à 16 parties (sans fusionner la PR).
