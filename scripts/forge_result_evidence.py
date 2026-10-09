@@ -33,7 +33,10 @@ def verify_result_evidence(raw, game, seats):
         issues.append("Expected exactly one four-player Commander declaration")
         declared = None
     else:
-        declared = declarations[0]
+        # Forge declares players with '[Default]'/'[Experimental]' profile
+        # suffixes; Game Outcome / Game Result omit these suffixes.
+        declared = tuple(re.sub(r" \\[(?:Default|Experimental|Cautious|Reckless)\\]$", "", name)
+                         for name in declarations[0])
 
     results = _RESULT.findall(raw)
     if len(results) != 1:
