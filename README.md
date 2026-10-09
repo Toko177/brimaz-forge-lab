@@ -30,6 +30,15 @@ preuve de performance de Brimaz.
 V8 expérimente des transformations défensives d'Incubateurs, toujours
 sous le moteur de règles Forge.
 
+## Résultat certifié et expérience V13
+
+- **V12 : 31/32 parties naturelles certifiées, 1 vraie censure, 1 victoire Brimaz** ; taux observé **3,23 %**, Wilson 95 % **0,57 à 16,19 %**, sans généralisation au Commander humain. [Rapport et certificats indépendants](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002649987).
+- **21/31 parties naturelles sans avertissement IA surveillé**, dont l'unique victoire Brimaz (seed `20610001`, adversaires éliminés à 0 PV, sans timeout ni repli d'attaque).
+- **33 dépassements IA**, dont 32 profils de calcul profond de combat ; le frein majeur n'est plus le premier lancement de Brimaz (31/31 parties naturelles, médiane tour personnel 4).
+- Correction : les pertes à **21 blessures de commandant** étaient rejetées à tort par l'ancienne certification ; désormais correctement reconnues. [81 tests de régression réussis](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002628580).
+- [Audit de reproductibilité des 32 graines répétées](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002258622) : 25/32 mêmes séquences d'événements suivis ; 1/30 paires naturellement finies change de vainqueur. Ne pas compter ces répétitions comme des graines indépendantes.
+- **V13** : [pilote 16 matchs sur 8 jobs](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002838904), conservation du support Incubate avec délai de réflexion **partagé** entre quatre IA, adapté 5→10→15 s après timeouts. Aucun gain de compétence ni winrate n'est proclamé sans les résultats.
+
 ## Campagne de validation V12 à 32 parties
 
 - [Campagne V12 équilibrée à 32 véritables parties](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38001534517) : **16 jobs Github Actions, 12 simultanés maximum**, 2 pods × 4 sièges × 2 séries de graines préenregistrées × 2 parties.
