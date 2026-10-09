@@ -54,6 +54,7 @@ jobs:
     outputs:
       matrix: ${{ steps.plan_matrix.outputs.matrix }}
       reference_reused: ${{ steps.plan_matrix.outputs.reference_reused }}
+      cache_run_id: ${{ steps.cache_lookup.outputs.run_id }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -135,43 +136,73 @@ jobs:
             --decks forge_decks --manifest forge_decks/candidate-manifest.json \
             --seed-base "$SEED_BASE" --repeats "$REPEATS" \
             --output forge_decks/reference-cache-key.json
-      - name: Retrieve optional previous validated reference inputs
-        if: ${{ inputs.reference_run_id != '' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: deckbuild-verified-inputs
-          run-id: ${{ inputs.reference_run_id }}
-          github-token: ${{ github.token }}
-          path: previously-verified/
-      - name: Plan only necessary Forge matches, rejecting incompatible reference reuse
+      - name: Find reusable reference results from matching successful GitHub campaigns
+        id: cache_lookup
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RUN_ID: ${{ inputs.reference_run_id || '' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ inputs.repeats || '1' }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$REQUESTED_RUN_ID" ]]; then
+            [[ "$REQUESTED_RUN_ID" =~ ^[0-9]+$ ]] || { echo "Invalid reference run ID"; exit 2; }
+            candidate_ids="$REQUESTED_RUN_ID"
+          else
+            candidate_ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deckbuild-ab.yml/runs?per_page=35" \
+              --jq '.workflow_runs[] | select(.conclusion=="success") | .id')"
+          fi
+          found=""
+          for run_id in $candidate_ids; do
+            mkdir -p "candidate-cache/$run_id"
+            if ! gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name deckbuild-verified-inputs --dir "candidate-cache/$run_id" >/dev/null 2>&1; then
+              if [[ -n "$REQUESTED_RUN_ID" ]]; then
+                echo "Requested run has no reusable verified-input artifact: $run_id"; exit 2
+              fi
+              continue
+            fi
+            if python3 scripts/deckbuild_cache.py --mode verify --root . \
+              --decks forge_decks --manifest forge_decks/candidate-manifest.json \
+              --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+              --previous "candidate-cache/$run_id/forge_decks/reference-cache-key.json"; then
+              found="$run_id"
+              cp "candidate-cache/$run_id/forge_decks/reference-cache-key.json" \
+                forge_decks/verified-reference-key.json
+              echo "REFERENCE_CACHE_HIT from run $run_id"
+              break
+            fi
+            if [[ -n "$REQUESTED_RUN_ID" ]]; then
+              echo "Requested run is incompatible with current decks, engine, seeds or clock"; exit 2
+            fi
+          done
+          if [[ -n "$found" ]]; then
+            echo "run_id=$found" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_id=" >> "$GITHUB_OUTPUT"
+            echo "REFERENCE_CACHE_MISS - will simulate every reference matchup normally"
+          fi
+      - name: Plan actual required runners (eight after cache hit, sixteen otherwise)
         id: plan_matrix
         env:
-          REFERENCE_RUN_ID: ${{ inputs.reference_run_id || '' }}
+          REFERENCE_RUN_ID: ${{ steps.cache_lookup.outputs.run_id }}
         run: |
           set -euo pipefail
           if [[ -n "$REFERENCE_RUN_ID" ]]; then
-            python3 scripts/deckbuild_cache.py --mode verify --root . \
-              --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-              --seed-base "${{ inputs.seed_base || '21410000' }}" \
-              --repeats "${{ inputs.repeats || '1' }}" \
-              --previous previously-verified/forge_decks/reference-cache-key.json
-            cp previously-verified/forge_decks/reference-cache-key.json \
-              forge_decks/verified-reference-key.json
             echo "reference_reused=true" >> "$GITHUB_OUTPUT"
           else
             echo "reference_reused=false" >> "$GITHUB_OUTPUT"
           fi
           python3 - <<'PY'
           import json,os
-          cache=bool(os.environ.get("REFERENCE_RUN_ID"))
-          arms=["candidate"] if cache else ["reference","candidate"]
-          pairs=[{"arm":arm,"pod":pod,"rotation":seat}
-                 for arm in arms for pod in ("aristo","artifact")
-                 for seat in range(4)]
-          assert len(pairs)==(8 if cache else 16)
-          with open(os.environ["GITHUB_OUTPUT"],"a") as out:
-              out.write("matrix="+json.dumps({"include":pairs},separators=(",",":"))+"\n")
-          print("DECKBUILD_CACHE_JOB_MATRIX",{"reuse":cache,"real_match_runners":len(pairs)})
+          reuse=bool(os.environ.get("REFERENCE_RUN_ID"))
+          arms=["candidate"] if reuse else ["reference","candidate"]
+          shards=[{"arm":arm,"pod":pod,"rotation":rot}
+                  for arm in arms for pod in ("aristo","artifact") for rot in range(4)]
+          assert len(shards)==(8 if reuse else 16)
+          with open(os.environ["GITHUB_OUTPUT"],"a") as fp:
+              fp.write("matrix="+json.dumps({"include":shards},separators=(",",":"))+"\n")
+          print("DECKBUILD_REQUIRED_REAL_JVMS",len(shards))
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -264,7 +295,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: deckbuild-game-reference-*
-          run-id: ${{ inputs.reference_run_id }}
+          run-id: ${{ needs.prepare.outputs.cache_run_id }}
           github-token: ${{ github.token }}
           path: match-artifacts/cached-reference/
       - name: Recheck every reused log SHA256, pod, seat, seed and AI policy
