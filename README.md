@@ -39,7 +39,7 @@ Le nouveau pipeline de **deckbuilding A/B** évite de créer une version Java/Fo
 - **[Workflow de deckbuilding A/B](.github/workflows/deckbuild-ab.yml)** : 16 jobs Forge parallèles, Scryfall obligatoire, option future de saisir des swaps directement en lancement manuel lorsque le workflow sera disponible sur la branche par défaut.
 - **[Tests de l'outil A/B](.github/workflows/deckbuild-regression.yml)** : contrôle du nombre de cartes, commandant, SHA256, vrais résultats et intervalles de confiance.
 
-Une comparaison A/B où les deux listes sont initialement identiques est un **test de fonctionnement**, pas un progrès du deck. Le résultat V12 1/31 reste l'échantillon indépendant de référence, et le V13 1/14 ne démontre pas une compétence supérieure de l'IA.
+Une comparaison A/B où les deux listes sont initialement identiques est un **test de fonctionnement**, pas un progrès du deck. **[Premier test réel A/A : SUCCESS, 16/16 parties naturelles certifiées](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38004900250)**, 0/8 victoires dans chaque bras, aucune censure, zéro timeout IA, deux replis d'attaque. C'est le bon résultat pour vérifier le pipeline, pas une mesure utile de progression des cartes. Le résultat V12 1/31 reste l'échantillon indépendant de référence, et le V13 1/14 ne démontre pas une compétence supérieure de l'IA.
 
 ## Résultat certifié et expérience V13
 
