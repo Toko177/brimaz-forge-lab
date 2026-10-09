@@ -18,11 +18,11 @@ Machine-readable artifact from workflow "Audit Forge AI decision traces":
 - 23 Brimaz Incubator transformations.
 - 7 Brimaz end-step triggers; 2 were during opponents' end steps.
 - 12 sacrifice-engine activations: 11 Arcbound Ravager, 1 High Market.
-- No observed sacrifice activation in an opponent's end step.
+- No observed sacrifice activation during the opponent's turn BEFORE its end step. This is the relevant window for Brimaz's turn-specific death condition; activating after the end step starts is too late.
 - Four of four logs emitted `No AI assigned for API: Incubate`.
 - Substantial clustering: 11 Arcbound Ravager activations logged during one cleanup step in one match. Whether tactical or a heuristic defect is unresolved; needs game-state inspection.
 
-**Important:** No activation does NOT mean an activation was legal, available, and beneficial. The audit does not reconstruct hands or board state, and triggers need the actual Phyrexian-death precondition.
+**Important:** Brimaz checks Phyrexian deaths at the START of the end step; the AI must trigger an eligible death before that point. No activation does NOT mean an activation was legal, available, and beneficial. The audit does not reconstruct hands or board state, and triggers need the actual Phyrexian-death precondition.
 
 ## Implemented response
 
@@ -53,3 +53,7 @@ Machine-readable artifact from workflow "Audit Forge AI decision traces":
 - [parallel benchmark](../.github/workflows/parallel-benchmark.yml)
 - [quality log audit](../.github/workflows/ai-audit.yml)
 - [isolated Incubate patch pilot](../.github/workflows/incubate-patch-test.yml)
+
+## Incubate AI handler first pilot
+
+The optional bytecode patch compiled and eliminated `No AI assigned for API: Incubate` in one four-player smoke game. However, that game hit the 360-second clock and was censored, so **the patch is NOT promoted to the baseline**. Removing an API warning is insufficient evidence of improved decisions. Further evaluation must compare complete-game rates, tactical decisions, and win performance before adoption.
