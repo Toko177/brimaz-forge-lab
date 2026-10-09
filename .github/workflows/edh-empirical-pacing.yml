@@ -1,0 +1,35 @@
+name: Empirical EDH pacing calibration on real Forge games
+on:
+  push:
+    paths:
+      - .github/workflows/edh-empirical-pacing.yml
+      - scripts/audit_edh_pacing.py
+      - tests/test_edh_pacing.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify global turns versus per-seat turns on deterministic fixtures
+        run: python3 -m unittest discover -s tests -p 'test_edh_pacing.py' -v
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-v8-defense-*
+          run-id: 37995083458
+          github-token: ${{ github.token }}
+          path: games/
+      - name: Audit full four-seat pacing in four genuine Commander Forge games
+        run: |
+          python3 scripts/audit_edh_pacing.py --input games/ \
+            --output results/edh-pacing/real-forge-v8.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-real-edh-pacing-benchmark
+          path: results/edh-pacing/
+          if-no-files-found: ignore
