@@ -1,0 +1,57 @@
+name: Rank multiple Commander deck variants (same Forge reference only)
+on:
+  workflow_dispatch:
+    inputs:
+      comparison_run_ids:
+        description: "At least two completed A/B run IDs, comma separated, all using the same certified reference logs"
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  strict-candidate-ranking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check cross-variant provenance and ranking guards
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_rank.py' -v
+      - name: Retrieve original real Forge comparison artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IDS: ${{ inputs.comparison_run_ids }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > ids.txt
+          import os,re
+          ids=[s.strip() for s in os.environ['IDS'].split(',')]
+          if not 2<=len(ids)<=20 or len(set(ids))!=len(ids) or not all(re.fullmatch('[0-9]+',s) for s in ids):
+              raise ValueError("Supply 2–20 unique numeric GitHub Actions run IDs")
+          print('\n'.join(ids))
+          PY
+          while read -r id; do
+            mkdir -p "comparisons/$id"
+            gh run download "$id" --repo "$GITHUB_REPOSITORY" \
+              --name commander-deckbuild-certified-comparison --dir "comparisons/$id"
+            test -f "comparisons/$id/comparison.json" || {
+              echo "No certified comparison for $id"; exit 2;
+            }
+          done < ids.txt
+      - name: Rank ONLY compatible variants with identical original reference SHA256s
+        run: |
+          set -euo pipefail
+          files=()
+          while read -r id; do
+            files+=("comparisons/$id/comparison.json")
+          done < ids.txt
+          python3 scripts/deckbuild_rank.py --reports "${files[@]}" \
+            --output results/deck-ranking/candidates.json \
+            --markdown results/deck-ranking/candidates.md
+          cat results/deck-ranking/candidates.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commander-candidate-ranking-provenance-checked
+          path: results/deck-ranking/
+          if-no-files-found: ignore
