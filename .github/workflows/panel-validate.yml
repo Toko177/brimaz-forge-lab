@@ -5,6 +5,9 @@ on:
       - ".github/workflows/panel-validate.yml"
       - "scripts/import_archidekt.py"
   workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
 jobs:
   import-panel:
     runs-on: ubuntu-latest
