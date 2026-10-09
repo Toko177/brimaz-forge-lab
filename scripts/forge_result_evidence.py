@@ -14,7 +14,10 @@ _RESULT = re.compile(
     re.M,
 )
 _OUTCOME = re.compile(
-    r"^Game Outcome: Ai\((\d+)\)-(.+?) has (won|lost) because (.+?)\s*$",
+    # Forge uses 'has lost trying to draw cards from empty library' for deck-out;
+    # requiring 'because' for every elimination wrongly rejects real outcomes.
+    # Keep the accepted outcome grammar explicit and fail closed on unknown forms.
+    r"^Game Outcome: Ai\((\d+)\)-(.+?) has (won because|lost because|lost trying to) (.+?)\s*$",
     re.M,
 )
 
@@ -50,7 +53,8 @@ def verify_result_evidence(raw, game, seats):
         issues.append(f"Expected four individual Game Outcome entries, found {len(outcomes)}")
 
     indexed = {}
-    for seat_text, name, state, reason in outcomes:
+    for seat_text, name, state_text, reason in outcomes:
+        state = state_text.split(" ", 1)[0]
         seat = int(seat_text)
         if seat not in (1, 2, 3, 4) or seat in indexed:
             issues.append("Duplicate or invalid Game Outcome seat " + seat_text)
