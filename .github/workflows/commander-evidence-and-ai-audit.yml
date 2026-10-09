@@ -16,6 +16,8 @@ on:
       - tests/test_incubate_support.py
       - tests/test_balanced_commander_campaign.py
       - tests/test_same_seed_campaign.py
+      - tests/test_brimaz_combat.py
+      - scripts/audit_brimaz_combat.py
       - scripts/audit_same_seed_campaign.py
       - scripts/audit_balanced_commander_campaign.py
       - scripts/audit_incubate_support.py
