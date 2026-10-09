@@ -9,6 +9,8 @@ on:
       - scripts/deckbuild_compare.py
       - scripts/deckbuild_cache.py
       - tests/test_deckbuild_cache.py
+      - scripts/deckbuild_rank.py
+      - tests/test_deckbuild_rank.py
       - scripts/deckbuild_swaps.py
       - tests/test_deckbuild_swaps.py
       - tests/test_deckbuild_pipeline.py
@@ -27,5 +29,7 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_swaps.py' -v
       - name: Reject all incompatible or tampered cached Forge reference games
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_cache.py' -v
+      - name: Check cross-candidate deck leaderboard does not mix differing baseline log histories
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_rank.py' -v
       - name: Verify existing strict Commander evidence fixtures still pass
         run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
