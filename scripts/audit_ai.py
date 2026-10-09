@@ -71,8 +71,12 @@ for path in files:
         if "activated Incubator Token" in line:
             inc=re.search(r"Add To Stack: (Ai\(\d+\)-.+?) activated Incubator Token",line)
             if inc: incubated[inc.group(1)]+=1
+    turns=[int(n) for n in re.findall(r"^Turn: Turn\s+(\d+)",raw,re.M)]
+    winners=re.findall(r"Game Result: Game\s+\d+\s+ended in\s+(\d+)\s*ms\.\s*(.*?) has won!",raw)
     logs={
       "file":str(path),
+      "last_turn":max(turns) if turns else None,
+      "reported_winner":winners[-1][1] if winners else None,
       "turn_lines":len(re.findall(r"^Turn: Turn ",raw,re.M)),
       "end_steps":phases["End step"],
       "brimaz_end_step_triggers":triggered_in_endstep,
