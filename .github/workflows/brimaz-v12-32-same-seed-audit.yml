@@ -1,0 +1,68 @@
+name: Audit 32 identical-seed Forge game replays
+on:
+  push:
+    paths:
+      - .github/workflows/brimaz-v12-32-same-seed-audit.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  compare-two-real-campaigns:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate replay comparison and absence of sample double counting
+        run: |
+          python3 -m unittest discover -s tests -p 'test_same_seed_campaign.py' -v
+          python3 -m unittest discover -s tests -p 'test_matched_replay.py' -v
+      - name: Ensure the two batches of 32 real Forge games have finished
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          finished=0
+          for n in $(seq 1 40); do
+            old="$(gh api "repos/${{ github.repository }}/actions/runs/38001496914" --jq '.status')"
+            current="$(gh api "repos/${{ github.repository }}/actions/runs/38001534517" --jq '.status')"
+            echo "Original run: $old; corrected run: $current; poll $n"
+            if [[ "$old" == "completed" && "$current" == "completed" ]]; then finished=1; break; fi
+            sleep 30
+          done
+          [[ "$finished" == 1 ]] || { echo "Two 32-game campaigns are not finished"; exit 2; }
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-v12-32-*
+          run-id: 38001496914
+          github-token: ${{ github.token }}
+          path: original/
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-v12-32-*
+          run-id: 38001534517
+          github-token: ${{ github.token }}
+          path: corrected/
+      - name: Compare all same-seed, same-pod, same-seat action sequences and winner outcomes
+        run: |
+          python3 scripts/audit_same_seed_campaign.py \
+            --first original/ --second corrected/ \
+            --output results/repeatability/identical-32-seeds.json \
+            --expected 32
+          python3 - <<'PY'
+          import json,pathlib
+          x=json.loads(pathlib.Path("results/repeatability/identical-32-seeds.json").read_text())
+          s=x["summary"]
+          assert s["seed_pairs"]==32
+          assert len(x["pairs"])==32
+          assert s["identical_event_sequences"]+s["changed_event_sequences"]==32
+          assert s["both_natural_same_winner"]+s["both_natural_different_winner"]==s["both_natural"]
+          print("COMMANDER_NONDETERMINISM_32_MATCHED_SEEDS",json.dumps(s,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-v12-32-same-seed-replay-audit
+          path: results/repeatability/
+          if-no-files-found: ignore
