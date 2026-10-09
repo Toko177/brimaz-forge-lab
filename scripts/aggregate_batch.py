@@ -33,7 +33,7 @@ for path in files:
 
 identities=[]
 for g in games:
-    identities.append((g["pod"],g["rotation"],g["repeat"],g.get("brimaz_profile","Default"),g.get("seed")))
+    identities.append((g["pod"],g["rotation"],g["repeat"],g.get("brimaz_profile","Default"),g.get("seed"),g.get("policy","stock")))
 if len(identities)!=len(set(identities)):
     raise ValueError("Duplicated game keys: artifact collision or rerun mixed into original sample")
 grouped=collections.defaultdict(list)
@@ -93,6 +93,9 @@ out={
   "quality_gate_complete_matrix":complete_matrix,
   "expected_games":expected_total,
   "games":len(games),"groups":report,"matched_seed_pairs":len(pairs),
+  "natural_games":sum(g.get("status")=="complete" for g in games),
+  "censored_games":sum(g.get("status")=="clock_censored" for g in games),
+  "wins_brimaz_verified_by_engine":sum(g.get("status")=="complete" and g.get("brimaz_win") is True for g in games),
   "profile_comparison_notes":"Default vs Experimental are existing Forge heuristics, not stronger AI by default. No causality or definitive ranking from small samples.",
   "limitations":["Actual rules engine; decisions are Forge heuristics, not expert human play",
                  "Per-game RNG seed recorded; changing decisions alters random draw consumption",
