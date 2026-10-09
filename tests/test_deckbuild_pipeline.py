@@ -134,6 +134,7 @@ def trial(n=1):
                        "candidate_seat":1+(4-shift)%4,"candidate_deck":manifest["decks"][arm]["label"],
                        "candidate_sha256":manifest["decks"][arm]["forge_sha256"],"policy":"V13-incubate-adaptive",
                        "status":"complete","natural_verified":True,"ai_warning_free":True,
+                       "transcript_sha256":hashlib.sha256(f"{pod}-{shift}-{repeat}-{arm}".encode()).hexdigest(),
                        "candidate_win":(arm=="candidate"),"winner_deck":"Deck_Candidate" if arm=="candidate" else "Opponent",
                        "ai_quality_signatures":{"evaluation_timeouts":0,"invalid_attack_fallbacks":0},
                        "rejection_reasons":[],"wall_seconds":3})
