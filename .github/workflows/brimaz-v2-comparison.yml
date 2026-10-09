@@ -29,6 +29,15 @@ jobs:
           run-id: 37960666613
           github-token: ${{ github.token }}
           path: candidate/
+      - name: Fetch V1 experimental AI logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-planner-v1-*
+          run-id: 37959185948
+          github-token: ${{ github.token }}
+          path: v1/
+      - name: Compare V2 against V1 directly
+        run: python3 scripts/compare_policy.py --baseline v1 --candidate candidate --output results/policy/v2_vs_v1.json
       - name: Compare reproducible matched pods seats seeds and game outcomes
         run: python3 scripts/compare_policy.py --baseline stock --candidate candidate --output results/policy/pairwise_v2.json
       - uses: actions/upload-artifact@v4
