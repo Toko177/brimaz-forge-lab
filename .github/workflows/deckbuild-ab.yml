@@ -328,7 +328,17 @@ jobs:
           python3 scripts/deckbuild_compare.py \
             --certificate results/deckbuild-report/certificate.json \
             --manifest forge_decks/candidate-manifest.json \
-            --repeats "$REPEATS" --out results/deckbuild-report/comparison.json
+            --repeats "$REPEATS" --cache-key forge_decks/reference-cache-key.json \
+            --out results/deckbuild-report/comparison.json
+      - name: Explain reference games reused from previous completed run
+        env:
+          CACHE_RUN_ID: ${{ needs.prepare.outputs.cache_run_id }}
+        run: |
+          if [[ -n "$CACHE_RUN_ID" ]]; then
+            echo "REFERENCE_CACHE_USED from GitHub Actions run $CACHE_RUN_ID; old games re-certified"
+          else
+            echo "REFERENCE_CACHE_BUILT: 16 real Forge games; original baseline reusable"
+          fi
       - name: Human-readable GitHub Actions summary
         run: |
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
