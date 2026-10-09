@@ -30,6 +30,15 @@ preuve de performance de Brimaz.
 V8 expérimente des transformations défensives d'Incubateurs, toujours
 sous le moteur de règles Forge.
 
+## État V10–V12 (10 octobre 2026)
+
+- **Première victoire Brimaz V10 indépendante des anciennes expériences** : seed `20281010` (aristo, siège 3), fin naturelle à **164,227 secondes**. Les quatre issues sont présentes : Brimaz survit, deux adversaires perdent à 0 PV, un troisième à bibliothèque vide. [Certification stricte 4/4 résultats, 1/4 Brimaz](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000153841).
+- Cette victoire comporte **4 dépassements du délai de réflexion IA** et une déclaration d'attaque invalidée puis corrigée par Forge : ce n'est ni une mesure du winrate réel, ni la preuve d'un gain de stratégie V10 (observation seule).
+- V11 : [4/4 parties certifiées, 2 timeouts, Brimaz 0/4](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999839503), budget IA adaptatif équitable 5→10→15s : expérimental, pas un gain démontré.
+- V12 : [gestionnaire IA natif d'Incubate en cours de tests](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000469712), mêmes règles pour les quatre IA.
+- Les scripts de contrôle reconnaissent désormais les pertes par bibliothèque vide `has lost trying to draw`, tout en exigeant quatre résultats cohérents, et publient les causes d'élimination sans inventer la causalité des kills.
+- **[Passation active à jour](docs/PASSATION_ACTIVE_2026-10-10.md)** pour reprendre toutes les expériences et le développement dans un nouveau chat.
+
 ## Résultat actuel à ne pas mal interpréter
 
 - 32 parties canoniques avant correction moteur : 29 naturelles certifiées, 3 censurées ; Brimaz 0/29.
