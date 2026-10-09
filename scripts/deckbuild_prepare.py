@@ -50,8 +50,8 @@ def read_deck(path, explicit_commander=None):
         commanders=collections.Counter({name:1 for name in names})
     if not commanders:
         raise ValueError(f"No commander declared for {path}; use --commander or [Commander]")
-    if sum(commanders.values()) not in (1,2):
-        raise ValueError("Expect one commander or two commanders with a legal pairing")
+    if sum(commanders.values()) != 1:
+        raise ValueError("Fast deckbuilder currently supports ONE commander; two-commander partner/background pairing requires a separate exact legality audit")
     if any(counts[name]<q for name,q in commanders.items()):
         raise ValueError("Commander is missing from total quantity list")
     if sum(counts.values())!=100:
@@ -61,14 +61,20 @@ def read_deck(path, explicit_commander=None):
     return counts,commanders
 
 
+def forge_primary_face(name):
+    # Forge 2.0.15 loads primary names of split and modal DFC cards.
+    # Keep the full original card name in the source hash / card diff.
+    return name.split(" // ", 1)[0]
+
+
 def write_deck(path,counts,commanders,label):
     main=counts.copy()
     for name,q in commanders.items():
         main[name]-=q
         if main[name]<0:raise ValueError("Commander overdraw")
     lines=["[metadata]",f"Name={label}","[Main]"]
-    lines.extend(f"{n} {card}" for card,n in sorted(main.items()) if n)
-    lines+=["[Commander]"]+[f"{n} {card}" for card,n in sorted(commanders.items())]
+    lines.extend(f"{n} {forge_primary_face(card)}" for card,n in sorted(main.items()) if n)
+    lines+=["[Commander]"]+[f"{n} {forge_primary_face(card)}" for card,n in sorted(commanders.items())]
     dest=Path(path)
     dest.parent.mkdir(parents=True,exist_ok=True)
     dest.write_text("\n".join(lines)+"\n",encoding="utf-8")
