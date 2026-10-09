@@ -1,0 +1,171 @@
+# Commander Deckbuilder — passer d'une idée de cartes à des parties Forge réelles
+
+## But et périmètre
+
+La voie d'usage courante du laboratoire est désormais le **comparateur A/B de listes**
+et **non** une série V14, V15, V16, etc. Un changement de cartes ne requiert
+plus de modifier le Java Forge ni de créer un nouveau workflow.
+
+- **Deux listes Commander complètes de 100 cartes**, avec un commandant
+  explicitement choisi. Les lists peuvent avoir des commandants différents,
+  mais la stratégie du bot n'est pas automatiquement experte pour chacun.
+- **2 pods fixes** : aristo (Radha, Dungeon/Tazri, Zimone et Dina) et artifact
+  (Lathril, Urza, Amalia).
+- **Quatre sièges équilibrés** pour chaque liste : Brimaz ou le nouveau
+  commandant occupe tour à tour les quatre places.
+- Le vrai moteur **Forge 2.0.15** applique les règles du jeu, avec le
+  correctif Charm et l'IA **V13 (Incubate + budget adaptatif partagé
+  aux quatre adversaires)**. Les choix sont de vraies heuristiques Forge,
+  pas encore une IA experte.
+- Les résultats sont indépendamment **certifiés** : les quatre issues,
+  le vrai vainqueur, le chrono, les pertes par 21 blessures de commandant,
+  les logs hachés et les validations Scryfall.
+- Les résultats **censurés ne deviennent jamais des victoires**.
+
+## Utilisation immédiate sur la branche expérimentale
+
+Tant que la PR #1 est en **brouillon** et que ce workflow n'est
+pas présent sur la branche par défaut, la manière la plus sûre de
+le déclencher est :
+
+1. Ouvrir [decks/Challenger.txt](../decks/Challenger.txt) sur
+   la branche \`improve/realism-and-ai-diagnostics\`.
+2. Modifier uniquement les quantités et noms des cartes de cette
+   liste. Pour commencer, remplacer **une carte par une autre**,
+   en conservant les 100 cartes et \`1 Brimaz, Blight of Oreskos\`.
+3. **Commiter le fichier sur cette branche**. Le workflow
+   [Fast Commander deckbuilding A/B](../.github/workflows/deckbuild-ab.yml)
+   est déclenché par cet événement, en utilisant la liste
+   \`decks/Brimaz_V3.txt\` comme référence et \`decks/Challenger.txt\`
+   comme variante.
+4. Consulter le job \`report\` et télécharger
+   l'artefact \`commander-deckbuild-certified-comparison\`,
+   qui contient \`certificate.json\` et \`comparison.json\`.
+
+**Attention :** un commit créant uniquement un nouveau fichier,
+par exemple \`decks/candidates/another.txt\`, ne déclenche pas
+automatiquement ce chemin de démarrage rapide. Il faut modifier
+\`decks/Challenger.txt\` ou utiliser le déclenchement manuel
+dès qu'il est disponible sur la branche par défaut.
+
+## Lancement manuel avec des échanges de cartes (après activation sur la branche par défaut)
+
+Depuis GitHub → Actions → **Fast Commander deckbuilding A/B** →
+Run workflow, renseigner :
+
+- \`reference_file\` : \`decks/Brimaz_V3.txt\`.
+- \`candidate_file\` : chemin d'une autre liste, si déjà présente dans
+  le dépôt.
+- \`swaps\` : facultatif, par exemple
+  \`1 Plains -> 1 Swamp; 1 Sol Ring -> 1 Arcane Signet\`.
+  Lorsque renseigné, ce champ prend le dessus sur \`candidate_file\`.
+  Il autorise les quantités \`2 Card Out -> 2 Card In\`, conserve
+  le commandant et les 100 cartes ; la légalité complète est ensuite
+  contrôlée via Scryfall **avant** de faire tourner Forge.
+  L'exemple est purement syntaxique, **pas une recommandation**
+  de remplacer Sol Ring.
+- \`reference_commander\` et \`candidate_commander\` :
+  obligatoires lorsque les listes ne contiennent pas de section
+  \`[Commander]\` ; pour le workflow, Brimaz est leur valeur par défaut.
+- \`repeats\` : \`1\`, \`2\`, \`4\` ou \`6\`.
+- \`seed_base\` : cohorte RNG déclarée à l'avance ; les deux variantes
+  utilisent les mêmes valeurs, sans que cela garantisse des décisions
+  déterministes ni une causalité statistique.
+
+La disponibilité de **Run workflow** pour une nouvelle définition
+GitHub Actions dépend notamment de sa présence sur la branche
+par défaut. **Ne pas fusionner automatiquement la PR #1 pour
+contourner cette limitation** tant que les contrôles de qualité
+et la revue du code ne sont pas satisfaits.
+
+## Tailles et coûts de calcul
+
+| Réglage | Groupes | Joueurs | Parties réelles | Runners parallèles maximum |
+|---|---:|---:|---:|---:|
+| 1 répétition | 2 | 4 | 16 (8 référence + 8 variante) | 16 |
+| 2 répétitions | 2 | 4 | 32 | 16 |
+| 4 répétitions | 2 | 4 | 64 | 16 |
+| 6 répétitions | 2 | 4 | 96 | 16 |
+
+Pour écarter rapidement une variante très faible, commencer à
+16. Pour une décision de deckbuilding moins incertaine, passer
+à 32–96. Ce n'est **pas une garantie de précision statistique**,
+notamment si la différence réelle est faible, les matchups
+peu représentatifs ou les parties non certifiables nombreuses.
+Éviter de choisir après coup la graine qui fait gagner son deck.
+
+Chaque job conserve ses logs bruts. Le coût le plus important
+est la simulation de Forge, pas le calcul de l'intervalle de
+confiance ; un lancement à 96 parties consomme réellement
+plus de calcul GitHub.
+
+## Ce que le rapport prouve — et ne prouve pas
+
+\`comparison.json\` fournit :
+- les decks de référence et candidat (SHA256 de la source et de
+  la liste Forge, et **détail des cartes ajoutées / retirées**) ;
+- parties programmées, **naturelles certifiées** et censurées,
+  victoires / taux / Wilson 95 % pour chaque bras ;
+- **bornes conservatrices** de taux rapportées aux parties
+  programmées, si des parties sont censurées ;
+- distribution des adversaires gagnants, résultat par pod et
+  par siège, décisions IA interrompues, attaques invalides ;
+- paires par pod, siège et graine, à interpréter de manière
+  **descriptive** : l'IA Forge peut diverger même à graine
+  identique.
+
+L'absence d'avertissements IA n'est pas la preuve de décisions
+parfaites. Un \`1/4\` ou \`1/16\` ne suffit pas à classer des decks
+sur un format multijoueur aussi variable. Et **un taux de
+victoire plus élevé ne doit jamais provenir d'un bonus caché,
+d'un handicap adversaire ni de règles simplifiées**.
+
+## Architecture technique (pour reprendre ce chantier)
+
+- \`scripts/deckbuild_swaps.py\` : échanges écrits sur une seule ligne,
+  protection du commandant, contrôle de quantité.
+- \`scripts/deckbuild_prepare.py\` : parseurs de listes,
+  sérialisation Forge, SHA256 et diff carte par carte.
+- \`scripts/deckbuild_run.py\` : runner générique en JVM indépendantes,
+  profils et adversaires constants, matrice à quatre sièges.
+- \`scripts/deckbuild_certify.py\` : auditeur indépendant
+  Forge/Scryfall, vrai résultat 4 joueurs, empreinte du log,
+  type de victoire, censures et avertissements IA séparés.
+- \`scripts/deckbuild_compare.py\` : rapport A/B avec
+  appariement descriptif, Wilson 95 %, répartition par siège,
+  qualité IA et proportion de parties non certifiables.
+- \`.github/workflows/deckbuild-ab.yml\` : préparation et légalité
+  une seule fois, puis **16 jobs parallèles** référence/variante/pod/siège.
+- \`.github/workflows/deckbuild-regression.yml\` : tests Python très
+  rapides pour tous les contrôles précédents.
+- \`tests/test_deckbuild_pipeline.py\` et
+  \`tests/test_deckbuild_swaps.py\` : garde-fous locaux sans téléchargement
+  de Forge ni Scryfall.
+
+La vérification de bout en bout sur une **copie strictement
+identique** de la liste de Brimaz est un **test d'infrastructure** :
+une différence de vainqueur dans ce contrôle doit inciter à
+étudier la non-reproductibilité ; elle ne constitue évidemment
+pas une amélioration de deck.
+
+## Étapes structurantes suivantes, sans accumulation de versions
+
+1. Stabiliser le comparateur sur une campagne témoin A/A.
+2. Rendre le moteur IA assez efficace pour réduire les coûteuses
+   simulations de bloqueurs, avec tests de non-régression
+   **des quatre IA**, sans changement des règles.
+3. Ajouter des bancs de tests tactiques (mulligan, première rampe,
+   blocage, interaction, Incubate/sacrifice) pour filtrer en quelques
+   secondes les décisions défectueuses avant un benchmark massif.
+4. Conserver des résultats référence réutilisables **seulement
+   si les hashes des decks, le code Forge, le profil des IA,
+   les pods, l'horloge et la cohorte de graines correspondent** ;
+   toute divergence doit invalider le cache et interdire
+   les comparaisons trompeuses.
+5. À terme, tester et comparer des variantes proposées depuis
+   les cartes légales via une **présélection** fondée sur le
+   rôle des cartes et le budget/puissance souhaités, puis
+   réserver les vraies parties Forge aux candidates prometteuses.
+
+Pour l'état courant des campagnes Forge et la passation du chat :
+[PASSATION ACTIVE](PASSATION_ACTIVE_2026-10-10.md).
