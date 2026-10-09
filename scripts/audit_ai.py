@@ -34,7 +34,7 @@ for path in files:
     incubated=collections.Counter()
     cast=collections.Counter()
     phases=collections.Counter()
-    inactive_end_step_actions=0
+    opponent_turn_pre_endstep_sacrifices=0
     warnings=[]
     for line in lines:
         t=re.match(r"Turn: Turn\s+\d+\s+\((Ai\(\d+\)-.+?)\)$",line)
@@ -58,8 +58,12 @@ for path in files:
                         sacrificed[engine]+=1
                         sacrifice_phase[phase or "unknown"]+=1
                         sacrifice_turn[turn or "unknown"]+=1
-                if phase == "End step" and current_endstep_active and "Brimaz" not in current_endstep_active:
-                    inactive_end_step_actions+=1
+                # Brimaz checks deaths when the end step STARTS.
+                # An activation during the end step does not trigger it this turn.
+                if (active_player and "Brimaz" not in active_player and
+                        phase not in ("End step", "Cleanup step") and
+                        any(engine in card for engine in engines)):
+                    opponent_turn_pre_endstep_sacrifices+=1
         if "Add To Stack:" in line and "triggered Brimaz, Blight of Oreskos" in line and phase == "End step":
             triggered_in_endstep+=1
             if current_endstep_active and "Brimaz" not in current_endstep_active:triggered_during_opponent_endstep+=1
@@ -76,7 +80,7 @@ for path in files:
       "brimaz_sacrifice_engine_activations":dict(sacrificed),
       "brimaz_sacrifice_activations_by_phase":dict(sacrifice_phase),
       "brimaz_sacrifice_activations_by_turn":dict(sacrifice_turn),
-      "brimaz_nonactive_endstep_activations":inactive_end_step_actions,
+      "brimaz_opponent_turn_pre_endstep_sac_activations":opponent_turn_pre_endstep_sacrifices,
       "all_incubator_transforms":dict(incubated),
       "brimaz_casts":sum(n for x,n in cast.items() if x.endswith("cast Brimaz, Blight of Oreskos") or " | Brimaz, Blight of Oreskos" in x),
       "all_brimaz_trigger_lines":raw.count("triggered Brimaz, Blight of Oreskos"),
@@ -84,6 +88,8 @@ for path in files:
       "quality_flags":[
         "Incubate AI API handler missing" if "No AI assigned for API: Incubate" in raw else "",
         "No observed Brimaz sacrifice-engine activations; availability unknown" if sum(sacrificed.values())==0 else "",
+        "No observed pre-endstep opponent-turn sacrifice activations; legality and value unknown"
+        if opponent_turn_pre_endstep_sacrifices==0 else "",
         "No observed Brimaz end-step proliferate triggers; death preconditions unknown" if triggered_in_endstep==0 else "",
       ]
     }
@@ -96,12 +102,13 @@ report={
         "brimaz_end_step_triggers":sum(x["brimaz_end_step_triggers"] for x in stats),
         "brimaz_opponent_end_step_triggers":sum(x["brimaz_opponent_end_step_triggers"] for x in stats),
         "sacrifice_engine_activations":sum(sum(x["brimaz_sacrifice_engine_activations"].values()) for x in stats),
-        "brimaz_opponent_end_step_activations":sum(x["brimaz_nonactive_endstep_activations"] for x in stats),
+        "brimaz_opponent_turn_pre_endstep_sac_activations":sum(x["brimaz_opponent_turn_pre_endstep_sac_activations"] for x in stats),
         "incubator_transforms":sum(sum(x["all_incubator_transforms"].values()) for x in stats),
         "ai_api_missing_incubate_games":sum(bool(x["unique_ai_api_warnings"]) for x in stats)
     },
     "interpretation_limits":[
       "An absent activation is not proof of an available missed activation.",
+      "Brimaz's death condition is checked at the beginning of each end step. Sacrificing in that end step is too late to trigger the ability.",
       "There is no full state reconstruction, hidden hand analysis, or policy optimality benchmark.",
       "Simple text-matching may miss alternative log renderings.",
       "Follow-up: instrument battlefield availability and compare AI profiles on matched random seeds."
