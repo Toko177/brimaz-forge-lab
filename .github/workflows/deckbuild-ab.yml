@@ -104,6 +104,13 @@ jobs:
           python3 scripts/validate_commander_legality.py \
             --deck forge_decks/Deck_Reference.dck --deck forge_decks/Deck_Candidate.dck \
             --require-no-game-changers --out legality/candidates
+      - name: Instant factual land/MDFC/mana-curve comparison before running Forge
+        run: |
+          python3 scripts/deckbuild_preflight.py \
+            --decks forge_decks \
+            --manifest forge_decks/candidate-manifest.json \
+            --scryfall legality/candidates/scryfall-snapshot.json \
+            --output results/deckbuild-preflight.json
       - uses: actions/download-artifact@v4
         with:
           name: legality-audit-all-playgroup-pods
@@ -216,6 +223,7 @@ jobs:
           path: |
             forge_decks/
             legality/merged.json
+            results/deckbuild-preflight.json
           if-no-files-found: error
 
   real-games:
@@ -330,6 +338,10 @@ jobs:
             --manifest forge_decks/candidate-manifest.json \
             --repeats "$REPEATS" --cache-key forge_decks/reference-cache-key.json \
             --out results/deckbuild-report/comparison.json
+      - name: Preserve zero-simulation structural deck report in final certified artifact
+        run: |
+          mkdir -p results/deckbuild-report
+          cp results/deckbuild-preflight.json results/deckbuild-report/preflight.json
       - name: Explain reference games reused from previous completed run
         env:
           CACHE_RUN_ID: ${{ needs.prepare.outputs.cache_run_id }}
@@ -353,6 +365,8 @@ jobs:
               print(f"| {key} | {s['reference'][key]} | {s['candidate'][key]} |")
           print()
           print('Winrate delta (candidate minus reference):',s['delta_candidate_minus_reference_conditional_winrate'])
+          q=json.loads(pathlib.Path('results/deckbuild-report/preflight.json').read_text())
+          print('Mana-curve preflight (candidate minus reference):',q['candidate_minus_reference'])
           print('Cards added:',d['candidate_deltas']['added'])
           print('Cards removed:',d['candidate_deltas']['removed'])
           print('Caveat: Same Forge seed does not ensure identical actions; censures are never assigned winners.')
