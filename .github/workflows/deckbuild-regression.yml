@@ -7,6 +7,8 @@ on:
       - scripts/deckbuild_run.py
       - scripts/deckbuild_certify.py
       - scripts/deckbuild_compare.py
+      - scripts/deckbuild_swaps.py
+      - tests/test_deckbuild_swaps.py
       - tests/test_deckbuild_pipeline.py
   workflow_dispatch:
 permissions:
@@ -19,5 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate decklist serialization, independent certificates and A/B statistics
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_pipeline.py' -v
+      - name: Test quick manual card-swap recipe semantics
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_swaps.py' -v
       - name: Verify existing strict Commander evidence fixtures still pass
         run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
