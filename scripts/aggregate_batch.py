@@ -14,6 +14,8 @@ import sys
 p=argparse.ArgumentParser()
 p.add_argument("--input",default="artifacts")
 p.add_argument("--output",default="results/parallel/aggregate.json")
+p.add_argument("--expected-groups",type=int,default=4,
+               help="Number of pod/profile combinations required")
 p.add_argument("--expected-per-group",type=int,default=8,
                help="Expected matches in each pod/profile group (4 seats x repeats)")
 args=p.parse_args()
@@ -78,9 +80,9 @@ for key,group in by_seed.items():
         if a["status"]=="complete" and b["status"]=="complete":
             pairs.append({"pod":key[0],"rotation":key[1],"seed":key[3],
                           "default_win":a["brimaz_win"],"experimental_win":b["brimaz_win"]})
-expected_total=args.expected_per_group*4
+expected_total=args.expected_per_group*args.expected_groups
 complete_matrix=(
-    len(grouped)==4 and len(games)==expected_total
+    len(grouped)==args.expected_groups and len(games)==expected_total
     and all(len(group)==args.expected_per_group and
             set(x["rotation"] for x in group)=={0,1,2,3}
             for group in grouped.values())
