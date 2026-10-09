@@ -1,0 +1,54 @@
+name: Matched seed forensic analysis of first Brimaz win
+on:
+  push:
+    paths:
+      - .github/workflows/brimaz-outcome-reproducibility.yml
+      - scripts/audit_matched_replay.py
+      - tests/test_matched_replay.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  compare-real-forge-transcripts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run deterministic forensic unit tests
+        run: python3 -m unittest discover -s tests -p 'test_matched_replay.py' -v
+      - uses: actions/download-artifact@v4
+        with:
+          name: charm-fixed-stock-20291010
+          run-id: 37968565113
+          github-token: ${{ github.token }}
+          path: original/
+      - uses: actions/download-artifact@v4
+        with:
+          name: first-brimaz-win-replay-900s
+          run-id: 37992318979
+          github-token: ${{ github.token }}
+          path: replay/
+      - name: Compare matched-seed Forge actions, clock and winner
+        run: |
+          python3 scripts/audit_matched_replay.py \
+            --reference original/ --replay replay/ \
+            --output results/reproducibility/first-brimaz-win.json
+      - name: Confirm divergence was observed and never classified as reproducible
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          result=json.loads(pathlib.Path('results/reproducibility/first-brimaz-win.json').read_text())
+          assert result['seed']==20291010
+          assert result['reference_winner']=='Brimaz_V3'
+          assert result['replay_winner']!='Brimaz_V3'
+          assert result['outcome_reproduced'] is False
+          assert result['first_divergence_reference'] is not None
+          print('FIRST_BRIMAZ_WIN_NOT_REPRODUCIBLE',result['first_divergence_reference'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-first-win-forensic-report
+          path: results/reproducibility/
+          if-no-files-found: ignore
