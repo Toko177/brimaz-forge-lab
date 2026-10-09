@@ -21,7 +21,12 @@ def has_land_front(card):
     return "Land" in faces[0].get("type_line","").split(" — ")[0].split()
 
 def has_land_back(card):
-    return any("Land" in f.get("type_line","").split(" — ")[0].split() for f in card_faces(card)[1:])
+    # Only a modal DFC lets the player choose to play a back-face land from
+    # hand. A transform DFC which becomes a land after transforming is NOT
+    # an additional starting land source.
+    return card.get("layout")=="modal_dfc" and any(
+        "Land" in f.get("type_line","").split(" — ")[0].split()
+        for f in card_faces(card)[1:])
 
 def mana_value(card):
     if "cmc" in card:
