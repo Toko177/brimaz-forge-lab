@@ -1,0 +1,51 @@
+name: Live Scryfall Commander preflight mana-curve smoke
+on:
+  push:
+    paths:
+      - .github/workflows/deckbuild-live-preflight.yml
+      - scripts/deckbuild_preflight.py
+      - tests/test_deckbuild_preflight.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  factual-oracle-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify offline modal-DFC land semantics
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_preflight.py' -v
+      - name: Prepare original unchanged Brimaz deck twice (A/A)
+        run: |
+          python3 scripts/deckbuild_prepare.py \
+            --reference decks/Brimaz_V3.txt --candidate decks/Brimaz_V3.txt \
+            --reference-commander "Brimaz, Blight of Oreskos" \
+            --candidate-commander "Brimaz, Blight of Oreskos" \
+            --out forge_decks
+      - name: Retrieve real current Scryfall Oracle/legal metadata
+        run: |
+          python3 scripts/validate_commander_legality.py \
+            --deck forge_decks/Deck_Reference.dck \
+            --deck forge_decks/Deck_Candidate.dck \
+            --require-no-game-changers --out legality/candidates
+      - name: Calculate real deck curve, lands and spell-land MDFC counts
+        run: |
+          python3 scripts/deckbuild_preflight.py --decks forge_decks \
+            --manifest forge_decks/candidate-manifest.json \
+            --scryfall legality/candidates/scryfall-snapshot.json \
+            --output results/preflight-report.json
+          python3 - <<'PY'
+          import json,pathlib
+          r=json.loads(pathlib.Path('results/preflight-report.json').read_text())
+          assert r['reference']==r['candidate'], "Identical decks must have exactly the same structure"
+          assert r['reference']['total_cards']==100
+          assert r['candidate_minus_reference']['land_capable_cards']==0
+          print('REAL_SCRYFALL_100_CARD_PREFLIGHT',json.dumps(r['reference'],ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-factual-scryfall-mana-preflight
+          path: results/preflight-report.json
+          if-no-files-found: ignore
