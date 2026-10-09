@@ -27,6 +27,7 @@ p.add_argument("--profile-brimaz",choices=["Default","Experimental","Cautious","
 p.add_argument("--profile-opponents",choices=["Default","Experimental","Cautious","Reckless"],default="Default")
 p.add_argument("--out-tag",default="baseline",help="Distinct output group to isolate A/B profiles")
 p.add_argument("--policy-label",default="stock",help="Exact AI code variant; distinguishes patched from stock games")
+p.add_argument("--require-canonical-decks",action="store_true",help="Refuse to reconstruct/overwrite the pre-verified commander deck")
 
 args=p.parse_args()
 assert 0 < args.clock < args.timeout
@@ -46,23 +47,27 @@ for name in decks:
     if not path.is_file():
         raise FileNotFoundError(f"Missing required validated deck: {path}")
 
-# The previously validated smoke-run script writes a Forge .dck for Brimaz;
-# the same exact baseline is created here for independent batch execution.
-source=root/"decks/Brimaz_V3.txt"
-entries=[]
-for line in source.read_text(encoding="utf-8").splitlines():
-    if not line.strip():
-        continue
-    m=re.fullmatch(r"(\d+)\s+(.+)",line.strip())
-    if not m: raise ValueError("Malformed Brimaz entry: "+line)
-    entries.append((int(m.group(1)),m.group(2)))
-assert sum(q for q,n in entries)==100
-assert sum(q for q,n in entries if n=="Brimaz, Blight of Oreskos")==1
-(directory/"Brimaz_V3.dck").write_text(
-    "[metadata]\nName=Brimaz V3\n[Main]\n" +
-    "".join(f"{q} {name}\n" for q,name in entries if name!="Brimaz, Blight of Oreskos")+
-    "[Commander]\n1 Brimaz, Blight of Oreskos\n",encoding="utf-8"
-)
+# Never overwrite a canonical Brimaz deck that was checked against Scryfall
+# and Forge. Earlier code silently regenerated this file after its SHA check.
+brimaz_file=directory/"Brimaz_V3.dck"
+if not brimaz_file.is_file():
+    if args.require_canonical_decks:
+        raise FileNotFoundError("Pre-validated canonical Brimaz deck absent")
+    source=root/"decks/Brimaz_V3.txt"
+    entries=[]
+    for line in source.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        m=re.fullmatch(r"(\\d+)\\s+(.+)",line.strip())
+        if not m: raise ValueError("Malformed Brimaz entry: "+line)
+        entries.append((int(m.group(1)),m.group(2)))
+    assert sum(q for q,n in entries)==100
+    assert sum(q for q,n in entries if n=="Brimaz, Blight of Oreskos")==1
+    brimaz_file.write_text(
+        "[metadata]\\nName=Brimaz V3\\n[Main]\\n" +
+        "".join(f"{q} {name}\\n" for q,name in entries if name!="Brimaz, Blight of Oreskos")+
+        "[Commander]\\n1 Brimaz, Blight of Oreskos\\n",encoding="utf-8"
+    )
 jar=pathlib.Path(args.jar).resolve()
 out=root/"results"/"batch"/args.pod/args.out_tag
 out.mkdir(parents=True,exist_ok=True)
@@ -143,4 +148,7 @@ stats={
 }
 (out/"summary.json").write_text(json.dumps(stats,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("POD SUMMARY",json.dumps(stats,ensure_ascii=False),flush=True)
-sys.exit(0 if len(valid)==len(summary) else 2)
+# Timeout/clock cutoff is an expected censored observation, not a failed CI job.
+# Engine exceptions, process timeouts and unparseable matches remain failures.
+bad={"engine_failed","process_timeout","unparsed"}
+sys.exit(2 if any(x["status"] in bad for x in summary) else 0)
