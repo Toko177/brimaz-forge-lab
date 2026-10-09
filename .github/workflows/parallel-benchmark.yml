@@ -89,7 +89,7 @@ jobs:
           pattern: forge-parallel-*
           path: artifacts/
       - name: Aggregate with censored match filtering
-        run: python3 scripts/aggregate_batch.py --input artifacts --output results/parallel/aggregate.json
+        run: python3 scripts/aggregate_batch.py --input artifacts --output results/parallel/aggregate.json --expected-per-group "$((4 * ${{ inputs.repeats || '2' }}))"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
