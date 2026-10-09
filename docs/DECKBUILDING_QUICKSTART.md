@@ -258,3 +258,49 @@ Les fichiers et tests correspondants sont
 \`scripts/deckbuild_rank.py\`,
 \`tests/test_deckbuild_cache.py\` et
 \`tests/test_deckbuild_rank.py\`.
+
+
+## Mesures disponibles sans attendre les parties
+
+Chaque campagne effectue désormais **avant toute JVM Forge**
+un rapport \`preflight.json\` basé sur l'API Scryfall :
+terrains première face, cartes MDFC dont l'autre
+face est un terrain jouable, courbe de valeur de
+mana et différences de structure entre A et B.
+
+**Mesure vérifiée sur le Brimaz V3 canonique** :
+35 terrains première face +3 terrains sur
+des versos modal DFC, soit 38 cartes ayant
+une possibilité de terrain ; courbe moyenne
+des 65 cartes non-terrain en première face
+2,892 mana. Voir le [test Scryfall live
+SUCCESS](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38006620330).
+Le fait qu'une MDFC puisse être jouée comme
+terrain ne garantit pas un land drop ;
+aucun avantage de winrate n'est attribué
+à ces chiffres isolés.
+
+La sortie est intégrée aux artefacts certifiés
+de chaque benchmark A/B. Pour détecter
+une anomalie de courbe de mana évidente,
+**ce préflight ne coûte aucune partie Forge**.
+
+## Classement dans GitHub Actions (quand Run workflow est disponible)
+
+Le workflow
+[Rank multiple Commander deck variants](../.github/workflows/deckbuild-leaderboard.yml)
+accepte \`comparison_run_ids\` avec deux à vingt
+identifiants de campagnes A/B terminées,
+séparés par virgules. Il télécharge leurs
+rapports, contrôle les empreintes de
+tous les vrais matchs de référence, puis
+publie \`candidates.json\` et
+\`candidates.md\` dans l'artefact
+\`commander-candidate-ranking-provenance-checked\`.
+
+Seules des variantes réellement différentes
+et basées sur le même environnement et les
+mêmes logs de référence peuvent être
+comparées. Il ne s'agit pas d'une preuve
+de supériorité : confirmer la variante
+prometteuse avec un nouveau lot de graines.
