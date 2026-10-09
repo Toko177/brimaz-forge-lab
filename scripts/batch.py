@@ -31,6 +31,8 @@ decks=PODS[args.pod]
 root=pathlib.Path.cwd()
 directory=root/"forge_decks"
 for name in decks:
+    if name=="Brimaz_V3":
+        continue
     path=directory/(name+".dck")
     if not path.is_file():
         raise FileNotFoundError(f"Missing required validated deck: {path}")
