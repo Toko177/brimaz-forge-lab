@@ -93,3 +93,4 @@
 4 Plains
 4 Swamp
 # Infrastructure reference-cache baseline test: 100 cards unchanged; no deck optimization claimed.
+# Reference-cache replay proof: exact same 100 Commander cards, second A/A control only.
