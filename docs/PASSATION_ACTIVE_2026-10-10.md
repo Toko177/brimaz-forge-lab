@@ -740,3 +740,78 @@ La campagne https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999839503
 pas encore) au moment de cette addition. Examiner
 les journaux et l'audit de son budget adaptatif partagé
 et les risques de CPU avant de promouvoir V11.
+
+
+## 17. V11 certifiée + V12 nouveau gestionnaire \`Incubate\`
+
+### Résultat V11 complet
+Run **37999839503 SUCCESS** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999839503
+Quatre parties réelles, **4/4 certifiées naturellement**, 0/4
+victoire Brimaz. **2 TimeoutException** au total (contre 6
+dans V10 à mêmes pods/seeds mais exécutions non
+déterministes), 1 attaque invalide corrigée,
+10 décisions terminées mais lentes. Deux épisodes ont
+élevé le budget de 5s à 10s pour toute la table;
+aucun épisode à 15s. Les deux cartes en cours de
+réflexion au timeout étaient \`Octopus Form\` pour
+Ai(2) et \`Vault of the Archangel\` pour Ai(3).
+Conserver cette politique comme **expérimentation** ;
+aucune preuve de gain en qualité tactique ou de winrate.
+L'effet de l'augmentation du budget sur le CPU doit
+être encore mesuré sur davantage de parties.
+
+### V12 : lacune de couverture IA Incubate
+Forge 2.0.15 \`forge-ai/.../SpellApiToAi.java\` ne
+contient **pas** \`.put(ApiType.Incubate,...)\`.
+Le code \`SpellApiToAi.Converter.get\` log
+\`No AI assigned for API: Incubate\` et substitue
+\`CannotPlayAi.class\`, ce qui peut empêcher la
+sélection volontaire d'une action Incubate.
+**Ce n'est pas une erreur du moteur de règles
+IncubateEffect** : les jetons continuent d'être créés
+par \`forge-game/.../effects/IncubateEffect.java\`.
+Cela concerne le support de décision AI.
+
+Patch \`scripts/patch_forge_brimaz_v12.py\` : part
+du **V10 observer + choix stratégiques V9**,
+PAS de V11 budget adaptatif. Ajoute une seule
+entrée de dispatch \`ApiType.Incubate ->
+IncubateAi.class\` dans \`SpellApiToAi.java\`
+et une classe
+\`forge.ai.ability.IncubateAi extends SpellAbilityAi\`.
+Son \`checkApiLogic\` approuve l'idée de lancer Incubate;
+les **contrôles génériques de timing, restrictions,
+conditions et paiement de coûts** du moteur AI/règles
+restent en place. Le patch s'applique à **toutes
+les quatre IA**, pas uniquement à Brimaz.
+Aucune création de jeton manuelle, aucun changement
+de règle ou de cartes.
+La V12 est une modification d'IA fonctionnelle :
+la juger selon nombre d'Incubate légaux exercés,
+la présence/absence d'avertissement, leur coût
+et le résultat de 4/4 parties certifiées,
+**pas seulement** un nouveau winrate.
+
+Test Java réel sur JAR :
+\`tests/java/forge/ai/BrimazV12IncubateChecks.java\`,
+qui affirme \`SpellApiToAi.Converter.get(ApiType.Incubate)\`
+une instance de \`IncubateAi\` et NON \`CannotPlayAi\`.
+Workflow pilote :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000469712
+**RECONTRÔLER son statut avant de rapporter un résultat !**
+
+### Référentiel de rigueur
+- Toutes les parties sont distribuées en JVM distinctes,
+  réelles et sans changement des quatre decks canoniques;
+  conserver toutes les censures/exception.
+- Un résultat \`winner_deck=Brimaz_V3\` n'est pas
+  un exploit si l'IA a triché, une sortie de log est
+  incomplète ou le résultat est fabriqué.
+- Le run V10 avec 1 vraie victoire a été recertifié
+  en exigant les quatre \`Game Outcome\` et la
+  reconnaissance d'une défaite par bibliothèque vide,
+  et contient des anomalies de qualité IA :
+  **4 timeouts + 1 attaque corrigée**.
+- Ne pas supposer les sorties 4/4 de V12 avant
+  résultats des jobs.
