@@ -864,3 +864,34 @@ Le pod \`aristo\` et l'audit indépendant doivent
 encore être vérifiés : ne pas confondre absence
 d'avertissement et preuve d'activation stratégique
 pertinente.
+
+
+## 19. Dernier contrôle automatisé du 10/10/2026
+
+- **56 tests Python réussis**, CI commune
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000864386
+  (\`scripts/forge_result_evidence.py\`,
+  \`scripts/audit_ai_eval_hotspots.py\`,
+  \`scripts/audit_adaptive_ai_budget.py\`,
+  \`scripts/audit_incubate_support.py\`, etc.).
+- \`scripts/audit_incubate_support.py\` et
+  \`tests/test_incubate_support.py\` (4 nouveaux tests)
+  auditent séparément :
+  avertissement \`No AI assigned for API: Incubate\`,
+  véritables résolutions de capacité contenant Incubate,
+  activations de transformation \`Incubator Token\` sur la
+  pile et mouvements du jeton en zone. Une mention
+  "create an Incubator" dans un rappel de texte
+  N'EST PAS une preuve de création supplémentaire.
+- V12 \`artifact\` (dans run 38000469712) :
+  2 jeux terminés, Amalia victorieuse dans chacun,
+  **aucun avertissement d'IA Incubate** ;
+  l'une des parties inclut de vraies résolutions
+  Incubate et des transformations d'Incubateur,
+  l'autre ne montre aucune résolution Incubate.
+  **Ne pas annoncer 4 jeux V12 certifiés avant le job audit**.
+- Le README et la PR #1 rappellent désormais que
+  la victoire V10 a été acceptée sur le plan
+  sortie naturelle mais pas au niveau "IA sans
+  avertissements". Ne pas annoncer une
+  amélioration du winrate avant davantage de jeux.
