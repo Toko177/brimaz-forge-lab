@@ -1,5 +1,21 @@
 # Rapport de transmission intégral — Brimaz Forge Lab
 
+> **ADDENDUM après reprise le 9 octobre 2026 :** Les faits historiques
+> relatifs à une première victoire Brimaz sont inchangés, mais une répétition
+> sur la même graine `20291010` avec une horloge de 900 secondes aboutit
+> à Radha (437 493 ms), pas à Brimaz. Première divergence détectée au
+> tour Forge 33 sur un choix de donjon adverse. Il faut lire l'ancienne
+> mention « victoire certifiée » comme « issue historique de transcript »,
+> **non reproduite et non utilisable pour inférer un winrate**.
+> [Audit forensique](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37994894861).
+> La V7 a aussi confirmé 0/4 victoire et a observé 166 fenêtres MAIN2
+> (64 avec Brimaz présent, dont 44 sans jeton Phyrexian sacrifiable candidat,
+> 17 sans sacrifice outlet en jeu et 3 avec KCI mais non listé comme action
+> normale, car il s'agit d'une capacité de mana). Pour les versions V8 et
+> suivantes, voir `docs/REPRISE_2026-10-09_CI_V7.md`.
+
+
+
 **Établi le 9 octobre 2026 (Europe/Paris).**  
 **Dépôt privé :** https://github.com/Toko177/brimaz-forge-lab  
 **Objet :** conception, exécution et audit d'un moteur de parties Magic: The Gathering Commander (EDH), avec quatre IA, pour mesurer et améliorer le deck **Brimaz, Blight of Oreskos**, puis comprendre les différences avec son pilotage humain.
