@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
-from forge_result_evidence import verify_result_evidence, inspect_ai_quality_signatures
+from forge_result_evidence import verify_result_evidence, inspect_ai_quality_signatures, describe_outcome_modes
 from analyze_ai_gameplay import audit_game
 
 SEATS = ["Brimaz_V3", "Kaal_9594008", "Kaal_10347090", "Kaal_21930525"]
@@ -49,6 +49,15 @@ class TranscriptEvidenceTests(unittest.TestCase):
         raw = RAW.replace(
             "Game Outcome: Ai(3)-Tazri has lost because life total reached 0\n", "")
         self.assertTrue(any("four individual Game Outcome" in issue for issue in self.check(raw)))
+
+    def test_distinguish_opponent_deckout_from_lethal_damage(self):
+        raw = RAW.replace("Ai(3)-Tazri has lost because life total reached 0",
+                          "Ai(3)-Tazri has lost trying to draw cards from empty library")
+        outcomes = describe_outcome_modes(raw)
+        self.assertEqual(len(outcomes), 4)
+        self.assertEqual({x["mode"] for x in outcomes if x["seat"] == 3}, {"library_depletion"})
+        self.assertEqual({x["mode"] for x in outcomes if x["seat"] == 2}, {"life_total_zero"})
+        self.assertEqual({x["mode"] for x in outcomes if x["seat"] == 1}, {"survivor_won"})
 
     def test_unrecognized_loss_reason_is_not_silently_accepted(self):
         raw = RAW.replace("Ai(3)-Tazri has lost because life total reached 0",
