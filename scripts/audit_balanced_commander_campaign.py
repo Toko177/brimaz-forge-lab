@@ -30,7 +30,7 @@ def wilson(wins, games, z=1.959963984540054):
 
 
 def game_key(row):
-    return (row["pod"], row["seed"], row["brimaz_seat"], row["policy"])
+    return (row["pod"], row["seed"], row.get("brimaz_seat", row.get("seat")), row["policy"])
 
 
 def summarize(manifests, certificate, *, games_per_rotation=4,
@@ -137,16 +137,26 @@ def summarize(manifests, certificate, *, games_per_rotation=4,
 
 def from_files(root, cert_path, expected_per_rotation, policy):
     manifest = []
+    transcript_sha = {}
     for path in sorted(root.rglob("games.json")):
         for g in json.loads(path.read_text(encoding="utf-8")):
             # Always verify original transcript bytes match certification SHA.
             transcript = path.parent/Path(g["log"]).name
             if not transcript.is_file():
                 raise FileNotFoundError(transcript)
+            k = game_key(g)
+            if k in transcript_sha:
+                raise ValueError(f"Duplicate transcript key {k}")
+            raw = transcript.read_text(encoding="utf-8", errors="replace")
+            transcript_sha[k] = hashlib.sha256(raw.encode("utf-8")).hexdigest()
             manifest.append(g)
     if not manifest:
         raise ValueError("No real Forge games found")
     c = json.loads(cert_path.read_text(encoding="utf-8"))
+    for record in c["games"]:
+        key = game_key(record)
+        if key not in transcript_sha or transcript_sha[key] != record["transcript_sha256"]:
+            raise ValueError(f"Certificate transcript SHA256 does not match original log: {key}")
     return summarize(manifest,c,games_per_rotation=expected_per_rotation,expected_policy=policy)
 
 
