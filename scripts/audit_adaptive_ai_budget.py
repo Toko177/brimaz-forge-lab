@@ -9,24 +9,29 @@ from pathlib import Path
 import re
 
 RE = re.compile(
-    r"^AI_ADAPTIVE_BUDGET_V11: previousSeconds=(\d+)"
+    r"^AI_ADAPTIVE_BUDGET_V(11|13): previousSeconds=(\d+)"
     r" currentSeconds=(\d+) appliedTo=ALL_FOUR_SEATS$", re.M)
 
 
 def analyze(raw, game):
-    changes = [{"previous_seconds": int(a), "current_seconds": int(b)}
-               for a, b in RE.findall(raw)]
+    changes = [{"instrumentation_version": int(version),
+                "previous_seconds": int(a), "current_seconds": int(b)}
+               for version, a, b in RE.findall(raw)]
     previous = 5
     for ch in changes:
         if ch["previous_seconds"] != previous or ch["current_seconds"] != min(15, previous+5):
             raise ValueError("V11 AI budget did not follow monotone global 5 -> 10 -> 15 rule")
         previous = ch["current_seconds"]
+    if len({c["instrumentation_version"] for c in changes}) > 1:
+        raise ValueError("Mixed V11 and V13 budget telemetry in one game")
+    if changes and "V" + str(changes[0]["instrumentation_version"]) not in game["policy"]:
+        raise ValueError("Adaptation trace version does not match AI policy label")
     if len(changes) > 2:
-        raise ValueError("V11 cannot exceed two shared budget increases")
+        raise ValueError("Adaptive AI cannot exceed two shared budget increases")
     actual_timeout_exceptions = raw.count("java.util.concurrent.TimeoutException")
     if len(changes) > actual_timeout_exceptions:
         raise ValueError("V11 budget increase occurred without original Forge timeout")
-    if game["policy"].startswith("V11") and actual_timeout_exceptions > 0 and not changes:
+    if game["policy"].startswith(("V11", "V13")) and actual_timeout_exceptions > 0 and not changes:
         raise ValueError("V11 timeout occurred without shared budget adaptation")
     return {
         "pod": game["pod"], "seed": game["seed"], "status": game["status"],
