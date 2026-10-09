@@ -122,6 +122,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         winner_index=int(winners[-1][1]) if status=="complete" else None
         record={
             "game":num,"pod":args.pod,"rotation":shift,"repeat":repeat,
+            "clock_seconds":args.clock,
             "seed":seed,"profiles":profiles,"brimaz_profile":args.profile_brimaz,
             "policy":args.policy_label,"planner_decisions":raw.count("BRIMAZ_PLANNER:"),
             "development_actions":raw.count("BRIMAZ_DEVELOPMENT:"),
