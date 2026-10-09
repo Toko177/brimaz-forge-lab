@@ -23,6 +23,8 @@ jobs:
           path: artifacts/
       - name: Classify Brimaz sacrifice timing in real Forge matches
         run: python3 scripts/audit_ai.py --logs artifacts --out results/audit/v3_timing.json
+      - name: Confirm Brimaz planner proposals against real activated abilities
+        run: python3 scripts/audit_planner_resolution.py --logs artifacts --out results/audit/v3_planner_resolution.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
