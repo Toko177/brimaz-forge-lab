@@ -1,5 +1,7 @@
 name: Fast Commander deckbuilding A/B (real Forge)
 on:
+  push:
+    paths: [decks/Challenger.txt]
   workflow_dispatch:
     inputs:
       swaps:
@@ -15,7 +17,7 @@ on:
       candidate_file:
         description: "100-card challenger deck file committed to repository"
         required: true
-        default: "decks/Brimaz_V3.txt"
+        default: "decks/Challenger.txt"
         type: string
       reference_commander:
         description: "Reference commander (semicolon for two commanders)"
@@ -74,7 +76,7 @@ jobs:
       - name: Materialize two immutable lists and explicit card swap diff
         env:
           REFERENCE_FILE: ${{ inputs.reference_file || 'decks/Brimaz_V3.txt' }}
-          CANDIDATE_FILE: ${{ inputs.candidate_file || 'decks/Brimaz_V3.txt' }}
+          CANDIDATE_FILE: ${{ inputs.candidate_file || 'decks/Challenger.txt' }}
           REFERENCE_COMMANDER: ${{ inputs.reference_commander || 'Brimaz, Blight of Oreskos' }}
           CANDIDATE_COMMANDER: ${{ inputs.candidate_commander || 'Brimaz, Blight of Oreskos' }}
           SWAPS: ${{ inputs.swaps || '' }}
