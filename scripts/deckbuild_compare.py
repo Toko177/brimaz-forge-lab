@@ -48,7 +48,7 @@ def statistic(rows):
     }
 
 
-def analyze(certificate,manifest,repeats):
+def analyze(certificate,manifest,repeats,reference_cache_key=None):
     if not 1<=repeats<=10:raise ValueError("Illegal number of repeats")
     rows=certificate["games"]
     expected=2*len(PODS)*4*repeats
@@ -85,6 +85,8 @@ def analyze(certificate,manifest,repeats):
                     "candidate_win":b["candidate_win"] if b["natural_verified"] else None,
                     "reference_warning_free":a["ai_warning_free"] if a["natural_verified"] else None,
                     "candidate_warning_free":b["ai_warning_free"] if b["natural_verified"] else None,
+                    "reference_transcript_sha256":a["transcript_sha256"],
+                    "candidate_transcript_sha256":b["transcript_sha256"],
                 })
     by_arm={arm:statistic([r for r in rows if r["arm"]==arm]) for arm in ARMS}
     by_pod={pod:{arm:statistic([r for r in rows if r["pod"]==pod and r["arm"]==arm])
@@ -97,6 +99,7 @@ def analyze(certificate,manifest,repeats):
     return {
         "summary":{
             "scheduled_matches":expected,
+            "reference_environment_fingerprint":reference_cache_key["fingerprint"] if reference_cache_key else None,
             "natural_certified_matches":a["natural_certified"]+b["natural_certified"],
             "matched_seed_pairs":len(pairs),
             "pairs_both_natural":len(both),
@@ -111,6 +114,7 @@ def analyze(certificate,manifest,repeats):
         },
         "by_pod":by_pod,"by_candidate_seat":by_seat,"pairs":pairs,
         "candidate_deltas":manifest.get("delta",{}),
+        "reference_environment":reference_cache_key,
         "deck_manifest":manifest["decks"]
     }
 
@@ -120,10 +124,12 @@ def main():
     p.add_argument("--certificate",required=True,type=Path)
     p.add_argument("--manifest",required=True,type=Path)
     p.add_argument("--repeats",required=True,type=int)
+    p.add_argument("--cache-key",type=Path,help="Verified reference-engine/deck/seed fingerprint for cross-candidate rankings")
     p.add_argument("--out",required=True,type=Path)
     a=p.parse_args()
     report=analyze(json.loads(a.certificate.read_text(encoding="utf-8")),
-                   json.loads(a.manifest.read_text(encoding="utf-8")),a.repeats)
+                   json.loads(a.manifest.read_text(encoding="utf-8")),a.repeats,
+                   json.loads(a.cache_key.read_text(encoding="utf-8")) if a.cache_key else None)
     a.out.parent.mkdir(parents=True,exist_ok=True)
     a.out.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print("DECKBUILD_AB_COMPARISON",json.dumps(report["summary"],ensure_ascii=False),flush=True)
