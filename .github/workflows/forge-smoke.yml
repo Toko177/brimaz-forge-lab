@@ -1,0 +1,45 @@
+name: Forge EDH four-seat smoke test
+on:
+  push:
+    paths:
+      - ".github/workflows/forge-smoke.yml"
+      - "scripts/**"
+      - "decks/**"
+  workflow_dispatch:
+jobs:
+  four-seat-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch Forge distribution
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -fL --retry 3 --connect-timeout 30 --max-time 450 -o forge.tar.bz2 'https://downloads.sourceforge.net/project/forge-engine.mirror/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+          ls -lh forge.tar.bz2
+          mkdir -p forge-dist
+          tar -xjf forge.tar.bz2 -C forge-dist
+          find forge-dist -maxdepth 5 -iname '*forge*.jar' -print | head -30
+      - name: Inspect executable and attempt four-player Commander match
+        shell: bash
+        run: |
+          set -euxo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge.jar' | head -1)"
+          if [ -z "$JAR" ]; then
+            echo "No forge.jar found; inspect extraction layout in logs."
+            exit 2
+          fi
+          python3 scripts/smoke.py --jar "$JAR" --games 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forge-smoke-diagnostics
+          path: |
+            results/
+            forge_decks/
+          if-no-files-found: ignore
