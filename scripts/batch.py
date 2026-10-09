@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Forge EDH batch: 4 independent games, rotating the four deck seat positions.
+"""Forge EDH batch: genuine independent 4-AI games, with seat rotation.
 
 This is a REAL Forge subprocess driver, not a Monte Carlo draw proxy.
 Unfinished games and simulation-clock "winners" are never counted as wins.
@@ -156,8 +156,8 @@ stats={
   "wins_by_deck":dict(collections.Counter(x["winner_deck"] for x in valid)),
   "status_counts":dict(collections.Counter(x["status"] for x in summary)),
   "elapsed_total_seconds":round(time.monotonic()-start,2),
-  "method":"Independent Forge JVM processes, deterministic -s seeds, isolated by GitHub Actions matrix jobs",
-  "caveat":"Small pilot sample. AI quality, card support and bracket legality not completely audited."
+  "method":"Independent Forge JVM processes with fixed -s seeds; same seed DOES NOT guarantee identical gameplay; isolated matrix jobs",
+  "caveat":"Seeded independent games can diverge across replays due to AI timing or nondeterminism. Status complete is NOT sufficient for a certified win: independently run certify_commander_games.py."
 }
 (out/"summary.json").write_text(json.dumps(stats,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("POD SUMMARY",json.dumps(stats,ensure_ascii=False),flush=True)
