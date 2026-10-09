@@ -16,24 +16,28 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Fetch Forge distribution
+      - name: Fetch and verify Forge 2.0.15
         shell: bash
         run: |
           set -euxo pipefail
-          curl -fL --retry 3 --connect-timeout 30 --max-time 450 -o forge.tar.bz2 'https://downloads.sourceforge.net/project/forge-engine.mirror/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+          URL='https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+          curl -fL --retry 3 --connect-timeout 25 --max-time 480 -o forge.tar.bz2 "$URL"
+          echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
           ls -lh forge.tar.bz2
           mkdir -p forge-dist
           tar -xjf forge.tar.bz2 -C forge-dist
-          find forge-dist -maxdepth 5 -iname '*forge*.jar' -print | head -30
+          find forge-dist -maxdepth 5 -type f -name '*jar-with-dependencies.jar' -print | head -30
       - name: Inspect executable and attempt four-player Commander match
         shell: bash
         run: |
           set -euxo pipefail
-          JAR="$(find "$PWD/forge-dist" -type f -name 'forge.jar' | head -1)"
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
           if [ -z "$JAR" ]; then
-            echo "No forge.jar found; inspect extraction layout in logs."
+            echo "Forge desktop executable JAR not found; inspect extracted filenames."
+            find forge-dist -maxdepth 5 -type f -name '*.jar' | head -40
             exit 2
           fi
+          echo "Running $JAR"
           python3 scripts/smoke.py --jar "$JAR" --games 1
       - uses: actions/upload-artifact@v4
         if: always()
