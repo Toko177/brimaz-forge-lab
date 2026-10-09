@@ -30,6 +30,14 @@ preuve de performance de Brimaz.
 V8 expérimente des transformations défensives d'Incubateurs, toujours
 sous le moteur de règles Forge.
 
+## Campagne de validation V12 à 32 parties
+
+- [Campagne V12 équilibrée à 32 véritables parties](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38001534517) : **16 jobs Github Actions, 12 simultanés maximum**, 2 pods × 4 sièges × 2 séries de graines préenregistrées × 2 parties.
+- Les taux de victoire utilisent exclusivement les certificats indépendants des journaux Forge, avec **intervalles de Wilson 95 %**, répartition par pod/siège, rejets, censures et exceptions d'IA. Une sortie `status=complete` du lanceur ne suffit pas à accepter une victoire.
+- `scripts/audit_balanced_commander_campaign.py` impose 32 traces, 32 empreintes SHA256, 32 certificats, la rotation équilibrée et des graines distinctes. `tests/test_balanced_commander_campaign.py` protège ces invariants.
+- Le premier lancement [38001496914](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38001496914) utilisait déjà les mêmes 32 graines mais contenait une assertion d'audit finale erronée (4 logs attendus au lieu de 32). Il sert de répétition technique : **ses résultats ne doivent pas être additionnés comme 32 graines indépendantes supplémentaires**. `scripts/audit_same_seed_campaign.py` permettra de comparer les divergences réelles sur les mêmes parties.
+- Les workflows sont asynchrones sur GitHub : consulter les jobs terminés et la [passation active](docs/PASSATION_ACTIVE_2026-10-10.md) pour connaître l'état vérifié, sans déduire le winrate d'une campagne encore partielle.
+
 ## État V10–V12 (10 octobre 2026)
 
 - **Première victoire Brimaz V10 indépendante des anciennes expériences** : seed `20281010` (aristo, siège 3), fin naturelle à **164,227 secondes**. Les quatre issues sont présentes : Brimaz survit, deux adversaires perdent à 0 PV, un troisième à bibliothèque vide. [Certification stricte 4/4 résultats, 1/4 Brimaz](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000153841).
