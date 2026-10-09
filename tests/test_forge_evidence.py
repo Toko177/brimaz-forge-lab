@@ -59,6 +59,25 @@ class TranscriptEvidenceTests(unittest.TestCase):
         self.assertEqual({x["mode"] for x in outcomes if x["seat"] == 2}, {"life_total_zero"})
         self.assertEqual({x["mode"] for x in outcomes if x["seat"] == 1}, {"survivor_won"})
 
+    def test_commander_damage_21_is_valid_four_player_elimination(self):
+        raw = RAW.replace("Ai(3)-Tazri has lost because life total reached 0",
+                          "Ai(3)-Tazri has lost due to accumulation of 21 damage from generals")
+        self.assertEqual(self.check(raw), [])
+        mode = [x["mode"] for x in describe_outcome_modes(raw) if x["seat"] == 3]
+        self.assertEqual(mode, ["commander_damage_21"])
+
+    def test_unsupported_due_to_reason_does_not_weaken_result_certification(self):
+        raw = RAW.replace("Ai(3)-Tazri has lost because life total reached 0",
+                          "Ai(3)-Tazri has lost due to an unknown invented rule")
+        self.assertTrue(any("Unknown or unsupported due-to elimination" in x for x in self.check(raw)))
+
+    def test_two_commander_damage_losses_and_life_loss_are_four_valid_records(self):
+        raw = RAW.replace("Ai(2)-Radha has lost because life total reached 0",
+                          "Ai(2)-Radha has lost due to accumulation of 21 damage from generals")
+        raw = raw.replace("Ai(4)-Zimone has lost because life total reached 0",
+                          "Ai(4)-Zimone has lost due to accumulation of 21 damage from generals")
+        self.assertEqual(self.check(raw), [])
+
     def test_unrecognized_loss_reason_is_not_silently_accepted(self):
         raw = RAW.replace("Ai(3)-Tazri has lost because life total reached 0",
                           "Ai(3)-Tazri has lost for unknown reasons")
