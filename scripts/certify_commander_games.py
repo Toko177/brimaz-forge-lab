@@ -11,7 +11,7 @@ Labels are intentionally conservative:
 Neither a truncated game nor absent/full data may produce a certified win.
 """
 import argparse,collections,hashlib,json,pathlib,re,sys
-from forge_result_evidence import verify_result_evidence
+from forge_result_evidence import verify_result_evidence, inspect_ai_quality_signatures
 
 p=argparse.ArgumentParser()
 p.add_argument("--input",required=True)
@@ -63,6 +63,7 @@ for record_path in sorted(root.rglob("games.json")):
         if g.get("process_exit")!=0:local.append("Forge subprocess exit was nonzero")
         if g.get("brimaz_win") is True and g.get("winner_deck")!="Brimaz_V3":
             local.append("Brimaz claimed win but different winning deck")
+        quality=inspect_ai_quality_signatures(raw)
         report={
           "pod":g.get("pod"),"policy":g.get("policy"),"seed":g.get("seed"),
           "seat":g.get("brimaz_seat"),"winner_deck":g.get("winner_deck"),
@@ -71,12 +72,16 @@ for record_path in sorted(root.rglob("games.json")):
           "transcript_sha256":hashlib.sha256(raw.encode("utf-8")).hexdigest() if raw else None,
           "engine_natural_and_consistent":not local,
           "rejection_reasons":local,
+          "ai_quality_signatures":quality,
           "caveat":"This audit verifies raw Forge outcomes and Scryfall legality, not a formal MTG rules proof. The Forge JAR may include disclosed bugfix or policy patches."
         }
         games.append(report)
         print("CERTIFIED_GAME" if not local else "REJECTED_GAME",json.dumps(report,ensure_ascii=False),flush=True)
 summary={
     "checked_games":len(games),
+    "games_with_ai_eval_timeouts":sum(x["ai_quality_signatures"]["evaluation_timeouts"]>0 for x in games),
+    "total_ai_eval_timeouts":sum(x["ai_quality_signatures"]["evaluation_timeouts"] for x in games),
+    "games_with_invalid_ai_attack_fallbacks":sum(x["ai_quality_signatures"]["invalid_attack_fallbacks"]>0 for x in games),
     "accepted_natural_games":sum(x["engine_natural_and_consistent"] for x in games),
     "accepted_brimaz_wins":sum(x["engine_natural_and_consistent"] and x["brimaz_win"] is True for x in games),
     "excluded_games":sum(not x["engine_natural_and_consistent"] for x in games),
