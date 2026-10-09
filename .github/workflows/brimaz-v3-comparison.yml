@@ -38,6 +38,15 @@ jobs:
           path: v1/
       - name: Compare V3 against V1 directly
         run: python3 scripts/compare_policy.py --baseline v1 --candidate candidate --output results/policy/v3_vs_v1.json
+      - name: Restore V2 match logs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-planner-v2-*
+          run-id: 37960666613
+          github-token: ${{ github.token }}
+          path: v2/
+      - name: Evaluate V3 against V2 on matched pods and seeds
+        run: python3 scripts/compare_policy.py --baseline v2 --candidate candidate --output results/policy/v3_vs_v2.json
       - name: Compare reproducible matched pods seats seeds and game outcomes
         run: python3 scripts/compare_policy.py --baseline stock --candidate candidate --output results/policy/pairwise_v3.json
       - uses: actions/upload-artifact@v4
