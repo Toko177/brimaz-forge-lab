@@ -1,0 +1,98 @@
+name: Parallel Forge Commander AI benchmark
+on:
+  push:
+    paths:
+      - ".github/workflows/parallel-benchmark.yml"
+  workflow_dispatch:
+    inputs:
+      repeats:
+        description: "Games per seat/pod/profile shard (1-10)"
+        required: true
+        default: "2"
+        type: choice
+        options: ["1", "2", "4", "8", "10"]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  game-shard:
+    name: "${{ matrix.pod }} seat${{ matrix.rotation }} ${{ matrix.profile }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        pod: [aristo, artifact]
+        rotation: [0, 1, 2, 3]
+        profile: [Default, Experimental]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Restore verified KaalDeagle deck snapshots
+        uses: actions/download-artifact@v4
+        with:
+          name: kaal-playgroup-deck-snapshots
+          run-id: 37952122924
+          github-token: ${{ github.token }}
+          path: .
+      - name: Restore cached Forge (or verify release)
+        uses: actions/cache@v4
+        with:
+          path: forge-dist/
+          key: forge-2.0.15-linux-shared-20261009
+      - name: Download Forge 2.0.15 if missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name "forge-gui-desktop-*-jar-with-dependencies.jar" -print -quit | grep -q .; then
+            curl -fL --retry 3 --connect-timeout 25 --max-time 480 -o forge.tar.bz2 "https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2"
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Run isolated seeded Forge games
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          test -n "$JAR"
+          python3 scripts/batch.py \
+            --jar "$JAR" \
+            --pod "${{ matrix.pod }}" \
+            --rotation "${{ matrix.rotation }}" \
+            --profile-brimaz "${{ matrix.profile }}" \
+            --profile-opponents "Default" \
+            --out-tag "${{ matrix.profile }}" \
+            --seed-base 20261009 \
+            --clock 360 --timeout 445 \
+            --games-per-rotation "${{ inputs.repeats || '2' }}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "forge-parallel-${{ matrix.pod }}-seat${{ matrix.rotation }}-${{ matrix.profile }}"
+          path: results/batch/${{ matrix.pod }}/${{ matrix.profile }}/
+          if-no-files-found: ignore
+          retention-days: 30
+  aggregate:
+    name: Aggregate verified Forge outcomes
+    needs: [game-shard]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: forge-parallel-*
+          path: artifacts/
+      - name: Aggregate with censored match filtering
+        run: python3 scripts/aggregate_batch.py --input artifacts --output results/parallel/aggregate.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: forge-parallel-aggregated-report
+          path: results/parallel/
+          if-no-files-found: ignore
