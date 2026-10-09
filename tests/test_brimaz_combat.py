@@ -37,7 +37,7 @@ class BrimazCombatTests(unittest.TestCase):
     def test_natural_win_does_not_claim_those_attackers_killed_opponents(self):
         r=inspect(LOG,GAME)
         self.assertTrue(r["brimaz_natural_win"])
-        self.assertIn("not a full life-loss causal trace",r["limitation"])
+        self.assertIn("not a full life-loss causal trace",r["limitation"].lower())
 
     def test_censored_game_never_marked_a_win(self):
         g={**GAME,"status":"clock_censored"}
