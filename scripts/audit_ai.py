@@ -28,6 +28,8 @@ for path in files:
     triggered_in_endstep=0
     triggered_during_opponent_endstep=0
     sacrificed=collections.Counter()
+    sacrifice_phase=collections.Counter()
+    sacrifice_turn=collections.Counter()
     activations=collections.Counter()
     incubated=collections.Counter()
     cast=collections.Counter()
@@ -52,7 +54,10 @@ for path in files:
             activations[player+" | "+card]+=1
             if "Brimaz" in player:
                 for engine in engines:
-                    if engine in card: sacrificed[engine]+=1
+                    if engine in card:
+                        sacrificed[engine]+=1
+                        sacrifice_phase[phase or "unknown"]+=1
+                        sacrifice_turn[turn or "unknown"]+=1
                 if phase == "End step" and current_endstep_active and "Brimaz" not in current_endstep_active:
                     inactive_end_step_actions+=1
         if "Add To Stack:" in line and "triggered Brimaz, Blight of Oreskos" in line and phase == "End step":
@@ -69,6 +74,8 @@ for path in files:
       "brimaz_end_step_triggers":triggered_in_endstep,
       "brimaz_opponent_end_step_triggers":triggered_during_opponent_endstep,
       "brimaz_sacrifice_engine_activations":dict(sacrificed),
+      "brimaz_sacrifice_activations_by_phase":dict(sacrifice_phase),
+      "brimaz_sacrifice_activations_by_turn":dict(sacrifice_turn),
       "brimaz_nonactive_endstep_activations":inactive_end_step_actions,
       "all_incubator_transforms":dict(incubated),
       "brimaz_casts":sum(n for x,n in cast.items() if x.endswith("cast Brimaz, Blight of Oreskos") or " | Brimaz, Blight of Oreskos" in x),
