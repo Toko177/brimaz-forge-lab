@@ -83,8 +83,11 @@ def audit_game(game, transcript):
         "artifact_development_proposals": transcript.count("BRIMAZ_DEVELOPMENT: cast-engine"),
         "sacrifice_planner_proposals": transcript.count("BRIMAZ_PLANNER:"),
     }
+    # KCI is a mana ability: mana abilities do NOT use the stack, and
+    # "Mana: Krark-Clan Ironworks" in Forge may be ability enumeration,
+    # not an activation. Never infer non-use from missing Add To Stack.
     cast_without_activation = [
-        card for card in ("Krark-Clan Ironworks", "Spawning Pit")
+        card for card in ("Spawning Pit",)
         if counts[f"cast|{card}"] > 0 and counts[f"activated|{card}"] == 0
     ]
     return {
@@ -98,8 +101,9 @@ def audit_game(game, transcript):
         "cast_but_never_activated_in_game": cast_without_activation,
         "events": events,
         "limitation": (
-            "No recorded activation does not prove a legal and advantageous "
-            "activation was available. Forge phase logging does not reveal "
+            "No recorded stack activation does not prove a legal and advantageous "
+            "activation was available. KCI mana activations are not observable "
+            "as Add To Stack events. Forge phase logging does not reveal "
             "every private choice or whether using an outlet was strategically good."
         )
     }
@@ -129,9 +133,7 @@ def audit_tree(root):
             "natural_games_in_manifest": sum(g["status"] == "complete" for g in games),
             "brimaz_wins_in_manifest": sum(g["winner_deck"] == "Brimaz_V3" and
                                            g["status"] == "complete" for g in games),
-            "games_with_cast_unactivated_kci": sum(
-                "Krark-Clan Ironworks" in g["cast_but_never_activated_in_game"]
-                for g in games),
+            "kci_mana_activation_auditability": "Not measured: mana abilities bypass the stack",
             "games_with_cast_unactivated_spawning_pit": sum(
                 "Spawning Pit" in g["cast_but_never_activated_in_game"]
                 for g in games),
