@@ -1,5 +1,7 @@
 package forge.integration;
 import forge.StaticData;
+import forge.GuiDesktop;
+import forge.gui.GuiBase;
 import forge.model.FModel;
 import forge.item.PaperCard;
 import java.nio.file.Files;
@@ -12,6 +14,7 @@ public final class VerifyAllForgeCards {
     private static final Pattern ROW=Pattern.compile("^(\\d+)\\s+(.+)$");
     public static void main(String[] argv) throws Exception {
         if (argv.length==0)throw new IllegalArgumentException("Must supply .dck paths");
+        GuiBase.setInterface(new GuiDesktop());
         FModel.initialize(null,null);
         List<String> missing=new ArrayList<>();
         int checked=0;
