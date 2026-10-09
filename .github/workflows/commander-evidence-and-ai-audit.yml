@@ -1,0 +1,43 @@
+name: Commander evidence gate and real V6 AI action audit
+on:
+  push:
+    paths:
+      - .github/workflows/commander-evidence-and-ai-audit.yml
+      - scripts/forge_result_evidence.py
+      - scripts/certify_commander_games.py
+      - scripts/analyze_ai_gameplay.py
+      - tests/test_forge_evidence.py
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  regress-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run deterministic no-Forge outcome and AI audit tests
+        run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-v6-*
+          run-id: 37969934893
+          github-token: ${{ github.token }}
+          path: v6-games/
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: legality/
+      - name: Independently check real four-player outcomes and configured clock
+        run: python3 scripts/certify_commander_games.py --input v6-games --legality legality/report.json --out results/evidence/certificates
+      - name: Report observed Brimaz actions from real V6 stack traces
+        run: python3 scripts/analyze_ai_gameplay.py --input v6-games --output results/evidence/ai-actions.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commander-evidence-and-v6-real-actions
+          path: results/evidence/
+          if-no-files-found: ignore
