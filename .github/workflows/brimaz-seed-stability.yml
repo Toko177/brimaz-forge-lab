@@ -1,0 +1,129 @@
+name: Same seed 600s stock Forge reproducibility experiment
+on:
+  push:
+    paths:
+      - .github/workflows/brimaz-seed-stability.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  replica:
+    name: Replica ${{ matrix.replica }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 26
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        replica: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-seven-decks-canonical-verified
+          run-id: 37966009166
+          github-token: ${{ github.token }}
+          path: canonical/
+      - name: Verify identical SHA-256 for all seven Forge-compatible decks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p forge_decks
+          cp canonical/forge_normalized/*.dck forge_decks/
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          data=json.loads(pathlib.Path('canonical/results/forge_normalization/report.json').read_text())
+          assert not data['errors'] and len(data['decks'])==7
+          for d in data['decks']:
+              p=pathlib.Path('forge_decks')/(d['deck']+'.dck')
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==d['normalized_sha256']
+          PY
+      - uses: actions/cache/restore@v4
+        with:
+          path: forge-dist/
+          key: forge-2.0.15-linux-shared-20261009
+      - name: Restore pristine authenticated Forge binary when uncached
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Apply only the independently documented Charm engine bugfix
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+      - name: Run the identical seed/seat/decks with 600s game clock
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/batch.py --jar "$JAR" --require-canonical-decks \
+            --pod aristo --rotation 3 --seed-base 20261010 \
+            --games-per-rotation 1 --policy-label charm-stock-stability600 \
+            --out-tag charm-stock-stability600 --clock 600 --timeout 750
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "brimaz-stock-stability-rep-${{ matrix.replica }}"
+          path: results/batch/
+          if-no-files-found: ignore
+
+  compare-replicas:
+    needs: replica
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: brimaz-stock-stability-rep-*
+          path: replicas/
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: legality/
+      - name: Validate each real Forge game
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/certify_commander_games.py --input replicas --legality legality/report.json --out results/stability/certification/
+      - name: Compare identical seed and identical clock across two independent JVMs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/audit_matched_replay.py \
+            --reference replicas/brimaz-stock-stability-rep-0/ \
+            --replay replicas/brimaz-stock-stability-rep-1/ \
+            --output results/stability/same-seed-two-runs.json
+          python3 - <<'PY'
+          import json,pathlib
+          r=json.loads(pathlib.Path('results/stability/same-seed-two-runs.json').read_text())
+          assert r['clock_seconds']==[600,600],r
+          assert r['seed']==20291010,r
+          print('SAME_SEED_REPLAY_FINDING',json.dumps({
+              'outcome_reproduced':r['outcome_reproduced'],
+              'sequence_identical':r['event_sequence_identical'],
+              'same_initial_events':r['identical_event_prefix'],
+              'first_divergence':r['first_divergence_reference']},
+              ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-same-seed-stability-study
+          path: results/stability/
+          if-no-files-found: ignore
