@@ -1,9 +1,12 @@
 name: Fast Commander deckbuilding A/B (real Forge)
 on:
-  push:
-    paths: [.github/workflows/deckbuild-ab.yml]
   workflow_dispatch:
     inputs:
+      swaps:
+        description: "Optional quick swaps: e.g. Card Out -> Card In; 2 Another Out -> 2 New In"
+        required: false
+        default: ""
+        type: string
       reference_file:
         description: "100-card reference deck file in repository"
         required: true
@@ -47,6 +50,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fast deckbuilding evidence checks
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_pipeline.py' -v
+      - name: Test one-line swap quantities and commander protection
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_swaps.py' -v
       - uses: actions/download-artifact@v4
         with:
           name: forge-seven-decks-canonical-verified
@@ -72,7 +77,14 @@ jobs:
           CANDIDATE_FILE: ${{ inputs.candidate_file || 'decks/Brimaz_V3.txt' }}
           REFERENCE_COMMANDER: ${{ inputs.reference_commander || 'Brimaz, Blight of Oreskos' }}
           CANDIDATE_COMMANDER: ${{ inputs.candidate_commander || 'Brimaz, Blight of Oreskos' }}
+          SWAPS: ${{ inputs.swaps || '' }}
         run: |
+          if [[ -n "$SWAPS" ]]; then
+            CANDIDATE_FILE="decks/generated_candidate.txt"
+            CANDIDATE_COMMANDER="$REFERENCE_COMMANDER"
+            python3 scripts/deckbuild_swaps.py --base "$REFERENCE_FILE" \
+              --commander "$REFERENCE_COMMANDER" --swaps "$SWAPS" --out "$CANDIDATE_FILE"
+          fi
           python3 scripts/deckbuild_prepare.py --reference "$REFERENCE_FILE" \
             --candidate "$CANDIDATE_FILE" --reference-commander "$REFERENCE_COMMANDER" \
             --candidate-commander "$CANDIDATE_COMMANDER" --out forge_decks
