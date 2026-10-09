@@ -1,0 +1,59 @@
+name: Independently certify first Brimaz win candidate
+on:
+  push:
+    paths: [.github/workflows/verify-brimaz-first-win.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  check-outcome:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: charm-fixed-stock-20291010
+          run-id: 37968565113
+          github-token: ${{ github.token }}
+          path: candidate/
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: legality/
+      - name: Apply independent legal, four-seat and natural-result validation
+        run: python3 scripts/certify_commander_games.py --input candidate --legality legality/report.json --out results/first-win
+      - name: Scrutinize raw winner, eliminated players, clock and game end
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,json,hashlib
+          games=list(pathlib.Path('candidate').rglob('games.json'))
+          assert len(games)==1, games
+          g=json.loads(games[0].read_text())[0]
+          log=list(pathlib.Path('candidate').rglob('game_*.log'))
+          assert len(log)==1,log
+          raw=log[0].read_text()
+          result=[l for l in raw.splitlines() if any(x in l for x in
+                ['Game Result:','Game Outcome:','Game State:','has lost','has won','Stopping slow','Exception',
+                 'conceded','was eliminated','killed','Time limit','Game over'])]
+          print('WIN_CANDIDATE',json.dumps(g,ensure_ascii=False,indent=2),flush=True)
+          print('GAME_ENDING_EVIDENCE',json.dumps(result[-65:],ensure_ascii=False,indent=2),flush=True)
+          print('TRANSCRIPT_SHA256',hashlib.sha256(raw.encode()).hexdigest(),flush=True)
+          print('FORGE_LOG_TAIL', '\n'.join(raw.splitlines()[-90:]),flush=True)
+          certificate=json.loads(pathlib.Path('results/first-win/certificate.json').read_text())
+          assert certificate['summary']['accepted_brimaz_wins']==1,certificate['summary']
+          assert g['winner_deck']=='Brimaz_V3' and g['status']=='complete'
+          assert g['game_milliseconds']<357500,'Win was too close to 360s simulation cutoff'
+          print('BRIMAZ_WIN_CERTIFIED_BY_AUTOMATIC_CHECKS',flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: independent-first-brimaz-win-certificate
+          path: results/first-win/
+          if-no-files-found: ignore
