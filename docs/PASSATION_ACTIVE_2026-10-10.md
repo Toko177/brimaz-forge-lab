@@ -895,3 +895,93 @@ pertinente.
   sortie naturelle mais pas au niveau "IA sans
   avertissements". Ne pas annoncer une
   amélioration du winrate avant davantage de jeux.
+
+
+## 20. Campagne V12 élargie sur 16 jobs et audit indépendant
+
+**Constat nouveau vérifié** : le run V12
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38000469712
+est définitivement **SUCCESS**, 4/4 parties réelles naturellement
+certifiées, 0 victoire Brimaz, 2 \`TimeoutException\` dans
+1 partie, 1 partie avec repli d'attaque invalide,
+**0 avertissement \`No AI assigned for API: Incubate\`**.
+Deux victoires Amalia côté artefacts et deux victoires
+Zimone et Dina côté aristocrates. Cette campagne
+n'établit aucune amélioration statistique du winrate.
+L'IA Incubate est bien mappée, mais il faut distinguer
+les déclenchements obligatoires de choix volontaires.
+
+### Nouvelle expérience déclarée AVANT d'observer les résultats
+Workflow **\`.github/workflows/brimaz-v12-balanced-32-games.yml\`** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38001534517
+
+- 16 shards sur machines GitHub Actions indépendantes ;
+  \`max-parallel: 12\`. **32 parties Commander véritables**
+  (2 JVM indépendantes par shard), 4 joueurs/partie,
+  100 cartes et mêmes 7 decks canoniques vérifiés.
+- 2 pods (\`aristo\`, \`artifact\`) x 4 rotations des sièges
+  x 2 cohortes de graines **fixées à l'avance**
+  x 2 parties par rotation/cohorte.
+- Bases des graines (ajouter 10000 fois rotation et
+  0 ou 1 pour la répétition) :
+  aristo : \`20310000\`, \`20410000\` ;
+  artifact : \`20510000\`, \`20610000\`.
+  La plage de 32 graines est distincte. Ne pas
+  sélectionner après coup les graines qui font gagner Brimaz.
+- \`clock=360s\`, \`timeout process=445s\`,
+  même budget AI 5s, même V12 code de 4 IA.
+  Une partie censurée doit rester au dénominateur
+  **des parties prévues**, mais ne constitue pas un
+  résultat naturel dans le calcul du taux de victoire
+  conditionnel. Toujours publier les deux effectifs.
+- Certifier depuis \`scripts/certify_commander_games.py\`
+  avec logs brut et empreinte SHA256, puis agréger
+  avec \`scripts/audit_balanced_commander_campaign.py\`.
+  Chaque matchup, rotation, graine et deck est contrôlé
+  et le taux Brimaz est accompagné de l'intervalle de
+  Wilson à 95 %, des censures et avertissements IA.
+  Regrouper également par pod et siège.
+  **Ne pas affirmer de seuil >=20%** à partir d'un
+  seul petit échantillon.
+- L'analyseur est testé dans
+  \`tests/test_balanced_commander_campaign.py\` :
+  équilibre 2x4, seeds uniques, résolutions naturelles,
+  rejets, censures, contrôle des gagnants, intervalles,
+  qualités IA. Suite permanente
+  \`.github/workflows/commander-evidence-and-ai-audit.yml\`.
+- Chaque shard conserve ses traces brutes dans un
+  artefact nommé
+  \`brimaz-v12-32-<pod>-r<rotation>-s<seed_base>\`.
+  L'artefact final \`brimaz-v12-32-certified-campaign\`
+  contient \`balanced-campaign.json\`,
+  \`certification/certificate.json\`,
+  \`ai-evaluation-hotspots.json\`,
+  \`per-seat-pacing.json\`, \`incubate-real-actions.json\`.
+
+### Double déclenchement à connaître (ne pas compter deux fois)
+La première version du workflow, run
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38001496914 ,
+était déjà en file lorsqu'une assertion de contrôle
+s'est révélée incorrecte (\`len(logs)==4\` malgré la
+nouvelle matrice de 32). Elle a déclenché elle aussi
+32 jeux ; **ce vieux job d'audit devrait échouer après
+les parties sur ce contrôle**, même si les traces
+Forge sont utilisables.
+La correction \`len(logs)==32\` est dans le run
+**38001534517**, qui doit être la source privilégiée
+de l'estimation V12. Les deux runs portent les
+MÊMES graines, donc **NE PAS** mélanger leurs 64
+issues pour un intervalle de Wilson indépendant :
+les deux traces sont des réplications / essais
+non déterministes, pas 64 graines indépendantes.
+Un éventuel audit futur de l'instabilité RNG
+peut comparer leurs parties à graines identiques.
+
+Au moment de cette rédaction, les deux runs
+étaient en cours/queue sur GitHub, et la nouvelle
+suite CI était en attente. **RECONTRÔLER leur état**,
+ne pas inventer des résultats. Les workflows
+exécuteront de nombreuses parties même si un
+job échoue; lire tous les logs, les artefacts,
+la correction du décompte, et distinguer
+\`winner_deck\` du certificat indépendant.
