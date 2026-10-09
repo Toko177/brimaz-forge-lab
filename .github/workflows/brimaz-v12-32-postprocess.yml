@@ -83,6 +83,14 @@ jobs:
           print("V12_32_BY_SEAT",json.dumps(r["by_brimaz_seat"],ensure_ascii=False))
           assert r["summary"]["scheduled"]==32
           assert r["summary"]["groups_pod_rotation"]==8
+          assert r["summary"]["certified"]==31, "Expected 31 four-seat natural outcomes after the known commander-damage grammar fix"
+          assert r["summary"]["censored_or_rejected"]==1, "Only the genuine 360-second clock-censored match should remain"
+          assert r["summary"]["wins"]==1, "One independent Brimaz win should be retained"
+          modes=json.loads(pathlib.Path("results/v12-32-independent/certification/certificate.json").read_text())
+          commander_losses=sum(x["mode"]=="commander_damage_21" for g in modes["games"]
+                               if g["engine_natural_and_consistent"] for x in g["outcome_modes"])
+          assert commander_losses>=3, "True 21-commander-damage opponent losses must be certified"
+          print("V12_LEGAL_COMMANDER_DAMAGE_ELIMINATIONS",commander_losses)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
