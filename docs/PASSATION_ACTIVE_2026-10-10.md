@@ -328,3 +328,36 @@ patch et règles modifiées (ou intactes), graine, pod, rotation,
 horloge, status, winner, censure et source réelle de l'événement.
 Une victoire n'a de valeur que si elle est une vraie victoire légale
 obtenue à quatre joueurs grâce à une IA compétente et évaluée.
+
+
+## 10. Première observation V9 EFFECTIVEMENT vérifiée (avant certification complète)
+
+Sur l'artefact réel \`brimaz-v9-mulligan-artifact-2\` du run
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37998299819 :
+
+- \`artifact/20281009\` :
+  trace \`BRIMAZ_MULLIGAN: V9 hand=7 actualLands=2
+  potentialLandDrops=2 cheapRamp=0 cheapDraw=0 expensive=4
+  cardsToReturn=0 stockKeep=true overrideFreeMulligan=true\`.
+  Forge montre ensuite un mulligan gratuit, puis une main conservée
+  de 7 cartes, 3 terrains. Brimaz joue **6 terrains en 7 tours
+  personnels**, et invoque pour la première fois le commandant
+  au tour personnel **5**; Amalia gagne naturellement. En V8,
+  même seed (NON nécessairement même déroulement aléatoire) :
+  **3 terrains en 7 tours**, commandant jamais lancé, Amalia gagne.
+- \`artifact/20281010\` : V9 n'effectue aucun mulligan forcé;
+  main initiale 3 terrains physiques (+1 MDFC possible); Brimaz
+  joue 7 terrains en 8 tours, est invoqué au tour 4; Amalia
+  gagne aussi naturellement.
+- **9 tests Java V9 réussis**, au moins deux parties pilotes
+  artefact terminées avec 0 victoire Brimaz. L'artefact
+  est issu du premier workflow, dont l'auditeur V9 n'était
+  pas encore présent au SHA de déclenchement.
+- Le second workflow V9 https://github.com/Toko177/brimaz-forge-lab/actions/runs/37998385269
+  a été déclenché APRES inclusion de l'auditeur et des tests
+  Python. À recontrôler pour confirmer le statut de 4/4.
+
+Cette observation est **un changement de décision V9 réellement exercé**,
+PAS une preuve de winrate supérieur, ni une paire de parties identiques
+(surtout lorsque le mulligan change les cartes et le flux RNG).
+La V9 doit être évaluée sur beaucoup plus de départs indépendants.
