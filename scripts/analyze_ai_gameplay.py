@@ -82,6 +82,7 @@ def audit_game(game, transcript):
         "commander_development_proposals": transcript.count("BRIMAZ_DEVELOPMENT: cast-commander"),
         "artifact_development_proposals": transcript.count("BRIMAZ_DEVELOPMENT: cast-engine"),
         "sacrifice_planner_proposals": transcript.count("BRIMAZ_PLANNER:"),
+        "defensive_transformation_proposals": transcript.count("BRIMAZ_DEFENSE: transform-incubator"),
     }
     # KCI is a mana ability: mana abilities do NOT use the stack, and
     # "Mana: Krark-Clan Ironworks" in Forge may be ability enumeration,
