@@ -52,6 +52,25 @@ class Preparation(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"not present"):
                 read_deck(p,"Brimaz, Blight of Oreskos")
 
+    def test_modal_double_faced_card_uses_primary_forge_face(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d)
+            src=root/"input.txt"
+            src.write_text("98 Plains\n1 Malakir Rebirth // Malakir Mire\n1 Brimaz, Blight of Oreskos\n")
+            data=prepare(src,src,root/"forge","Brimaz, Blight of Oreskos","Brimaz, Blight of Oreskos")
+            forge=(root/"forge/Deck_Candidate.dck").read_text()
+            self.assertIn("1 Malakir Rebirth\n",forge)
+            self.assertNotIn("Malakir Mire",forge)
+            self.assertTrue(data["decks"]["candidate"]["forge_sha256"])
+
+    def test_two_commanders_without_pairing_audit_are_rejected(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d)
+            src=root/"input.txt"
+            src.write_text("98 Plains\n1 Commander Alpha\n1 Commander Beta\n")
+            with self.assertRaisesRegex(ValueError,"ONE commander"):
+                read_deck(src,"Commander Alpha;Commander Beta")
+
     def test_swap_report_is_quantity_aware(self):
         with tempfile.TemporaryDirectory() as d:
             root=pathlib.Path(d)
