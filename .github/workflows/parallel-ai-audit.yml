@@ -1,0 +1,29 @@
+name: Audit 32 parallel AI game logs
+on:
+  push:
+    paths:
+      - ".github/workflows/parallel-ai-audit.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  parallel-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all parallel match transcripts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: forge-parallel-*
+          run-id: 37955082304
+          github-token: ${{ github.token }}
+          path: artifacts/
+      - name: Analyze Brimaz combat, sacrifice and opponent-turn timing
+        run: python3 scripts/audit_ai.py --logs artifacts/ --out results/audit/parallel_ai.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: parallel-ai-evaluation-32-games
+          path: results/audit/
