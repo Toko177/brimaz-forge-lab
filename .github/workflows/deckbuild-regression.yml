@@ -7,6 +7,8 @@ on:
       - scripts/deckbuild_run.py
       - scripts/deckbuild_certify.py
       - scripts/deckbuild_compare.py
+      - scripts/deckbuild_cache.py
+      - tests/test_deckbuild_cache.py
       - scripts/deckbuild_swaps.py
       - tests/test_deckbuild_swaps.py
       - tests/test_deckbuild_pipeline.py
@@ -23,5 +25,7 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_pipeline.py' -v
       - name: Test quick manual card-swap recipe semantics
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_swaps.py' -v
+      - name: Reject all incompatible or tampered cached Forge reference games
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_cache.py' -v
       - name: Verify existing strict Commander evidence fixtures still pass
         run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
