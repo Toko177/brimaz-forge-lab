@@ -1897,3 +1897,37 @@ opérationnel, mais les heuristiques Forge
 restent limitées; classer des variantes
 requiert des résultats nouveaux et de la
 reproductibilité de la décision IA.
+
+
+## 30. Suppression d'un smoke test redondant à chaque changement de carte
+
+En lançant la seconde campagne
+\`decks/Challenger.txt\`, le laboratoire déclenchait
+aussi \`.github/workflows/forge-smoke.yml\`
+(cause : glob \`decks/**\`). Cette seconde action
+téléchargeait l'intégralité de Forge et exécutait
+un smoke test stock additionnel, sans contribuer
+à la comparaison A/B.
+
+Ce coût de calcul et cette concurrence inutiles
+ont été supprimés : \`forge-smoke.yml\` se
+déclenche maintenant sur les changements
+du deck de référence \`decks/Brimaz_V3.txt\`,
+du script \`scripts/smoke.py\` ou du workflow
+lui-même — pas sur les échanges de cartes
+dans \`decks/Challenger.txt\`.
+
+La voie normale pour une nouvelle variante
+est UNIQUEMENT \`deckbuild-ab.yml\`, avec
+cache de référence dès qu'une campagne
+précédente est complète et compatible.
+Ne pas désactiver les tests de règles Forge :
+ils restent indépendamment disponibles
+pour tout changement de code moteur.
+
+La clé de référence et son usage restent
+décrits en section 29. Si le job final du
+run 38006656707 n'est pas encore fini,
+**la réduction de 16 à 8 jobs est prouvée,
+mais l'acceptation du rapport final 16 preuves
+doit toujours être vérifiée**.
