@@ -1242,3 +1242,59 @@ mais **ne doit PAS être déclarée supérieure**
 avant audit des décisions, règles et coûts CPU.
 Test Java IncubateV12 + V9 Mulligan et tests
 Python de budget adaptatif.
+
+
+## 24. Couverture d'APIs Forge vérifiée et CI portée à 88 tests
+
+Rapport [\`V12/32 missing AI handlers\`](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38003057234)
+**SUCCESS** :
+- 32 vrais transcrits vérifiés, **0 warning**
+  \`No AI assigned for API: ...\` ;
+- dictionnaire \`missing_api_counts={}\` pour les 7
+  decks utilisés en V12.
+  Attention : **ne prouve PAS** qu'il n'existe
+  aucun autre gestionnaire manquant pour
+  l'ensemble des cartes Magic, seulement
+  qu'aucun n'a été rencontré dans ces 32 parties.
+- Scripts \`scripts/audit_missing_ai_handlers.py\`
+  et \`tests/test_missing_ai_handlers.py\` (5 cas),
+  aucune modification du moteur de règles.
+
+La [suite permanente de CI](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38003081740)
+passe maintenant **88 tests Python** et les
+4 parties de régression V6 sont encore
+certifiées, conformément au niveau
+d'exigence sur les résultats et les pertes
+par 21 blessures de commandant.
+
+Détail supplémentaire du rapport V12/32 :
+- la couverture des sorties initiales n'est plus
+  le premier point faible : Brimaz lancé 31/31,
+  première invocation médiane au quatrième tour
+  personnel ; 4 mulligans gratuits V9 déclenchés ;
+- les cartes en cours d'évaluation lors des
+  dépassements fréquents incluent
+  \`Soul of New Phyrexia\` (6),
+  \`Basilisk Gate\` (5),
+  \`Elvish Warmaster\` (5),
+  \`Ezuri, Renegade Leader\` (5),
+  \`Magic Damper\` (3), etc. ;
+- ces cartes sont les dernières candidates
+  examinées par Forge au timeout, **pas
+  nécessairement des cartes dont la
+  résolution est illégale**, ni une preuve
+  que la carte est la cause algorithmique
+  complète du délai ;
+- la prochaine optimisation devrait s'appuyer
+  sur une **mesure de coût de simulation de
+  combat** et un contrôle de non-régression
+  tactique contre tous les adversaires.
+
+Le V13 16-jeux
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38002838904
+est la prochaine expérience de mitigation :
+allocation 5 -> 10 -> 15s équitable pour tous.
+Ne pas conclure avant le job de certification
+indépendant et le rapport CPU/timeout. Un
+changement de vainqueur avec la même seed
+peut venir de la non-détermination du moteur.
