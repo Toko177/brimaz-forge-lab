@@ -14,9 +14,7 @@ A2 = "AI_ADAPTIVE_BUDGET_V11: previousSeconds=10 currentSeconds=15 appliedTo=ALL
 
 class AdaptiveBudgetTests(unittest.TestCase):
     def test_v13_all_seat_budget_policy_after_one_timeout(self):
-        log = (T0 + "AI_ADAPTIVE_BUDGET_V13: previousSeconds=5 currentSeconds=10 appliedTo=ALL_FOUR_SEATS\\n")
-        # The actual fixture uses a newline, not a literal backslash plus n.
-        log = log.replace("\\\\n", "\\n")
+        log = T0 + "AI_ADAPTIVE_BUDGET_V13: previousSeconds=5 currentSeconds=10 appliedTo=ALL_FOUR_SEATS\n"
         result = analyze(log, {**GAME, "policy": "V13-incubate-adaptive"})
         self.assertEqual(result["final_ai_timeout_seconds"], 10)
         self.assertEqual(result["adaptations"][0]["instrumentation_version"], 13)
