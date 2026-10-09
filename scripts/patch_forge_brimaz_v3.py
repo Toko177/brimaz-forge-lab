@@ -161,7 +161,14 @@ public final class BrimazTurnPlanner {
         for (Player enemy : ai.getOpponents()) {
             if (enemy.getPoisonCounters() > 0) poison++;
             for (Card c : enemy.getCardsIn(ZoneType.Battlefield)) {
-                if (c.hasCounters() && c.isCreature()) negativeOpp++;
+                if (c.hasCounters() && c.isCreature()) {
+                    for (var counter : c.getCounters().elementSet()) {
+                        if (ComputerUtil.isNegativeCounter(counter, c)) {
+                            negativeOpp++;
+                            break;
+                        }
+                    }
+                }
                 if (c.isCreature()) highestOppThreat = Math.max(highestOppThreat, c.getNetPower());
             }
         }
