@@ -11,7 +11,7 @@ Labels are intentionally conservative:
 Neither a truncated game nor absent/full data may produce a certified win.
 """
 import argparse,collections,hashlib,json,pathlib,re,sys
-from forge_result_evidence import verify_result_evidence, inspect_ai_quality_signatures
+from forge_result_evidence import verify_result_evidence, inspect_ai_quality_signatures, describe_outcome_modes
 
 p=argparse.ArgumentParser()
 p.add_argument("--input",required=True)
@@ -73,6 +73,8 @@ for record_path in sorted(root.rglob("games.json")):
           "engine_natural_and_consistent":not local,
           "rejection_reasons":local,
           "ai_quality_signatures":quality,
+          "outcome_modes":describe_outcome_modes(raw),
+          "victory_causality_verified":False,
           "caveat":"This audit verifies raw Forge outcomes and Scryfall legality, not a formal MTG rules proof. The Forge JAR may include disclosed bugfix or policy patches."
         }
         games.append(report)
