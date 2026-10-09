@@ -17,7 +17,7 @@ _OUTCOME = re.compile(
     # Forge uses 'has lost trying to draw cards from empty library' for deck-out;
     # requiring 'because' for every elimination wrongly rejects real outcomes.
     # Keep the accepted outcome grammar explicit and fail closed on unknown forms.
-    r"^Game Outcome: Ai\((\d+)\)-(.+?) has (won because|lost because|lost trying to) (.+?)\s*$",
+    r"^Game Outcome: Ai\((\d+)\)-(.+?) has (won because|lost because|lost trying to|lost due to) (.+?)\s*$",
     re.M,
 )
 
@@ -62,6 +62,8 @@ def verify_result_evidence(raw, game, seats):
         indexed[seat] = (name.strip(), state, reason.strip())
         if not reason.strip():
             issues.append("Missing outcome reason for seat " + seat_text)
+        if state_text == "lost due to" and reason.strip() != "accumulation of 21 damage from generals":
+            issues.append("Unknown or unsupported due-to elimination cause for seat " + seat_text)
         if declared and name.strip() != declared[seat - 1]:
             issues.append("Game Outcome seat name differs from Commander declaration")
     if set(indexed) != {1, 2, 3, 4}:
@@ -137,6 +139,8 @@ def describe_outcome_modes(raw):
             mode = "survivor_won"
         elif "empty library" in full:
             mode = "library_depletion"
+        elif state_text == "lost due to" and r == "accumulation of 21 damage from generals":
+            mode = "commander_damage_21"
         elif "life total reached 0" in full:
             mode = "life_total_zero"
         elif "poison" in full:
