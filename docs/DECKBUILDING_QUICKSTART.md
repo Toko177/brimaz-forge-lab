@@ -6,9 +6,12 @@ La voie d'usage courante du laboratoire est désormais le **comparateur A/B de l
 et **non** une série V14, V15, V16, etc. Un changement de cartes ne requiert
 plus de modifier le Java Forge ni de créer un nouveau workflow.
 
-- **Deux listes Commander complètes de 100 cartes**, avec un commandant
-  explicitement choisi. Les lists peuvent avoir des commandants différents,
+- **Deux listes Commander complètes de 100 cartes**, avec **un seul commandant
+  explicite par liste**. Les deux commandants peuvent différer,
   mais la stratégie du bot n'est pas automatiquement experte pour chacun.
+  Les paires `Partner`, `Choose a Background` et assimilées
+  sont **refusées pour l'instant** : la simple présence de deux cartes
+  en zone de commandement ne suffit pas à vérifier leur légalité.
 - **2 pods fixes** : aristo (Radha, Dungeon/Tazri, Zimone et Dina) et artifact
   (Lathril, Urza, Amalia).
 - **Quatre sièges équilibrés** pour chaque liste : Brimaz ou le nouveau
