@@ -44,6 +44,7 @@ def parse_deck(data):
     cat_by_id = {str(c.get("id")): c for c in cats if isinstance(c, dict)}
     cat_by_name = {c.get("name"): c for c in cats if isinstance(c, dict)}
     counts = collections.Counter()
+    excluded = []
     debug_categories = collections.Counter()
     debug_samples = {}
     for entry in data.get("cards", []):
@@ -63,8 +64,10 @@ def parse_deck(data):
             # and total_count validation prevents silent misuse.
             names = {str(c.get("name", "")).lower() for c in category_objs}
             if names and names <= {"sideboard", "maybeboard", "considering", "acquireboard"}:
+                excluded.append({"name":get_name(entry), "categories":sorted(names), "primary":entry.get("category")})
                 continue
             if any(c.get("includedInDeck") is False for c in category_objs):
+                excluded.append({"name":get_name(entry), "categories":sorted(names), "primary":entry.get("category")})
                 continue
         name = get_name(entry)
         qty = int(entry.get("quantity", entry.get("qty", 1)))
@@ -74,6 +77,7 @@ def parse_deck(data):
         key = ", ".join(sorted(str(x.get("name")) for x in category_objs))
         debug_categories[key] += qty
         debug_samples.setdefault(key, []).append(name)
+    print("EXCLUDED CARDS", data.get("name"), json.dumps(excluded, ensure_ascii=False), flush=True)
     print("CATEGORY BREAKDOWN", data.get("name"), json.dumps({
         "by_category": dict(debug_categories),
         "sample_names": {k: v[:4] for k, v in debug_samples.items()},
