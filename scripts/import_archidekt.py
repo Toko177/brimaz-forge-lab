@@ -3,6 +3,7 @@
 
 Store exact source JSON snapshots for later audit. No fabricated replacements.
 """
+import argparse
 import collections
 import json
 import pathlib
@@ -14,6 +15,9 @@ PANEL = [
     ("Muldrotha_B3", 3732210, "Muldrotha, the Gravetide"),
     ("Yuriko_B3", 5411992, "Yuriko, the Tiger's Shadow"),
 ]
+options=argparse.ArgumentParser()
+options.add_argument("--offline", action="store_true", help="Use previously archived JSON snapshots only")
+args=options.parse_args()
 OUT = pathlib.Path("forge_decks")
 RAW = pathlib.Path("results/archidekt_snapshots")
 OUT.mkdir(parents=True, exist_ok=True)
@@ -97,8 +101,15 @@ def make_dck(label, commander, counts):
 reports=[]
 for label, deck_id, commander in PANEL:
     try:
-        raw = fetch_deck(deck_id)
-        (RAW / f"{deck_id}.json").write_text(json.dumps(raw, indent=2, ensure_ascii=False), encoding="utf-8")
+        snapshot = RAW / f"{deck_id}.json"
+        if snapshot.exists():
+            raw = json.loads(snapshot.read_text(encoding="utf-8"))
+            print("REUSED SNAPSHOT", snapshot, flush=True)
+        elif args.offline:
+            raise FileNotFoundError(str(snapshot))
+        else:
+            raw = fetch_deck(deck_id)
+            snapshot.write_text(json.dumps(raw, indent=2, ensure_ascii=False), encoding="utf-8")
         summary = make_dck(label, commander, parse_deck(raw))
         summary["source"] = f"https://archidekt.com/decks/{deck_id}"
         reports.append(summary)
