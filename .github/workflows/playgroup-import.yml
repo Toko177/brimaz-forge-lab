@@ -20,7 +20,7 @@ jobs:
           name: kaal-playgroup-catalog
           run-id: 37951864571
           github-token: ${{ github.token }}
-          path: .
+          path: results/playgroup
       - name: Import selected decklists with validation
         run: python3 scripts/import_playgroup.py --limit 8
       - uses: actions/upload-artifact@v4
