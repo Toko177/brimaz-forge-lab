@@ -22,6 +22,19 @@ def load(root):
                 continue
             key=(g["pod"],g["rotation"],g["repeat"],g["seed"])
             if key in result:raise ValueError("Duplicate key "+repr(key))
+            # Read the original transcript, not only the cast-trigger proxy.
+            log_file=path.parent / pathlib.Path(g.get("log","")).name
+            if log_file.is_file():
+                phase=""
+                count=0
+                for line in log_file.read_text(encoding="utf-8",errors="replace").splitlines():
+                    if line.startswith("Phase: "):
+                        phase=line.rsplit("'s ",1)[-1]
+                    if phase=="End step" and "triggered Brimaz, Blight of Oreskos" in line:
+                        count+=1
+                g["brimaz_proliferate_triggers"]=count
+            else:
+                g["brimaz_proliferate_triggers"]=None
             result[key]=g
     return result
 
@@ -39,7 +52,9 @@ for k in shared:
       "candidate_cast_triggers":y["brimaz_triggered"],
       "baseline_incubator_transforms":x["incubator_transforms"],
       "candidate_incubator_transforms":y["incubator_transforms"],
-      "planner_decisions":y.get("planner_decisions",0)
+      "planner_decisions":y.get("planner_decisions",0),
+      "baseline_proliferate_triggers":x.get("brimaz_proliferate_triggers"),
+      "candidate_proliferate_triggers":y.get("brimaz_proliferate_triggers")
     }
     records.append(row)
 both=[r for r in records if r["baseline_status"]=="complete" and r["candidate_status"]=="complete"]
@@ -52,6 +67,9 @@ summary={
  "candidate_wins":sum(r["candidate_win"] is True for r in both),
  "planner_decisions":sum(r["planner_decisions"] for r in records),
  "planner_activated_games":sum(r["planner_decisions"]>0 for r in records),
+ "baseline_proliferate_total":sum(r["baseline_proliferate_triggers"] or 0 for r in records),
+ "candidate_proliferate_total":sum(r["candidate_proliferate_triggers"] or 0 for r in records),
+ "proliferate_logs_parsed":sum(r["baseline_proliferate_triggers"] is not None and r["candidate_proliferate_triggers"] is not None for r in records),
  "cast_triggers_baseline_mean":statistics.mean(r["baseline_cast_triggers"] for r in both) if both else None,
  "cast_triggers_candidate_mean":statistics.mean(r["candidate_cast_triggers"] for r in both) if both else None,
  "incubator_transforms_baseline_mean":statistics.mean(r["baseline_incubator_transforms"] for r in both) if both else None,
