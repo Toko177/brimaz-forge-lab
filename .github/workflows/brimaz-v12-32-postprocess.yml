@@ -18,7 +18,7 @@ jobs:
       - name: Wait for all original 16 match runners to finish and upload artifacts
         shell: bash
         env:
-          GH_${{ github.token }}: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           complete=0
