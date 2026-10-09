@@ -40,6 +40,8 @@ def parse_deck(data):
     cat_by_id = {str(c.get("id")): c for c in cats if isinstance(c, dict)}
     cat_by_name = {c.get("name"): c for c in cats if isinstance(c, dict)}
     counts = collections.Counter()
+    debug_categories = collections.Counter()
+    debug_samples = {}
     for entry in data.get("cards", []):
         category_objs = []
         for category in entry.get("categories") or []:
@@ -65,6 +67,14 @@ def parse_deck(data):
         if not name or qty < 1:
             raise ValueError("Bad card: " + repr(entry)[:200])
         counts[name] += qty
+        key = ", ".join(sorted(str(x.get("name")) for x in category_objs))
+        debug_categories[key] += qty
+        debug_samples.setdefault(key, []).append(name)
+    print("CATEGORY BREAKDOWN", data.get("name"), json.dumps({
+        "by_category": dict(debug_categories),
+        "sample_names": {k: v[:4] for k, v in debug_samples.items()},
+        "category_definitions": cats,
+    }, ensure_ascii=False), flush=True)
     return counts
 
 def make_dck(label, commander, counts):
