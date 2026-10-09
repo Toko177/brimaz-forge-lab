@@ -564,3 +564,96 @@ il faut auditer ce phénomène avant de l'« optimiser ».
 Ne JAMAIS augmenter artificiellement le winrate par
 suppression d'une phase de combat, choix aléatoire de
 bloqueurs ou limites de tours arbitraires.
+
+
+## 15. V10 / V11 — audit quatre IA et budget de réflexion ADAPTATIF
+
+### Cause empirique des timeouts V9
+Run postmortem **37999670437 SUCCESS** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999670437
+7 Python unit tests réussis ; 4 vraies parties V9 relues ;
+7 \`java.util.concurrent.TimeoutException\` classées :
+- 6 dans \`ComputerUtilCombat\` / \`AiBlockController\` ou
+  \`predictNextCombatsRemainingLife\` (calculs complexes de
+  menaces / bloquants);
+- 1 dans \`ReplacementHandler\` (énumération d'effets
+  de remplacement).
+Ces exceptions proviennent du thread de réflexion de l'IA
+et **pas nécessairement du moteur de règles Magic**.
+Une exception pendant une réflexion ne prouve pas que toute
+la partie était illégale; elle dégrade cependant la qualité
+de pilotage et parfois la reproductibilité.
+
+### V10 = instrumentation PURE de la politique V9
+\`scripts/patch_forge_brimaz_v10.py\` : conserve les choix
+stratégiques V9, la même limite de 5s et toutes les règles.
+\`AiController.chooseSpellAbilityToPlayFromList\` :
+- \`AI_EVAL_TIMEOUT_V10\` : joueur, tour, phase,
+  millisecondes, limite réelle, nombre de capacités
+  listées / considérées, dernière carte en cours
+  d'évaluation ;
+- \`AI_EVAL_SLOW_V10\` : décision terminée mais lente >=1s;
+- \`AI_OPENING_V10\` : chaque joueur, nombre de terrains
+  initiaux, sorts de faible coût, frais de mulligan ;
+  chaque joueur reçoit seulement les informations dont
+  Forge dispose normalement; le journal de diagnostic ne
+  fournit pas les mains adverses aux IA.
+
+\`scripts/audit_ai_eval_hotspots.py\` :
+classification des stacks et des événements par siège;
+\`tests/test_ai_eval_hotspots.py\` : 7 tests.
+Workflow :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999502125
+**Recontrôler son statut** avant de parler de fin ou de victoire.
+
+### V11 = expérimentation de coût CPU global (PAS gain prouvé)
+\`scripts/patch_forge_brimaz_v11.py\` : superpose
+à V10 une adaptation du \`Game.AI_TIMEOUT\` partagé
+par la table : **5s -> 10s** après la première exception,
+**10s -> 15s** après la deuxième, puis pas d'autre hausse.
+La limite s'applique identiquement aux quatre joueurs.
+Aucune carte / deck / PV / règle Magic n'est modifié.
+Attention : le timeout déjà échu reste abandonné, le
+\`Thread.stop()\` historique reste inchangé et
+le CPU / temps d'exécution peut augmenter.
+Ne jamais affirmer que V11 améliore la tactique
+simplement parce qu'il augmente le budget.
+
+\`scripts/audit_adaptive_ai_budget.py\` et
+\`tests/test_adaptive_ai_budget.py\` : 7 tests qui
+interdisent les régressions du budget, les hausses
+sans TimeoutException et le dépassement de 15s.
+Workflow :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/37999839503
+**Recontrôler son statut et ses résultats**, particulièrement
+les phases d'audit des vraies parties.
+
+### Critères de comparaison V9/V10/V11
+- Toujours même ensemble de decks légaux et adversaires
+  Forge ; quatre vrais joueurs dans chaque partie.
+- Comparer : \`status\` naturel / censuré, nombre
+  d'exceptions AI, temps de CPU, nombre de cartes
+  examinées lors des délais, déclarations d'attaque
+  invalidées et déploiement de Brimaz.
+- Une graine identique ne donne PAS une trajectoire
+  identique dans Forge : comparer les distributions
+  et rappeler l'incertitude statistique.
+- Une V10 « observation pure » ne doit pas prétendre
+  rendre les IA meilleures; une V11 « délai adaptatif »
+  ne doit pas être promue sans preuve de diminution
+  des décisions abandonnées ET surcoût acceptable.
+- Les timeouts de combat doivent conduire à une
+  optimisation mesurée du moteur d'évaluation, PAS à la
+  suppression de bloqueurs ou de menaces pour aller vite.
+
+### Reprise depuis un nouveau chat
+\`GET /repos/Toko177/brimaz-forge-lab/actions/runs?per_page=20\`,
+puis pour chaque run V10/V11 appeler
+\`fetch_workflow_run_jobs\` et
+\`fetch_workflow_job_logs\` via GitHub connector.
+Suivre les artefacts \`brimaz-v10-...\` et
+\`brimaz-v11-...\`; extraire \`results/v10\`,
+\`results/v11\` et les journaux Forge bruts.
+Poursuivre ensuite sur les véritables goulets
+d'étranglement les plus coûteux, sans handicaper
+les autres joueurs et sans gonfler le winrate.
