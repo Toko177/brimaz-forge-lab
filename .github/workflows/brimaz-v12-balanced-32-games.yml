@@ -1,4 +1,7 @@
 name: V12 balanced 32-real-game Commander multi-runner campaign
+concurrency:
+  group: v12-balanced32-${{ github.ref }}
+  cancel-in-progress: true
 on:
   push:
     paths: [.github/workflows/brimaz-v12-balanced-32-games.yml, scripts/patch_forge_brimaz_v12.py]
@@ -158,7 +161,7 @@ jobs:
               for game in json.loads(manifest.read_text()):
                   log=manifest.parent/pathlib.Path(game["log"]).name
                   logs.append(log.read_text(errors="replace"))
-          assert len(logs)==4,len(logs)
+          assert len(logs)==32,len(logs)
           unsupported=sum(l.count("No AI assigned for API: Incubate") for l in logs)
           print("V12_UNSUPPORTED_INCUBATE_WARNINGS",unsupported)
           assert unsupported==0,"Incubate AI dispatch still missing"
