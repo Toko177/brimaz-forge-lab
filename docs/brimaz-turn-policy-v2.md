@@ -14,7 +14,7 @@ V2 adds to V1:
 
 This is in addition to **Arcbound Ravager** and **Bartolomé del Presidio**, the two V1 free sacrifice/counter outlets.
 
-Only the recognized activated abilities are added, never arbitrary non-validated outlets. Stock Forge marks Spawning Pit `AI:RemoveDeck:All` and Throne of Geth `AI:RemoveDeck:Random`; the V2 code conditionally bypasses that exclusion only when an immediate eligible Brimaz play is found. **V2 does not yet teach the AI to proactively cast Spawning Pit from hand or to convert its charge counters into creatures.** Those are separate limitations.
+Only the recognized activated abilities are added, never arbitrary non-validated outlets. Stock Forge marks Spawning Pit `AI:RemoveDeck:All`; unlike `AI:RemoveDeck:Random` on Throne of Geth, this `All` hint is also checked by AiController when filtering playable abilities. V2 conditionally bypasses it only when an immediate eligible Brimaz sacrifice exists. The `Random` hint affects random AI deck-generation handling, not that specific ability filter. **V2 does not yet teach the AI to proactively cast Spawning Pit from hand or to convert its charge counters into creatures.** Those are separate limitations.
 
 ## Adaptive sacrifice cost
 
