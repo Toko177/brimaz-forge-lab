@@ -26,6 +26,8 @@ Life: Life: Ai(2)-EDH Amalia 40 > 36
 AI_EVAL_SLOW_V10: player=Ai(1)-Brimaz V3 globalTurn=3 phase=COMBAT_BEGIN elapsedMs=2500 timeoutSecs=5 listed=6 considered=2 lastCandidate=Plains
 FOUR_AI_TARGET: controller=Ai(1)-Brimaz V3 chosen=Ai(2)-EDH Amalia visibleSafeDamage=4 visibleSafePoison=0
 FOUR_AI_V17_COVERAGE controller=Ai(1)-Brimaz V3 threatPlayers=3 baselinePermille=900 afterPermille=0 reserved=1 turn=3 proactive=true
+FOUR_AI_COUNTER_DECISION player=Ai(1)-Brimaz V3 spell=Lightning Bolt originalDecline=true threatensCommander=false threatensLethalLife=true policyActive=true
+FOUR_AI_CRITICAL_COUNTER accepted player=Ai(1)-Brimaz V3 hostileSpell=Lightning Bolt protectedCommander=none imminentLife=true
 Zone Change: Brimaz, Blight of Oreskos (300) was put into Graveyard from Battlefield.
 Game Outcome: Ai(1)-Brimaz V3 has won because all opponents have lost
 Game Outcome: Ai(2)-EDH Amalia has lost because life total reached 0
@@ -42,6 +44,10 @@ assert a["combat_damage_to_players"]==4,a
 assert a["slow_ai_evaluations"]==1 and a["slowest_evaluation_ms"]==2500,a
 assert a["defensive_reserves"]==1 and a["peak_model_risk_permille"]==900,a
 assert a["target_checks"]==1,a
+assert a["counter_spells_considered"]==1,a
+assert a["counter_profile_declines"]==1,a
+assert a["counter_lethal_life_threats"]==1,a
+assert a["counter_override_acceptances_not_casts"]==1,a
 assert b["combat_damage_received"]==4 and b["poison_counters_received"]==1,b
 assert g["brimaz"]["commander_battlefield_exits"]==1,g
 assert g["identity"]["observed_turn_events"]==3,g
