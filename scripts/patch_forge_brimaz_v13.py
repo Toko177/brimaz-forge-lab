@@ -27,6 +27,15 @@ def fetch(path):
     with urllib.request.urlopen(url,timeout=90) as r:
         return r.read().decode("utf-8")
 controller=fetch(files[0])
+# Optional per-seat anti-repeat penalty for a REAL timed-out, individually
+# identified card on the same shared public board. Does not alter Forge
+# card rules, commander targets, or stack response choices.
+cooldown_field_anchor = "    private List<SpellAbility> skipped;"
+if controller.count(cooldown_field_anchor)!=1:
+    raise ValueError("V23 AiController instance field source drift")
+controller=controller.replace(cooldown_field_anchor,
+    cooldown_field_anchor+"\n    private final AiTimeoutCooldownPolicy v23SlowCards = new AiTimeoutCooldownPolicy();",1)
+
 
 # Stock Forge 2.0.15 has no ApiType.Incubate AI mapping and falls back to
 # CannotPlayAi. That is an AI support gap, NOT a Magic rules engine bug.
@@ -76,6 +85,8 @@ future_replacement = (
     "new java.util.concurrent.atomic.AtomicReference<>(\"<none>\");\n"
     "        final java.util.concurrent.atomic.AtomicInteger evalConsideredV10 = "
     "new java.util.concurrent.atomic.AtomicInteger();\n"
+    "        final java.util.concurrent.atomic.AtomicInteger evalCandidateCardV23 = "
+    "new java.util.concurrent.atomic.AtomicInteger(-1);\n"
     "        final int evalAvailableV10 = all.size();\n"
     + future_anchor
 )
@@ -90,6 +101,12 @@ candidate_instrument = (
     "                evalCandidateV10.set(sa.getHostCard() == null "
     "? \"<null>\" : sa.getHostCard().getName());\n"
     "                evalConsideredV10.incrementAndGet();\n"
+    "                int currentCardV23 = sa.getHostCard()==null ? -1 : sa.getHostCard().getId();\n"
+    "                evalCandidateCardV23.set(currentCardV23);\n"
+    "                if (skipCounter && Boolean.getBoolean(\"brimaz.aiTimeoutCooldown\")\n"
+    "                    && v23SlowCards.shouldSkip(currentCardV23,game.getPhaseHandler().getTurn())) {\n"
+    "                    continue;\n"
+    "                }\n"
 )
 if controller.count(candidate_anchor) != 1:
     raise ValueError("AiController counterspell processing anchor changed")
@@ -107,6 +124,16 @@ get_replacement = (
     '                    + " listed=" + evalAvailableV10\n'
     '                    + " considered=" + evalConsideredV10.get()\n'
     '                    + " lastCandidate=" + evalCandidateV10.get());\n'
+    "                if (Boolean.getBoolean(\"brimaz.aiTimeoutCooldown\")) {\n"
+    "                    int v23Id = evalCandidateCardV23.get();\n"
+    "                    int v23Until = v23SlowCards.recordTimeout(v23Id,game.getPhaseHandler().getTurn());\n"
+    "                    if (v23Until >= 0) {\n"
+    '                        System.out.println("FOUR_AI_TIMEOUT_COOLDOWN_V23 player=" + player.getName()\n'
+    '                            + " card=" + evalCandidateV10.get() + " cardId=" + v23Id\n'
+    '                            + " untilGlobalTurn=" + v23Until\n'
+    '                            + " strikeCount=" + v23SlowCards.strikeCount(v23Id));\n'
+    "                    }\n"
+    "                }\n"
     "            }\n"
     "            return evalDecisionV10;"
 )
@@ -730,6 +757,9 @@ with tempfile.TemporaryDirectory() as d:
     target=root/"forge"/"ai"
     target.mkdir(parents=True,exist_ok=True)
     (target/"AiController.java").write_text(controller,encoding="utf-8")
+    (target/"AiTimeoutCooldownPolicy.java").write_text(
+        (pathlib.Path(__file__).resolve().parents[1] / "patches/java/forge/ai/AiTimeoutCooldownPolicy.java").read_text(encoding="utf-8"),
+        encoding="utf-8")
     (target/"PlayerControllerAi.java").write_text(player_controller,encoding="utf-8")
     (target/"BrimazMulliganPolicy.java").write_text(mulligan_policy,encoding="utf-8")
     (target/"SpellApiToAi.java").write_text(incubate_dispatcher,encoding="utf-8")
@@ -738,7 +768,7 @@ with tempfile.TemporaryDirectory() as d:
     (target/"BrimazTurnPlanner.java").write_text(planner,encoding="utf-8")
     classes=root/"classes";classes.mkdir()
     command=["javac","--release","21","-cp",str(jar),"-d",str(classes),
-             str(target/"AiController.java"),str(target/"BrimazTurnPlanner.java"),
+             str(target/"AiController.java"),str(target/"AiTimeoutCooldownPolicy.java"),str(target/"BrimazTurnPlanner.java"),
              str(target/"PlayerControllerAi.java"),str(target/"BrimazMulliganPolicy.java"),
              str(target/"SpellApiToAi.java"),str(ability_dir/"IncubateAi.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
