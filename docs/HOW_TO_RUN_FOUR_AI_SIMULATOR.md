@@ -26,7 +26,7 @@ moteur et les tests évoluent dans des branches de développement.
 |---|---|---|
 | `source_ref` | nom de la branche | code Forge patché + scripts analysés |
 | `pod` | `both`, `aristo`, `artifact` | adversaires présents |
-| `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive` | heuristiques partagées par les quatre IA |
+| `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
 | `games_per_rotation` | 1, 2, 3 ou 5 | processus Forge indépendants, chacun à 4 joueurs |
 | `seed_base` | entier positif | graine de référence, dérivée pour chaque siège et répétition |
 
@@ -43,6 +43,18 @@ des durées observées et des files de jobs GitHub.
 Le workflow fixe initialement une horloge de partie Forge de **360 s**
 et une limite de processus de **445 s**. Les parties interrompues par
 l'horloge sont classées comme **censurées**, pas comme défaites/victoires.
+
+
+### Option V19 : choix des anti-créatures (expérimentale)
+
+Avec `source_ref=feature/v19-opponent-removal-urgency-20261010`,
+`policy=v19_removal` ajoute un bonus à certaines **cibles de retrait déjà
+légales** dont les dégâts publics présentent un risque de défaite
+prochainement (vie, poison, blessures d'un commandant précis).
+Aucune carte adverse ni règle Magic n'est modifiée. Les évaluations
+`FOUR_AI_REMOVAL_URGENCY` dans les journaux **ne signifient pas**
+qu'un retrait a réellement été lancé. Ce mode reste expérimental
+et doit être comparé à `v17_strict` sur des parties certifiées.
 
 ## 3. Contrôles automatiques
 
