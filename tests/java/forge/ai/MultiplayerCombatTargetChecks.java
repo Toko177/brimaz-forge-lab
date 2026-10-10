@@ -46,11 +46,17 @@ public final class MultiplayerCombatTargetChecks {
               > score(40, 40, 0, 1),
               "stealing initiative is still rewarded");
 
+        check(MultiplayerCombatTargetPolicy.poisonPressure(8, 2, false) >
+              MultiplayerCombatTargetPolicy.poisonPressure(8, 1, false),
+              "unblocked infect reaches ten poison and beats near-miss");
+        check(MultiplayerCombatTargetPolicy.poisonPressure(9, 1, true) == 0,
+              "poison ranking respects a cannot-lose-game approximation");
+
         for (int seat = 1; seat <= 4; seat++) {
             check(score(10 + seat, 30, 2, 1) ==
                   score(10 + seat, 30, 2, 1),
                   "scoring must be deterministic across the four agents");
         }
-        System.out.println("FOUR_SEAT_COMBAT_TARGET_CHECKS_PASS checks=12");
+        System.out.println("FOUR_SEAT_COMBAT_TARGET_CHECKS_PASS checks=14");
     }
 }
