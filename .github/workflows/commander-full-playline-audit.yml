@@ -1,7 +1,10 @@
 name: Forensic audit of every observed Forge Commander play
 on:
   push:
-    paths: [.github/workflows/commander-full-playline-audit.yml]
+    paths:
+      - .github/workflows/commander-full-playline-audit.yml
+      - scripts/audit_commander_playlines.py
+      - tests/test_audit_commander_playlines.py
   workflow_dispatch:
 permissions:
   contents: read
