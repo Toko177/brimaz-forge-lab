@@ -88,14 +88,9 @@ class MultiVariantTournamentTests(unittest.TestCase):
 
     def test_duplicate_replacement_contents_rejected_even_with_different_recipe(self):
         self.recipe.write_text(json.dumps({"variants":[
-            {"id":"one","swaps":"1 Plains -> 1 Swamp"},
-            {"id":"two","swaps":"2 Plains -> 2 Swamp; 1 Plains -> 1 Swamp"}]}))
+            {"id":"one","swaps":"1 Plains -> 1 Swamp; 1 Plains -> 1 Fabled Passage"},
+            {"id":"two","swaps":"1 Plains -> 1 Fabled Passage; 1 Plains -> 1 Swamp"}]}))
         with self.assertRaisesRegex(ValueError,"identical|Duplicate"):
-            # Same resulting deck? no, three swamps vs one. Re-check actual
-            # duplicate same result with a net-neutral swap combination.
-            self.recipe.write_text(json.dumps({"variants":[
-                {"id":"one","swaps":"1 Plains -> 1 Swamp"},
-                {"id":"two","swaps":"1 Plains -> 1 Swamp; 1 Plains -> 1 Plains"}]}))
             self.build()
 
     def test_real_game_shards_assemble_for_each_candidate_without_duplication(self):
