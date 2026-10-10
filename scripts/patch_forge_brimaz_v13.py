@@ -124,16 +124,6 @@ get_replacement = (
     '                    + " listed=" + evalAvailableV10\n'
     '                    + " considered=" + evalConsideredV10.get()\n'
     '                    + " lastCandidate=" + evalCandidateV10.get());\n'
-    "                if (Boolean.getBoolean(\"brimaz.aiTimeoutCooldown\")) {\n"
-    "                    int v23Id = evalCandidateCardV23.get();\n"
-    "                    int v23Until = v23SlowCards.recordTimeout(v23Id,game.getPhaseHandler().getTurn());\n"
-    "                    if (v23Until >= 0) {\n"
-    '                        System.out.println("FOUR_AI_TIMEOUT_COOLDOWN_V23 player=" + player.getName()\n'
-    '                            + " card=" + evalCandidateV10.get() + " cardId=" + v23Id\n'
-    '                            + " untilGlobalTurn=" + v23Until\n'
-    '                            + " strikeCount=" + v23SlowCards.strikeCount(v23Id));\n'
-    "                    }\n"
-    "                }\n"
     "            }\n"
     "            return evalDecisionV10;"
 )
@@ -152,6 +142,16 @@ catch_replacement = (
     '                    + " listed=" + evalAvailableV10\n'
     '                    + " considered=" + evalConsideredV10.get()\n'
     '                    + " lastCandidate=" + evalCandidateV10.get());\n'
+    "                if (Boolean.getBoolean(\"brimaz.aiTimeoutCooldown\")) {\n"
+    "                    int v23Id = evalCandidateCardV23.get();\n"
+    "                    int v23Until = v23SlowCards.recordTimeout(v23Id,game.getPhaseHandler().getTurn());\n"
+    "                    if (v23Until >= 0) {\n"
+    '                        System.out.println("FOUR_AI_TIMEOUT_COOLDOWN_V23 player=" + player.getName()\n'
+    '                            + " card=" + evalCandidateV10.get() + " cardId=" + v23Id\n'
+    '                            + " untilGlobalTurn=" + v23Until\n'
+    '                            + " strikeCount=" + v23SlowCards.strikeCount(v23Id));\n'
+    "                    }\n"
+    "                }\n"
     "            }\n"
     + catch_anchor
 )
