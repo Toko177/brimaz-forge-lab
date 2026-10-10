@@ -46,6 +46,54 @@ if code.count(needle)!=1:
     raise ValueError("Forge 2.0.15 removal-target source drift")
 code=code.replace(needle,replacement,1)
 
+
+# V20 instrumentation: inspect BOTH rankings on precisely the same public
+# legal target list, without needing a second generated match or guessing which
+# removal spells were available in a counterfactual game. The real selection
+# still delegates to Forge's original aggregator, preventing synthetic choices.
+choose_old = """        return Aggregates.itemWithMax(list, c -> evaluateRemovalTargetPriority(ai, c));
+    }
+
+    private static int evaluateRemovalTargetPriority"""
+choose_new = """        final Card actual = Aggregates.itemWithMax(list, c -> evaluateRemovalTargetPriority(ai, c));
+        if (Boolean.getBoolean("brimaz.removalShadowAudit") && ai != null) {
+            Card baselineBest = null;
+            Card urgentBest = null;
+            int baselineScore = Integer.MIN_VALUE;
+            int urgentScore = Integer.MIN_VALUE;
+            int options = 0;
+            final boolean urgencyEnabled = Boolean.getBoolean("brimaz.fourSeatRemovalUrgency");
+            for (Card candidate : list) {
+                int effective = evaluateRemovalTargetPriority(ai, candidate);
+                int bonus = candidate.isCreature() && candidate.getController().isOpponentOf(ai)
+                        ? MultiplayerRemovalUrgencyPolicy.publicThreatBonus(ai, candidate) : 0;
+                int stock = urgencyEnabled ? effective - bonus : effective;
+                int counterfactual = stock + bonus;
+                options++;
+                if (stock > baselineScore) { baselineScore = stock; baselineBest = candidate; }
+                if (counterfactual > urgentScore) { urgentScore = counterfactual; urgentBest = candidate; }
+            }
+            if (options > 1) {
+                boolean changed = baselineBest != urgentBest;
+                System.out.println("FOUR_AI_REMOVAL_SHADOW player=" + ai.getName()
+                        + " options=" + options + " baseline=" +
+                        (baselineBest == null ? "none" : baselineBest.getName()+"#"+baselineBest.getId())
+                        + " urgency=" +
+                        (urgentBest == null ? "none" : urgentBest.getName()+"#"+urgentBest.getId())
+                        + " chosen=" + (actual == null ? "none" : actual.getName()+"#"+actual.getId())
+                        + " changed=" + changed
+                        + " baselineScore=" + baselineScore
+                        + " urgencyScore=" + urgentScore);
+            }
+        }
+        return actual;
+    }
+
+    private static int evaluateRemovalTargetPriority"""
+if code.count(choose_old)!=1:
+    raise ValueError("Forge source drift: removal shadow choice anchor")
+code=code.replace(choose_old,choose_new,1)
+
 helper=Path(__file__).resolve().parents[1]/"patches/java/forge/ai/MultiplayerRemovalUrgencyPolicy.java"
 with tempfile.TemporaryDirectory() as td:
     root=Path(td)
