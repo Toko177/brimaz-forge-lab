@@ -76,6 +76,18 @@ helper = r'''
     private static final boolean BRIMAZ_VERIFY_COMBAT_TRIGGER_SCAN =
             Boolean.getBoolean("brimaz.verifyCombatTriggerScan");
 
+    // Only shadow runs count checks: zero overhead in the timed fast/reference arms.
+    private static final java.util.concurrent.atomic.LongAdder BRIMAZ_COMBAT_SHADOW_CHECKS =
+            new java.util.concurrent.atomic.LongAdder();
+    static {
+        if (BRIMAZ_VERIFY_COMBAT_TRIGGER_SCAN) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("COMBAT_TRIGGER_SHADOW_CHECKED "
+                        + BRIMAZ_COMBAT_SHADOW_CHECKS.sum());
+            }, "brimaz-combat-shadow-summary"));
+        }
+    }
+
     private static boolean brimazTriggerDestroys(final Card attacker, final Card blocker,
             final Trigger trigger, final boolean againstAttacker) {
         final Card source = trigger.getHostCard();
@@ -135,6 +147,7 @@ helper = r'''
         final boolean quick = brimazScanCombatDestroyTriggers(attacker, blocker,
                 againstAttacker, true);
         if (BRIMAZ_VERIFY_COMBAT_TRIGGER_SCAN) {
+            BRIMAZ_COMBAT_SHADOW_CHECKS.increment();
             final boolean reference = brimazScanCombatDestroyTriggers(attacker, blocker,
                     againstAttacker, false);
             if (quick != reference) {
