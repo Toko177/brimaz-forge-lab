@@ -9,19 +9,19 @@ ci-dessous.
 
 ## Branche ACTIVE et passation
 
-- **V19, branche active :**
-  `feature/v19-opponent-removal-urgency-20261010`
-- **Passation intégrale V19 :**
-  [docs/PASSATION_2026-10-10_V19.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V19.md)
-- **PR #11 en développement :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/11
-- **Base V18 :**
-  `feature/v18-gameplay-forensics-and-release-gate-20261010`,
-  [PR #10](https://github.com/Toko177/brimaz-forge-lab/pull/10).
+- **V20, branche active :**
+  `feature/v20-counterfactual-removal-and-tournament-20261010`
+- **Passation intégrale V20 :**
+  [docs/PASSATION_2026-10-10_V20.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V20.md)
+- **PR #12 en développement :**
+  https://github.com/Toko177/brimaz-forge-lab/pull/12
+- **Base V19 :**
+  `feature/v19-opponent-removal-urgency-20261010`,
+  [PR #11](https://github.com/Toko177/brimaz-forge-lab/pull/11).
 - **Histoire V13–V16 :**
-  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V16.md),
-  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V17.md),
-  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
+  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V16.md),
+  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V17.md),
+  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
 
 ## Le simulateur peut être lancé depuis GitHub
 
@@ -29,7 +29,7 @@ ci-dessous.
   [Commander simulator — run 4 AI games](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml)
 - **Guide d'utilisation :**
   [docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md)
-- Sélectionner `source_ref` sur la branche V19 ci-dessus, un pod
+- Sélectionner `source_ref` sur la branche V20 ci-dessus, un pod
   `artifact`/`aristo` ou `both`, une politique IA et 1–5 parties
   par rotation. Chaque partie utilise un **processus Forge réel**
   avec quatre sièges IA distincts, listes de cartes vérifiées SHA256.
@@ -55,7 +55,7 @@ avant toute affirmation de vitesse.
 
 ## Consignes au prochain ChatGPT
 
-1. **Lire d'abord la passation V19 et le statut actuel de la PR #11.**
+1. **Lire d'abord la passation V20 et le statut actuel de la PR #12.**
 2. Vérifier les nouveaux GitHub Actions, branches, commits et artefacts
    directement dans le dépôt ; ne pas deviner les résultats.
 3. Continuer à **modifier le code et lancer des tests**, en visant
@@ -84,3 +84,17 @@ https://github.com/Toko177/brimaz-forge-lab/actions/runs/38083587718
 
 Le manuel sur main accepte `policy=v19_removal` ; ne pas considérer ce mode
 comme supérieur tant que ses résultats et son audit ne sont pas examinés.
+
+## V20 : expérience contrefactuelle et agrégation des tournois
+
+La PR #12 ajoute un relevé **à état public identique** des deux cibles
+qu'auraient choisies les politiques de retrait classique et urgente,
+sans modifier les cibles légales ou les règles. Test A/B :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085352043
+
+Le workflow de lancement manuel sur main contient maintenant un job
+`tournament-summary` qui agrège tous les processus Forge indépendants,
+contrôle les artefacts et publie des résultats par pod avec incertitude
+descriptive. Il n'a PAS encore été vérifié en lancement manuel complet.
+Le mode `policy=v20_shadow` exploite la branche V20. La PR #12 doit
+rester en draft jusqu'aux résultats de ses comparaisons à état identique.
