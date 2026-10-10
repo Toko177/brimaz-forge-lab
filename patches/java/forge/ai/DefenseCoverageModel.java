@@ -127,9 +127,23 @@ public final class DefenseCoverageModel {
                                      int life, int poison,
                                      boolean lifeProtected, boolean poisonProtected,
                                      boolean commanderProtected) {
+        return bestReservation(threeOpponents,currentlyHeld,candidate,
+                life,poison,lifeProtected,poisonProtected,commanderProtected,1000);
+    }
+
+    /** Only explicit experimental callers may use a proactive threshold below lethal. */
+    public static int bestReservation(List<List<Threat>> threeOpponents,
+                                     boolean[] currentlyHeld, boolean[] candidate,
+                                     int life, int poison,
+                                     boolean lifeProtected, boolean poisonProtected,
+                                     boolean commanderProtected,
+                                     int triggerPermille) {
+        if(triggerPermille<500 || triggerPermille>1000) {
+            throw new IllegalArgumentException("Risk threshold outside safe tactical range");
+        }
         int base=worstRisk(threeOpponents,currentlyHeld,life,poison,
                            lifeProtected,poisonProtected,commanderProtected);
-        if(base<1000) return -1; // no projected loss after existing blockers
+        if(base<triggerPermille) return -1;
         final int baseTotal=totalRisk(threeOpponents,currentlyHeld,life,poison,
                 lifeProtected,poisonProtected,commanderProtected);
         int best=-1, bestGain=0, bestTotalGain=0;
