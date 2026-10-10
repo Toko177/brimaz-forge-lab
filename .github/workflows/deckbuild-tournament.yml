@@ -41,6 +41,7 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       reference_run_id: ${{ steps.reference_lookup.outputs.reference_run_id }}
+      reference_run_source: ${{ steps.reference_lookup.outputs.reference_run_source }}
     steps:
       - uses: actions/checkout@v4
       - name: Confirm tournament safety and previous Commander regression
@@ -121,32 +122,48 @@ jobs:
               assert all(items[n]["structurally_and_legality_valid"] for n in needed)
               (folder/"merged.json").write_text(json.dumps({"reports":[items[n] for n in sorted(needed)]})+"\n")
           PY
-      - name: Discover exact compatible original Forge baseline without replaying it
+      - name: Discover previous successful tournament or A/B with the exact same reference history
         id: reference_lookup
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           found=""
+          source=""
           slug="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["reference_variant"])')"
-          root="tournament/variants/$slug/forge_decks"
+          d="tournament/variants/$slug/forge_decks"
           SEED="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["seed_base"])')"
           REPEATS="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["repeats"])')"
-          ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deckbuild-ab.yml/runs?per_page=30"             --jq '.workflow_runs[] | select(.conclusion=="success") | .id')"
-          for id in $ids; do
-            mkdir -p "reference-search/$id"
-            if ! gh run download "$id" --repo "$GITHUB_REPOSITORY"               --name deckbuild-verified-inputs --dir "reference-search/$id" >/dev/null 2>&1; then
-              continue
-            fi
-            previous="reference-search/$id/forge_decks/reference-cache-key.json"
-            if [[ ! -f "$previous" ]]; then continue; fi
-            if python3 scripts/deckbuild_cache.py --mode verify --root .               --decks "$root" --manifest "$root/candidate-manifest.json"               --seed-base "$SEED" --repeats "$REPEATS"               --previous "$previous"; then found="$id"; break; fi
+          for workflow in deckbuild-tournament.yml deckbuild-ab.yml; do
+            ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?per_page=30" --jq '.workflow_runs[] | select(.conclusion=="success") | .id')"
+            for id in $ids; do
+              folder="reference-search/$id"
+              mkdir -p "$folder"
+              if [[ "$workflow" == deckbuild-tournament.yml ]]; then
+                artifact=commander-tournament-immutable-inputs
+                mode=tournament
+              else
+                artifact=deckbuild-verified-inputs
+                mode=ab
+              fi
+              if ! gh run download "$id" --repo "$GITHUB_REPOSITORY" --name "$artifact" --dir "$folder" >/dev/null 2>&1; then
+                continue
+              fi
+              previous="$(find "$folder" -type f -name reference-cache-key.json | head -1)"
+              if [[ -z "$previous" ]]; then continue; fi
+              if python3 scripts/deckbuild_cache.py --mode verify --root .                  --decks "$d" --manifest "$d/candidate-manifest.json"                  --seed-base "$SEED" --repeats "$REPEATS" --previous "$previous"; then
+                found="$id"
+                source="$mode"
+                break 2
+              fi
+            done
           done
           echo "reference_run_id=$found" >> "$GITHUB_OUTPUT"
+          echo "reference_run_source=$source" >> "$GITHUB_OUTPUT"
           if [[ -n "$found" ]]; then
-            echo "TOURNAMENT_REFERENCE_CACHE_HIT run $found: no new reference JVM required"
+            echo "TOURNAMENT_REFERENCE_CACHE_HIT run=$found source=$source"
           else
-            echo "TOURNAMENT_REFERENCE_CACHE_MISS: eight new reference games are required"
+            echo "TOURNAMENT_REFERENCE_CACHE_MISS"
           fi
       - name: "Plan only needed new JVM matches: eight per variant plus optional shared reference"
         id: plan
@@ -247,8 +264,16 @@ jobs:
         with:
           pattern: tournament-real-*
           path: original-games/
-      - name: Load exact original reference game logs from prior GitHub campaign
-        if: ${{ needs.prepare.outputs.reference_run_id != '' }}
+      - name: Reuse original eight games from earlier tournament when exact SHA256 matches
+        if: ${{ needs.prepare.outputs.reference_run_source == 'tournament' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tournament-real-reference-*
+          run-id: ${{ needs.prepare.outputs.reference_run_id }}
+          github-token: ${{ github.token }}
+          path: original-games/cached-reference/
+      - name: Reuse original eight games from historical A/B when exact SHA256 matches
+        if: ${{ needs.prepare.outputs.reference_run_source == 'ab' }}
         uses: actions/download-artifact@v4
         with:
           pattern: deckbuild-game-reference-*
