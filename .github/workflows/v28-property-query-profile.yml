@@ -1,0 +1,98 @@
+name: V28 real Forge 4-AI high-cost CardProperty query frequency
+on:
+  pull_request:
+    branches: [feature/v27-four-ai-strategic-forensics-20261011]
+    paths:
+      - .github/workflows/v28-property-query-profile.yml
+      - scripts/patch_forge_card_property_profile.py
+      - patches/java/forge/game/card/CardPropertyQueryProfiler.java
+      - tests/java/forge/game/card/CardPropertyQueryProfilerChecks.java
+  workflow_dispatch:
+concurrency:
+  group: v28-single-genuine-four-ai-card-property-profile
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  actual-card-query-profile:
+    name: Which actual Oracle card predicates consume the Forge four-AI hot path?
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-seven-decks-canonical-verified
+          run-id: 37966009166
+          github-token: ${{ github.token }}
+          path: canonical/
+      - name: Exact original seven-player deck verification
+        run: |
+          set -euo pipefail
+          mkdir -p forge_decks
+          cp canonical/forge_normalized/*.dck forge_decks/
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          x=json.loads(pathlib.Path('canonical/results/forge_normalization/report.json').read_text())
+          assert len(x['decks'])==7 and not x['errors']
+          for v in x['decks']:
+            f=pathlib.Path('forge_decks')/(v['deck']+'.dck')
+            assert hashlib.sha256(f.read_bytes()).hexdigest()==v['normalized_sha256']
+          print('FOUR_AI_V28_SEVEN_DECKS_SHA256_IDENTICAL')
+          PY
+      - uses: actions/cache/restore@v4
+        with:
+          key: forge-2.0.15-linux-shared-20261009
+          path: forge-dist/
+      - name: Fetch pristine official Forge 2.0.15 if not present
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Compile genuine AI and read-only card-property profiler into original rules JAR
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
+          test -s "$JAR"
+          echo "$JAR" > /tmp/real-forge-v28-jar
+          python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+          python3 scripts/patch_forge_brimaz_v13.py --jar "$JAR"
+          python3 scripts/patch_forge_four_ai_targets.py --jar "$JAR"
+          python3 scripts/patch_forge_combat_trigger_prune.py --jar "$JAR"
+          python3 scripts/patch_forge_card_property_profile.py --jar "$JAR"
+          mkdir -p /tmp/real-forge-property-tests
+          javac --release 21 -cp "$JAR" -d /tmp/real-forge-property-tests \
+            tests/java/forge/game/card/CardPropertyQueryProfilerChecks.java
+          java -Dbrimaz.profilePropertyQueries=true -cp "$JAR:/tmp/real-forge-property-tests" \
+            forge.game.card.CardPropertyQueryProfilerChecks
+      - name: Record actual CardProperty query demand in real four AI Commander
+        env:
+          JAVA_TOOL_OPTIONS: "-Dbrimaz.fourSeatCombatTarget=true -Dbrimaz.deterministicForcedAttacks=true -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.aiTimeoutCooldown=false -Dbrimaz.fastCombatTriggerNegativePrune=true -Dbrimaz.profilePropertyQueries=true"
+        run: |
+          set -euo pipefail
+          python3 scripts/batch.py --jar "$(cat /tmp/real-forge-v28-jar)" \
+            --require-canonical-decks --pod aristo --rotation 1 \
+            --out-tag V28-property-query-profile --policy-label V24-with-read-only-predicate-profiling \
+            --seed-base 20261023 --clock 420 --timeout 505 --games-per-rotation 1
+          echo '=== ACTUAL MOST FREQUENT CARD PROPERTY RULE QUERIES ==='
+          grep -E '^FOUR_AI_PROPERTY_(PROFILE_TOTAL|TOP)' results/batch/aristo/V28-property-query-profile/*.log || true
+      - name: Archive exact raw four-AI game and capped read-only property count
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-ai-v28-actual-card-property-query-hotspots
+          path: results/batch/
+          retention-days: 30
+          if-no-files-found: ignore
