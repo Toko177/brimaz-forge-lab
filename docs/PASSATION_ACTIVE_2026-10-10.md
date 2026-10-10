@@ -1931,3 +1931,183 @@ run 38006656707 n'est pas encore fini,
 **la réduction de 16 à 8 jobs est prouvée,
 mais l'acceptation du rapport final 16 preuves
 doit toujours être vérifiée**.
+
+
+## 31. MAJOR ARCHITECTURE: un tournoi Commander de 2 à 8 variantes, référence unique
+
+### Pourquoi
+
+Objectif exprimé le 10 octobre : **deckbuilder rapidement plusieurs
+decks, sans créer des dizaines de versions du moteur**.
+La voie principale reste Forge 2.0.15 + V13 IA quatre sièges,
+le correctif Magic Charm, le contrôle Scryfall. Un changement
+de carte est un candidat temporaire ; ne jamais modifier
+\`decks/Brimaz_V3.txt\` ni tricher sur les règles/victoires.
+
+Le comparateur historique \`deckbuild-ab.yml\` permet UNE variante
+vs une référence. L'amélioration nouvelle est un véritable
+**tournoi partagé à N variantes** (2–8) dans un seul run :
+- \`scripts/deckbuild_tournament.py\`: \`prepare\` construit
+  les listes expérimentales distinctes et leurs manifestes
+  SHA256, conserve la référence immutable,
+  écrit \`tournament.json\` contenant la matrice exacte
+  \`reference × (aristo/artifact) ×4 sièges\` UNE fois et
+  \`candidate × chaque variante ×2 pods ×4 sièges\`.
+- \`scripts/deckbuild_tournament.py assemble\` refuse
+  une matrice incomplète, un log modifié, des seeds/sièges
+  différents, un deuxième bras de référence ou un
+  candidat à hash identique ; il recopiera les véritables
+  fichiers Forge originaux (pas les résultats fictifs)
+  dans des sous-répertoires A/B individuels.
+- \`scripts/deckbuild_certify.py\` vérifie chaque A/B
+  via les quatre \`Game Outcome\` légaux,
+  les perdants commander-damage/deck-out,
+  Scryfall, les SHA256 et les censures.
+- \`scripts/deckbuild_compare.py\` : Wilson95,
+  taux Brimaz, problèmes IA par siège/pod;
+  \`scripts/deckbuild_rank.py\` : classement
+  descriptif N variantes, refus si une seule
+  empreinte de référence diffère.
+- Workflow complet \`.github/workflows/deckbuild-tournament.yml\` :
+  **max-parallel=16** ; 2–8 variantes ;
+  répéter 1/2/4 fois par pod et siège.
+  Scryfall live/absence de Game Changers et
+  préflight mana/MDFC pour CHAQUE variante AVANT les jeux.
+  Job report écrit \`commander-multivariant-certified-ranking\`.
+  Il prend désormais aussi \`reference_file\` et
+  \`commander\` en \`workflow_dispatch\` (un seul
+  commandant par liste, pas Partner non audité)
+  et une nouvelle \`seed_base\` pour confirmation
+  sur cohorte distincte.
+- Recettes éditables \`decks/tournament-experiments.json\`,
+  exemple expérimental initial **sans toucher
+  au deck canonique** :
+  \`1 Plains -> 1 Shadowy Backstreet\` et
+  \`1 Swamp -> 1 Fabled Passage\`.
+  Ce sont des essais de terrains à vérifier,
+  **pas des recommandations de cartes**.
+- Guide indépendant :
+  [DECKBUILDING_TOURNAMENT.md](DECKBUILDING_TOURNAMENT.md).
+- 9 tests Python supplémentaires
+  \`tests/test_deckbuild_tournament.py\` :
+  qualité des recettes, modification inexistante,
+  échange identique, répartition baseline unique,
+  impossible d'intégrer log falsifié/jeu manquant,
+  refus du doublon de shard.
+
+### Économie de calcul réelle
+
+Sans cache existant : N variantes × 8 matchs
++ 8 vrais matchs référence UNE seule fois =
+**8 × (N + 1)** vrais Commander 4 joueurs,
+contre **16 × N** si N comparateurs A/B refont
+chacun leur référence.
+Avec une référence déjà certifiée et
+SHA256-compatible : **8 × N nouvelles JVM**,
+les huit traces anciennes étant réexaminées
+et indépendamment recertifiées pour chaque
+nouvelle comparaison. Le nombre de matchs
+indépendants n'augmente PAS avec les réemplois.
+Exemple quatre variantes : 64 sans partage,
+40 avec référence commune neuve,
+32 avec cache. L'IA reste identique pour les
+quatre sièges.
+
+### Run réel 24 matchs en cours
+
+**Premier pilote** :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040171940
+- \`prepare\` SUCCESS. Scryfall valide **les deux
+  versions** et leurs deux adversaires pods ;
+  la matrice exacte comporte **24 shards**,
+  dont 8 parties baseline et 16 candidats,
+  jusqu'à 16 runners GitHub simultanés.
+- Référence SHA256 identique au cache A/B
+  déjà certifié \`f7c8e3d85c430933470a7c9818f503fef47e3c9df41a815ac7e19c3173a71c1d\`.
+- Pendant la rédaction, 22/25 jobs étaient
+  terminés, 0 en échec, derniers jeux longs
+  en aristo et artifact. **NE PAS ENCORE
+  ANNONCER DE WINRATE NI DE RANG** sans
+  la réussite du job report et ses
+  \`certificate.json\` + \`ranking.json\`.
+- Un lancement antérieur **38040157687** a
+  échoué uniquement parce que la recette
+  JSON n'avait pas encore été créée.
+- Suite de tests du moteur deckbuilder
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040002329
+  SUCCESS : 74 tests (14 A/B, 6 swaps, 9 cache,
+  8 rankings, 6 préflight, 9 tournament,
+  22 règles/outcomes).
+
+### Réemploi automatique des huit parties dans le NOUVEAU tournoi
+
+Après démarrage du pilote 24 parties, le workflow
+a été enrichi d'une étape \`reference_lookup\` :
+GitHub recherche automatiquement les archives
+d'une campagne A/B historique COMPLETED SUCCESS
+contenant \`deckbuild-verified-inputs\`, charge
+\`reference-cache-key.json\` et exécute
+\`scripts/deckbuild_cache.py --mode verify\`.
+Si la clé courante concorde EXACTEMENT :
+- la matrice est réduite de 8 jobs : n'exécuter
+  que les variantes ;
+- télécharger \`deckbuild-game-reference-*\` avec
+  la \`reference_run_id\` ;
+- \`deckbuild_cache.py --mode audit-archive\`
+  refuse le moindre mismatch de seed, pod,
+  siège, 100 cartes, profil IA, patch moteur,
+  clock et SHA256 de transcript ;
+- réutiliser les vraies traces brutes dans
+  \`assemble\`, puis recertifier TOUS les jeux.
+
+**IMPORTANT : le premier pilote en cours
+utilise le YAML original 24 jeux du SHA initial**.
+L'optimisation cache a été ajoutée ENSUITE ;
+elle s'appliquera à la prochaine campagne
+(et devrait retrouver run 38006057124 s'il
+reste compatible). **Ne PAS annoncer 16 nouveaux
+jeux validés au prochain run avant test effectif**.
+
+### Incident de configuration GitHub Actions corrigé
+
+Les commits intermédiaires YAML
+\`73dc02e\`, \`d211a936\`, \`d5846beb\`
+ont donné des workflow runs sans jobs (état
+\`conclusion=failure\`) car une description
+\`name: Plan only needed new JVM matches: eight...\`
+contenait un \`:\` sans guillemets :
+syntaxe YAML invalide. Corrigé au commit
+\`369d5fd1f9ff73bacf35fd1fb0ca69dcc33aff8b\`
+en entourant le nom de guillemets. 
+Le déclenchement \`on.push\` n'écoute maintenant
+QUE \`decks/tournament-experiments.json\`
+pour ne pas rejouer 16–72 parties en cas
+de simple documentation ou correction du
+workflow lui-même. Le nouveau YAML doit être
+validé au prochain push de recette ou
+workflow_dispatch disponible ; ne pas considérer
+les échecs sans jobs comme des simulations
+Magic défectueuses.
+
+### Suites prioritaires
+
+1. Lire le job final du pilote 38040171940 ;
+   s'il échoue, corriger les vérifications
+   et **recertifier les 24 logs existants
+   sans relancer 24 JVM** (job postprocess
+   indépendant).
+2. Valider expérimentalement le nouveau cache
+   tournoi à référence précédente, et
+   contrôler 8 ref +16 candidate vrais logs
+   sous seulement 16 nouvelles JVM.
+3. Sélectionner une candidate uniquement à
+   titre exploratoire, puis confirmation
+   sur **seed_base distincte** en augmentant
+   \`repeats\`; ne jamais traiter le premier
+   rang sur 8 parties comme compétence prouvée.
+4. Consacrer la prochaine optimisation moteur
+   aux décisions de combat sur des situations
+   tactiques reproductibles des QUATRE IA.
+   Ne pas cacher le problème en supprimant
+   des réponses ou en augmentant seulement
+   le budget CPU. 
