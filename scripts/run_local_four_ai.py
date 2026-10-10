@@ -139,6 +139,8 @@ def main():
     p.add_argument("--clock",type=int,choices=[360,420,480],default=420)
     p.add_argument("--seed-base",type=int,default=20261027)
     p.add_argument("--campaign-root",type=Path,default=ROOT/"results/local_campaigns")
+    p.add_argument("--preflight-only",action="store_true",
+                   help="Check Java 21 and all seven SHA256 decks without patching or running a JVM game")
     args=p.parse_args()
     if not 1<=args.games_per_rotation<=5 or not 1<=args.parallel<=4:
         p.error("1–5 games per rotation, 1–4 parallel JVM jobs")
@@ -151,6 +153,18 @@ def main():
     java=java_version()
     deck_hashes=validate_decks(args.decks,args.canonical_report)
     pods=PODS if args.pod=="both" else (args.pod,)
+    if not args.jar.is_file():
+        raise FileNotFoundError("Original Forge desktop fat JAR not found: "+str(args.jar))
+    if args.preflight_only:
+        print("FOUR_AI_LOCAL_PREFLIGHT_OK",json.dumps({
+            "java":java,"jar":str(args.jar.resolve()),
+            "canonical_unchanged_seven_decks":len(deck_hashes),
+            "pods":list(pods),"rotation_count":4,
+            "planned_real_forge_jvms":len(pods)*4*args.games_per_rotation,
+            "policy":args.policy,"uniform_profile":args.profile,
+            "clock_seconds":args.clock
+        },ensure_ascii=False),flush=True)
+        return
     campaign_id=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"-"+uuid.uuid4().hex[:8]
     dest=args.campaign_root.resolve()/campaign_id
     dest.mkdir(parents=True,exist_ok=False)
