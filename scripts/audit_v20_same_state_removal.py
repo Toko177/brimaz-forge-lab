@@ -41,7 +41,8 @@ for policy,folder in (("baseline","V20-stock-shadow"),("urgent","V20-urgent-shad
             })
     # Same state counterfactual consistency: actual Forge choice must reflect
     # the policy it was configured to use. No fake winning action is added.
-    bad=[x for x in observed if x["actually_chosen"]!=x[policy if policy=="baseline" else "urgency"]]
+    selected_rank="stock" if policy=="baseline" else "urgency"
+    bad=[x for x in observed if x["actually_chosen"]!=x[selected_rank]]
     if bad:raise AssertionError(f"{policy} choice mismatch: {bad[:2]}")
     events=[ln for ln in raw.splitlines() if
             ln.startswith(("Turn: ","Phase: ","Combat: ","Add To Stack: ","Game Outcome: "))
