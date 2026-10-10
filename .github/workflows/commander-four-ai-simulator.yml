@@ -6,7 +6,7 @@ on:
         description: "Source branch containing the latest simulator code"
         type: string
         required: true
-        default: feature/four-ai-critical-counter-response-20261010
+        default: feature/v22-four-ai-operator-smoke-and-counter-audit-20261010
       pod:
         description: "Which opponent pods to simulate"
         type: choice
@@ -157,7 +157,7 @@ jobs:
             v17_proactive) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=true";;
             v19_removal) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.fourSeatRemovalUrgency=true -Dbrimaz.removalUrgencyTrace=true";;
             v20_shadow) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.fourSeatRemovalUrgency=false -Dbrimaz.removalShadowAudit=true";;
-            critical_counter) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.fourSeatCounterCritical=true";;
+            critical_counter) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.fourSeatCounterCritical=true -Dbrimaz.counterDecisionAudit=true";;
             *) echo "Unknown AI policy" >&2; exit 2;;
           esac
           export JAVA_TOOL_OPTIONS
