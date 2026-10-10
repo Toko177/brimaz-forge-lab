@@ -217,12 +217,17 @@ def main():
         jfr_dir=dest/"jfr_summaries"
         jfr_dir.mkdir()
         for path in jfr_files:
-            proc=subprocess.run(["jfr","summary",str(path)],text=True,
-                                capture_output=True,cwd=ROOT)
             rel=path.relative_to(dest/"games")
             name="__".join(rel.parts)
-            (jfr_dir/(name+".txt")).write_text(
-                proc.stdout+"\n[STDERR]\n"+proc.stderr,encoding="utf-8")
+            for title,cmd in (
+                ("summary",["jfr","summary",str(path)]),
+                ("hot_methods",["jfr","view","--width","160","hot-methods",str(path)]),
+                ("cpu_load",["jfr","view","thread-cpu-load",str(path)]),
+            ):
+                proc=subprocess.run(cmd,text=True,capture_output=True,
+                                    cwd=ROOT,timeout=180)
+                (jfr_dir/(name+"."+title+".txt")).write_text(
+                    proc.stdout+"\n[STDERR]\n"+proc.stderr,encoding="utf-8")
         print("FOUR_AI_JFR_REAL_JVM_PROFILES",len(jfr_files),
               "source=JDK21_execution_samples",flush=True)
     jobs_bad=[x for x in jobs if x["driver_returncode"]!=0 or not x["game_manifest_present"]]
