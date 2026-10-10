@@ -1,3 +1,44 @@
+# DERNIÈRE REPRISE ACTIVE — V24, 11 octobre 2026
+
+**Lire en premier cette nouvelle branche et sa passation, AVANT les
+anciennes entrées historiques ci-dessous :**
+
+- **Branche active :** `feature/v24-combat-trigger-fast-negatives-20261011`
+- **PR #17, DRAFT :** https://github.com/Toko177/brimaz-forge-lab/pull/17
+- **Passation V24 détaillée :**
+  https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/PASSATION_ACTIVE_V24_2026-10-11.md
+- **Nouveau lanceur LOCAL Windows/Linux pour de vraies parties Forge
+  quatre IA :**
+  https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md
+- **CI V24 :** https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v24-trigger-prune.yml
+- **Candidate de consolidation PR #15 (toujours en brouillon) :**
+  https://github.com/Toko177/brimaz-forge-lab/pull/15
+
+**Résultats empiriques nouveaux :** le pilote V23 est FINI, 4 vraies
+parties Forge, 18 tests Java, mais **aucune réduction des timeouts**
+(3→3 aristo, 1→1 artifact). V23 n'est pas une accélération prouvée.
+V24 vise un filtre sûr de **prédictions AI de triggers de combat
+impossibles**, avec 16 invariants Java, sans toucher aux règles Magic
+réelles. L'ancrage de patch est vérifié dans le code Forge 2.0.15 ;
+sa compilation et ses gains **ne sont pas encore vérifiés**.
+
+**Blocage d'infrastructure :** depuis V24, les jobs GitHub Actions
+échouent avant toute étape, avec `runner_id=0`, sans logs
+d'exécution ; la cause exacte est inconnue. Ne pas leur attribuer
+un résultat tactique ou de compilation. Le nouveau
+`scripts/run_local_four_ai.py` permet de lancer les mêmes
+vraies parties sur le PC avec Java 21, vérification SHA256 des sept
+decks, plusieurs JVM, archives et rapports ; il n'a pas encore été
+testé complètement sur Windows/Linux. Commencer par
+`--preflight-only`.
+
+**Référence certaine :** 16 vraies parties d'une campagne précédente,
+14 naturelles, 2 censurées et 1 victoire Brimaz **observée**
+(voir `docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md` sur main).
+Ne pas confondre cette observation avec un winrate validé.
+
+---
+
 # REPRISE — Simulateur Magic Commander Forge, quatre IA
 
 **Dernière passation : 10 octobre 2026.**
