@@ -12,7 +12,7 @@ permissions:
   actions: read
 jobs:
   four-seat-combat:
-    name: "Pilot ${{ matrix.pod } rotation ${{ matrix.rotation }"
+    name: "Pilot ${{ matrix.pod }} rotation ${{ matrix.rotation }}"
     runs-on: ubuntu-latest
     timeout-minutes: 31
     strategy:
@@ -32,7 +32,7 @@ jobs:
         with:
           name: forge-seven-decks-canonical-verified
           run-id: 37966009166
-          github-token: ${{ github.token }
+          github-token: ${{ github.token }}
           path: canonical/
       - name: Validate canonical seven Commander decks
         shell: bash
@@ -83,7 +83,7 @@ jobs:
           set -euo pipefail
           export JAVA_TOOL_OPTIONS="-Dbrimaz.fourSeatCombatTarget=false"
           python3 scripts/batch.py --jar "$(cat /tmp/four-ai-jar)" --require-canonical-decks \
-            --pod "${{ matrix.pod }" --rotation "${{ matrix.rotation }" \
+            --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
             --out-tag V13-target-control --policy-label V13-original-target \
             --seed-base 20261009 --clock 360 --timeout 445 --games-per-rotation 2
       - name: V14 all-four-seat tactical targeting (same seats and seeds)
@@ -92,19 +92,19 @@ jobs:
           set -euo pipefail
           export JAVA_TOOL_OPTIONS="-Dbrimaz.fourSeatCombatTarget=true"
           python3 scripts/batch.py --jar "$(cat /tmp/four-ai-jar)" --require-canonical-decks \
-            --pod "${{ matrix.pod }" --rotation "${{ matrix.rotation }" \
+            --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
             --out-tag V14-four-seat-target --policy-label V14-four-seat-target \
             --seed-base 20261009 --clock 360 --timeout 445 --games-per-rotation 2
       - name: Audit all four AI target choices, natural endings, and censures
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/audit_four_ai_targets.py --pod "${{ matrix.pod }" \
-            --out "results/target_pilot/${{ matrix.pod }_rotation${{ matrix.rotation }.json"
+          python3 scripts/audit_four_ai_targets.py --pod "${{ matrix.pod }}" \
+            --out "results/target_pilot/${{ matrix.pod }}_rotation${{ matrix.rotation }}.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: "four-ai-target-${{ matrix.pod }-rot${{ matrix.rotation }"
+          name: "four-ai-target-${{ matrix.pod }}-rot${{ matrix.rotation }}"
           path: |
             results/batch/
             results/target_pilot/
