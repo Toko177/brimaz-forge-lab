@@ -105,7 +105,7 @@ def audit(forensic):
                        "observation_key":key,"next_proof_required":next_step})
     ranked.sort(key=lambda x:-x["games_or_seats_with_signal"])
     return {
-      "source":"16+ REAL Forge 2.0.15 four-seat gameplay transcripts; action-only forensics",
+      "source":"Real Forge 2.0.15 four-seat gameplay transcripts; action-only forensics",
       "game_count":len(games),"pod_counts":{k:dict(v) for k,v in sorted(by_pod.items())},
       "policy_counts":{k:dict(v) for k,v in sorted(by_policy.items())},
       "signals":dict(counts),"per_deck":{k:dict(v) for k,v in sorted(by_deck.items())},
