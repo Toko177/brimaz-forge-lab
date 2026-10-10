@@ -1,12 +1,12 @@
 {
   "variants": [
     {
-      "id": "surveil-land",
-      "swaps": "1 Plains -> 1 Shadowy Backstreet"
+      "id": "two-mana-rock",
+      "swaps": "1 Gold Myr -> 1 Fellwar Stone"
     },
     {
-      "id": "fetch-land",
-      "swaps": "1 Swamp -> 1 Fabled Passage"
+      "id": "reanimation-package",
+      "swaps": "1 Vulpine Harvester -> 1 Victimize"
     }
   ]
 }
