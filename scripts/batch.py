@@ -18,6 +18,7 @@ p=argparse.ArgumentParser()
 p.add_argument("--jar",required=True)
 p.add_argument("--runtime-dir",default=None,
                help="Original Forge installation directory for resource lookups when using a copied patched JAR")
+p.add_argument("--jfr",action="store_true",help="Opt-in bounded 128MB Java Flight Recorder per genuine 4-player game; affects timings")
 p.add_argument("--pod",choices=["aristo","artifact"],default="aristo")
 p.add_argument("--clock",type=int,default=360)
 p.add_argument("--timeout",type=int,default=445)
@@ -87,7 +88,11 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         num=len(summary)+1
         seed=args.seed_base + 10000*shift + repeat
         profiles=[args.profile_brimaz if d=="Brimaz_V3" else args.profile_opponents for d in seats]
-        cmd=["java","-Xmx4g","-jar",str(jar),"sim","-d",
+        # JFR is for identifying sampled JVM hot methods; it may alter timing,
+        # so profile runs must NOT be used as unprofiled speed benchmarks.
+        jfr_path=out/f"game_rot{shift}_rep{repeat:03d}_seat{br_index}.jfr" if args.jfr else None
+        jvm_flags=[f"-XX:StartFlightRecording=filename={jfr_path.resolve()},settings=profile,dumponexit=true,maxsize=128m"] if jfr_path else []
+        cmd=["java","-Xmx4g",*jvm_flags,"-jar",str(jar),"sim","-d",
              *[x+".dck" for x in seats],"-D",str(directory),
              "-f","Commander","-n","1","-c",str(args.clock),
              "-s",str(seed),"-a",*profiles]
@@ -139,6 +144,8 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
             "winner_deck":seats[winner_index-1] if winner_index else None,
             "brimaz_win":winner_index==br_index if winner_index else None,
             "game_milliseconds":int(winners[-1][0]) if winners else None,
+            "jfr_enabled":bool(args.jfr),
+            "jfr_file":str(jfr_path.relative_to(root)) if jfr_path and jfr_path.is_file() else None,
             "wall_seconds":elapsed,"process_exit":rc,
             "brimaz_casts":len(re.findall(r"\bcast Brimaz, Blight of Oreskos\b",stdout)),
             "brimaz_triggered":len(re.findall(r"\btriggered Brimaz, Blight of Oreskos\b",stdout)),
