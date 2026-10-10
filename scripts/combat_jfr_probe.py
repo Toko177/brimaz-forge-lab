@@ -75,7 +75,7 @@ def jfr_file_report(path):
 def run_probe(*,jar,decks,pod,rotation,seed,clock,timeout,output):
     if pod not in OPPONENTS or rotation not in range(4) or clock<20 or timeout<=clock:
         raise ValueError("Invalid real Commander profiler parameters")
-    output=Path(output)
+    output=Path(output).resolve()
     output.mkdir(parents=True,exist_ok=True)
     names=["Brimaz_V3"]+OPPONENTS[pod]
     seats=names[rotation:]+names[:rotation]
