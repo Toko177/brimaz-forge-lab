@@ -100,7 +100,7 @@ def patch_jar(original,output,policy):
                         "--jar",str(output)],check=True,cwd=ROOT)
     return sha(output),scripts
 
-def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag):
+def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag,jfr):
     source_tag=f"{tag}-rot{rotation}"
     env=os.environ.copy()
     env["JAVA_TOOL_OPTIONS"]=" ".join((env.get("JAVA_TOOL_OPTIONS",""),flags)).strip()
@@ -112,6 +112,7 @@ def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,pro
          "--timeout",str(clock+85),
          "--profile-brimaz",profile,"--profile-opponents",profile,
          "--out-tag",source_tag,"--policy-label",policy,"--require-canonical-decks"]
+    if jfr:cmd.append("--jfr")
     proc=subprocess.run(cmd,text=True,capture_output=True,cwd=ROOT,env=env)
     generated=ROOT/"results/batch"/pod/source_tag
     target=campaign_root/"games"/pod/("rotation"+str(rotation))
@@ -142,6 +143,8 @@ def main():
     p.add_argument("--clock",type=int,choices=[360,420,480],default=420)
     p.add_argument("--seed-base",type=int,default=20261027)
     p.add_argument("--campaign-root",type=Path,default=ROOT/"results/local_campaigns")
+    p.add_argument("--jfr",action="store_true",
+                   help="Save up to 128MB JDK21 Java Flight Recorder per genuine JVM game; profiling changes timing")
     p.add_argument("--preflight-only",action="store_true",
                    help="Check Java 21 and all seven SHA256 decks without patching or running a JVM game")
     args=p.parse_args()
@@ -190,6 +193,8 @@ def main():
         "canonical_seven_deck_sha256":deck_hashes,
         "scryfall_legality_report_file":str(args.scryfall_legality_report.resolve()) if args.scryfall_legality_report else None,
         "java_tool_options":flags,
+        "jfr_enabled":bool(args.jfr),
+        "warning_on_jfr":"JFR sampling may alter timing; do not interpret profile-on/off timing as game engine speedup",
         "source_commit":subprocess.run(["git","rev-parse","HEAD"],
                             cwd=ROOT,capture_output=True,text=True).stdout.strip(),
         "proof_warning":"A successful process is not independent Scryfall/Magic Oracle certification. Censored games are not wins.",
@@ -200,13 +205,26 @@ def main():
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
         futures={pool.submit(run_job,dest,output_jar,runtime_dir,pod,rot,args.seed_base,
                 args.games_per_rotation,args.clock,args.profile,args.policy,
-                flags,tag):(pod,rot) for pod,rot in tasks}
+                flags,tag,args.jfr):(pod,rot) for pod,rot in tasks}
         jobs=[]
         for future in as_completed(futures):
             result=future.result()
             jobs.append(result)
             print("REAL_FOUR_AI_MATRIX",json.dumps(result),flush=True)
     (dest/"matrix_jobs.json").write_text(json.dumps(jobs,indent=2)+"\n")
+    if args.jfr:
+        jfr_files=sorted((dest/"games").rglob("*.jfr"))
+        jfr_dir=dest/"jfr_summaries"
+        jfr_dir.mkdir()
+        for path in jfr_files:
+            proc=subprocess.run(["jfr","summary",str(path)],text=True,
+                                capture_output=True,cwd=ROOT)
+            rel=path.relative_to(dest/"games")
+            name="__".join(rel.parts)
+            (jfr_dir/(name+".txt")).write_text(
+                proc.stdout+"\n[STDERR]\n"+proc.stderr,encoding="utf-8")
+        print("FOUR_AI_JFR_REAL_JVM_PROFILES",len(jfr_files),
+              "source=JDK21_execution_samples",flush=True)
     jobs_bad=[x for x in jobs if x["driver_returncode"]!=0 or not x["game_manifest_present"]]
     if jobs_bad:
         print("Some real Forge jobs failed; logs preserved in "+str(dest),
