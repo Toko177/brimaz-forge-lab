@@ -40,12 +40,18 @@ for policy, tag in (("control", "V13-target-control"),
             r"visibleSafeDamage=(\d+) visibleSafePoison=(\d+) "
             r"opponentsScored=(\d+) score=(-?\d+) globalTurn=(\d+)",
             log)
+        actual_attacks = re.findall(
+            r"^Combat: (Ai\(\d+\)-.+?) assigned (.*?) to attack "
+            r"(Ai\(\d+\)-.+?)\.$", log, re.M)
         by_key[key] = {
             "manifest": x,
             "turns_observed": len(turns),
             "moves_sha256": hashlib.sha256("\n".join(moves).encode()).hexdigest(),
             "events": len(moves),
             "choice_count": len(choices),
+            "actual_attack_count": len(actual_attacks),
+            "attackers_by_controller": dict(Counter(k[0] for k in actual_attacks)),
+            "actual_attack_targets": dict(Counter(k[2] for k in actual_attacks)),
             "controllers_actually_choosing": dict(Counter(k[0] for k in choices)),
             "visible_unblocked_damage_windows": sum(int(k[2]) > 0 for k in choices),
             "chosen_targets": dict(Counter(k[1] for k in choices)),
@@ -69,6 +75,8 @@ for key in sorted(groups["control"]):
             "wall_seconds": x["wall_seconds"],
             "turn_events": a["turns_observed"],
             "observed_actions": a["events"],
+            "actual_attack_count": a["actual_attack_count"],
+            "actual_attack_targets": a["actual_attack_targets"],
         },
         "tactical": {
             "status": y["status"], "winner": y["winner_deck"],
@@ -76,6 +84,9 @@ for key in sorted(groups["control"]):
             "turn_events": b["turns_observed"],
             "observed_actions": b["events"],
             "target_choices_logged": b["choice_count"],
+            "actual_attack_count": b["actual_attack_count"],
+            "attackers_by_controller": b["attackers_by_controller"],
+            "actual_attack_targets": b["actual_attack_targets"],
             "controllers": b["controllers_actually_choosing"],
             "visible_unblocked_damage_windows": b["visible_unblocked_damage_windows"],
             "chosen_targets": b["chosen_targets"],
