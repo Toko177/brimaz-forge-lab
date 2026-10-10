@@ -29,8 +29,8 @@ CARD = re.compile(r"\((\d+)\)")
 CREATURE_GONE = re.compile(r"^Zone Change: (.+?) \((\d+)\) was put into (.+?) from Battlefield\.")
 BRIMAZ = re.compile(r"^BRIMAZ_WINDOW: .*?turn=(\d+).*?selfTurn=(true|false).*?candidatePhyrexianTokens=(-?\d+).*?outletCardsOnBattlefield=(\d+).*")
 CHOICE = re.compile(r"^FOUR_AI_TARGET: controller=(Ai\([1-4]\)-.*?) chosen=(Ai\([1-4]\)-.*?) visibleSafeDamage=(\d+)")
-COUNTER_DECISION = re.compile(r"^FOUR_AI_COUNTER_DECISION player=(Ai\\([1-4]\\)-.*?) spell=(.*?) originalDecline=(true|false) threatensCommander=(true|false) threatensLethalLife=(true|false) policyActive=(true|false)$")
-CRITICAL_ACCEPT = re.compile(r"^FOUR_AI_CRITICAL_COUNTER accepted player=(Ai\\([1-4]\\)-.*?) hostileSpell=(.*?) protectedCommander=(.*?) imminentLife=(true|false)$")
+COUNTER_DECISION = re.compile(r"^FOUR_AI_COUNTER_DECISION player=(Ai\([1-4]\)-.*?) spell=(.*?) originalDecline=(true|false) threatensCommander=(true|false) threatensLethalLife=(true|false) policyActive=(true|false)$")
+CRITICAL_ACCEPT = re.compile(r"^FOUR_AI_CRITICAL_COUNTER accepted player=(Ai\([1-4]\)-.*?) hostileSpell=(.*?) protectedCommander=(.*?) imminentLife=(true|false)$")
 TITLE = "Forge four-seat action-level diagnostic (NOT a legal-action oracle)"
 
 def seat_of(text):
