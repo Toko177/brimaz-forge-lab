@@ -85,6 +85,27 @@ campagnes désactive explicitement les ratios de vitesse lorsque
 JFR est actif ; ces parties servent au diagnostic, pas à proclamer
 un gain de performance.
 
+## Validation de compilation V24 contre le VRAI moteur Forge
+
+Pour vérifier le Java avant de consacrer du temps à huit parties :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -CompileOnly
+```
+
+Cela lance `scripts/verify_v24_real_jar_compile.py`, qui
+télécharge les sources Java **au tag exact forge-2.0.15**,
+copie le JAR original sans le modifier, applique les correctifs
+réels, vérifie que la classe V24 est bien présente dans le
+bytecode `ComputerUtilCombat` (avec `javap`) et exige la
+réussite des **16 assertions Java**.
+
+**Ce test ne simule aucune partie.** Un succès établira uniquement
+la compatibilité du correctif et le résultat de ces invariants,
+pas une amélioration CPU ou tactique. Cette commande n'a pas
+encore été exécutée avec succès ici, faute de runtime local et
+de runners GitHub fonctionnels.
+
 ## Pré-validation, sans lancer une partie
 
 Depuis la racine du clone :
