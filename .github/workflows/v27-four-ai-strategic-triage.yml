@@ -57,6 +57,24 @@ jobs:
           python3 scripts/first_real_four_ai_divergence.py \
             --input downloaded/ \
             --output results/v27_real_strategic/first_gameplay_divergence.json
+          python3 - <<'PY'
+          import json,pathlib
+          x=json.loads(pathlib.Path("results/v27_real_strategic/first_gameplay_divergence.json").read_text())
+          for d in x["differences"]:
+            if d["entire_observable_event_sequences_equal"]:continue
+            print("FOUR_AI_AUTHENTIC_FIRST_GAMEPLAY_DIFFERENCE",json.dumps({
+              "pod":d["pod"],"rotation":d["rotation"],"seed":d["seed"],
+              "index":d["first_mismatch_index"],
+              "base_first_event":d["reference_at_mismatch"],
+              "optimized_first_event":d["experimental_at_mismatch"],
+              "previous_base":d["reference_preceding_events"],
+              "previous_opt":d["experimental_preceding_events"],
+              "base_following":d["reference_following_events"],
+              "optimized_following":d["experimental_following_events"],
+              "timeouts_already_happened":[d["reference_timeouts_before_mismatch"],
+                 d["experimental_timeouts_before_mismatch"]]
+            },ensure_ascii=False))
+          PY
           python3 scripts/analyze_four_ai_timeout_stacks.py \
             --input downloaded/ --out results/v27_real_strategic/
           python3 - <<'PY'
