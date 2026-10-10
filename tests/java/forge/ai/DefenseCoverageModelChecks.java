@@ -90,6 +90,25 @@ public final class DefenseCoverageModelChecks {
             commander,new boolean[]{false},40,0,false,false,true).riskPermille<1000,
             "Commander-specific protection prevents commander kill");
 
+        // Two distinct opponents can both kill us. The first blocker may
+        // leave the *maximum* risk unchanged, but is still necessary for a
+        // two-blocker defense. The total-risk tie-break must make progress.
+        var twoLethalOpponents=List.of(
+            List.of(hit(12,false,null,0,true,true,false)),
+            List.of(hit(12,false,null,0,true,false,true)));
+        var initialHeld=new boolean[]{false,false};
+        var eligible=new boolean[]{true,true};
+        int first=DefenseCoverageModel.bestReservation(twoLethalOpponents,
+                    initialHeld,eligible,10,0,false,false,false);
+        assertTrue(first==0,"Do not stall on tied worst-case risks");
+        initialHeld[first]=true;
+        int second=DefenseCoverageModel.bestReservation(twoLethalOpponents,
+                    initialHeld,eligible,10,0,false,false,false);
+        assertTrue(second==1,"A second defender must now cover the other opponent");
+        initialHeld[second]=true;
+        assertTrue(DefenseCoverageModel.worstRisk(twoLethalOpponents,initialHeld,
+                    10,0,false,false,false)==0,
+                    "Two distinct enemies' otherwise lethal attacks are blockable");
         System.out.println("FOUR_AI_V17_COVERAGE_CHECKS_PASS checks="+checks);
     }
 }
