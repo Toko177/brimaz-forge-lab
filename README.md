@@ -30,6 +30,17 @@ preuve de performance de Brimaz.
 V8 expérimente des transformations défensives d'Incubateurs, toujours
 sous le moteur de règles Forge.
 
+## Tester plusieurs changements de cartes dans une seule campagne
+
+Le **[tournoi de deckbuilding multivariantes](docs/DECKBUILDING_TOURNAMENT.md)** permet de tester **2 à 8 variantes de cartes** dans une seule expérience Commander à quatre IA, au lieu de répéter entièrement une comparaison A/B pour chaque remplacement.
+
+- **[Recettes de variantes modifiables](decks/tournament-experiments.json)** : échanges `Carte retirée -> Carte ajoutée` ; aucun changement du deck de référence.
+- **[Workflow tournoi](.github/workflows/deckbuild-tournament.yml)** : 2 pods × 4 positions, 8 jeux candidats par variante, référence commune jouée une seule fois ou **réutilisée depuis un run précédent SHA256-compatible**. Jusqu'à 16 jobs Forge simultanés.
+- Avant toute partie : vérification live **Scryfall Commander / Game Changers**, et préflight de mana pour chaque candidat. Après les parties : SHA256 des vrais logs, 4 issues du match, censure et anomalies IA, taux par pod/siège et classement exploratoire sur exactement les mêmes références.
+- Le premier [tournoi de validation à deux variantes de terrains](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040171940) a lancé 24 vraies parties, sans toucher au canonique. Les modifications ne sont pas des recommandations avant validation indépendante et nouveaux échantillons.
+
+La première campagne nécessite `8 + 8 × N` parties pour N variantes (contre `16 × N` séparément), ou `8 × N` si les huit références certifiées sont déjà disponibles. **Le classement n'est qu'une présélection** : une différence sur huit parties ne démontre pas une supériorité réelle.
+
 ## Comparer et améliorer rapidement ses decks Commander
 
 Le nouveau pipeline de **deckbuilding A/B** évite de créer une version Java/Forge pour chaque échange de cartes. Il recherche désormais automatiquement une référence Forge certifiée compatible : **après un premier test de 16 parties, les comparaisons suivantes peuvent n'exécuter que 8 nouvelles parties**, sans modifier les règles ni réinventer les résultats. Chaque archive doit correspondre aux SHA256 des decks, du moteur, des pods, des graines et aux traces brutes. Un nouveau script permet aussi de classer plusieurs modifications sur **la même référence**. Il prend deux listes de 100 cartes, vérifie leur légalité avec Scryfall et les confronte à trois véritables IA sur 4 sièges × 2 groupes d'adversaires. Il certifie indépendamment les journaux Forge et publie winrates, incertitude statistique, censures et erreurs de décision IA.
