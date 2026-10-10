@@ -5,6 +5,8 @@ on:
     paths:
       - .github/workflows/v27-four-ai-strategic-triage.yml
       - scripts/triage_real_four_ai_strategy.py
+      - scripts/assess_simulator_readiness.py
+      - tests/test_assess_simulator_readiness.py
       - tests/test_triage_real_four_ai_strategy.py
       - scripts/first_real_four_ai_divergence.py
       - tests/test_first_real_four_ai_divergence.py
@@ -30,6 +32,7 @@ jobs:
           set -euo pipefail
           python3 -m py_compile scripts/triage_real_four_ai_strategy.py scripts/forensic_four_seat.py
           python3 tests/test_triage_real_four_ai_strategy.py
+          python3 tests/test_assess_simulator_readiness.py
           python3 tests/test_first_real_four_ai_divergence.py
           python3 tests/test_forensic_four_seat.py
           python3 tests/test_aggregate_four_ai_tournament.py
@@ -74,17 +77,23 @@ jobs:
              "natural_changed_winner_pairs":divergence["different_natural_winner_pairs"],
           }))
           PY
-      - name: Classify readiness separately from technical capability (may be blocked)
+      - name: Enforce correctly censored exploratory engine readiness without claiming human-like AI
         if: success()
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
           python3 scripts/assess_simulator_readiness.py \
              --forensics results/v27_real_strategic/four_seat_actions.json \
              --out results/v27_real_strategic/readiness.json
-          RC=$?
-          echo "Readiness decision exit status $RC (blocked does NOT invent a game result)"
-          test -f results/v27_real_strategic/readiness.json
+          python3 - <<'PY'
+          import json,pathlib
+          x=json.loads(pathlib.Path("results/v27_real_strategic/readiness.json").read_text())
+          assert x["engine_pilot_gate"]=="PASS",x["blocking_issues"]
+          assert x["expected_clock_censored_games_kept_in_denominator"]==2
+          assert x["statistically_validated_brimaz_winrate"] is False
+          assert x["human_like_ai_demonstrated"] is False
+          print("FOUR_AI_V27_EXPLORATORY_ENGINE_PILOT_READY_WITH_CENSORS",x["game_count"])
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
