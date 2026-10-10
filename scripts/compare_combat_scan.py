@@ -37,7 +37,9 @@ def load(tag):
                             "Game Outcome: ", "Game Result: "))
         and not line.startswith(("Game Result: ", "Game Outcome: Match Duration "))
     ]
-    # Exclude measured elapsed time: a real speedup changes this value\n    # without changing any decision, play, phase or rule outcome.\n    signature = hashlib.sha256("\n".join(events).encode("utf-8")).hexdigest()
+    # Exclude measured elapsed time: a real speedup changes this value
+    # without changing any decision, play, phase or rule outcome.
+    signature = hashlib.sha256("\n".join(events).encode("utf-8")).hexdigest()
     return entry, log, signature, len(events)
 
 control, control_log, control_sig, control_events = load("control-scan")
