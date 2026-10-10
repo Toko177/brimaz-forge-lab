@@ -26,6 +26,20 @@ LONG_EVENT=140
 
 def extract(log, max_events=1500):
     raw=Path(log).read_bytes()
+    digest=hashlib.sha256(raw).hexdigest()
+    # Manifest status is not independent certification, but lets the action
+    # explorer FLAG clock-forced pseudo-winners instead of miscounting them.
+    manifest=Path(log).parent/"games.json"
+    game_status="unknown"
+    if manifest.exists():
+        rows=json.loads(manifest.read_text(encoding="utf-8"))
+        matches=[row for row in rows
+                 if Path(row.get("log","")).name==Path(log).name]
+        if len(matches)!=1:
+            raise ValueError("Raw action log not uniquely linked to original game's manifest")
+        if matches[0].get("log_sha256")!=digest:
+            raise ValueError("Original transcript SHA256 differs from game manifest")
+        game_status=matches[0].get("status","unknown")
     text=raw.decode("utf-8",errors="replace")
     lines=text.splitlines()
     current=None
@@ -107,7 +121,7 @@ def extract(log, max_events=1500):
     if len(actions)==max_events and total_actions>max_events:
         raise ValueError("Action buffer exhausted: full chronological audit required")
     return {
-      "file":str(log),"sha256":hashlib.sha256(raw).hexdigest(),
+      "file":str(log),"sha256":digest,"launcher_status":game_status,
       "seats":seats,"outcomes":outcomes,
       "global_turns_observed":current["global_turn"],
       "all_player_actions_by_kind":{str(s):dict(v) for s,v in sorted(stats.items())},
@@ -141,6 +155,12 @@ def aggregate(rows):
           any(v["result"]=="won" for k,v in r["outcomes"].items()
               if int(k)==r["brimaz"]["seat"]) for r in rows),
       "raw_winner_label_warning":"Raw Game Outcome labels can be present even in clock-censored/artificially stopped games. NEVER count them as accepted victories; use deckbuild_certify.py only.",
+      "brimaz_raw_winner_labels_in_censored_games":sum(
+          r["launcher_status"]!="complete" and
+          r["outcomes"].get(r["brimaz"]["seat"],{}).get("result")=="won"
+          for r in rows),
+      "clock_censored_games_by_manifest":sum(
+          r["launcher_status"]=="clock_censored" for r in rows),
       "brimaz_games_without_cast":sum(x is None for x in first),
       "first_cast_turn_histogram":dict(sorted(Counter(str(x) for x in first).items())),
       "games_with_zero_incubate_trigger":sum(not r["brimaz"]["incubate_triggers_resolved"] for r in rows),
