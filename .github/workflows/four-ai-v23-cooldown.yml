@@ -118,7 +118,7 @@ jobs:
           java -cp "$JAR:/tmp/four-ai-tests" forge.ai.ability.MultiplayerCriticalCounterChecks
           javac --release 21 -cp "$JAR" -d /tmp/four-ai-tests tests/java/forge/ai/AiTimeoutCooldownChecks.java
           java -cp "$JAR:/tmp/four-ai-tests" forge.ai.AiTimeoutCooldownChecks
-      - name: V23 reference: all four seats keep original timed evaluation behavior
+      - name: 'V23 reference: all four seats keep original timed evaluation behavior'
         shell: bash
         run: |
           set -euo pipefail
