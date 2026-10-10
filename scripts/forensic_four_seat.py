@@ -103,6 +103,8 @@ def inspect_game(record, log_text):
                                     or "cast-commander" in name):
                     stats[seat]["commander_casts_observed"]+=1
                 record_event(seat,kind,{"action":name[:200]})
+            if kind=="activated" and name.startswith("Incubator Token"):
+                incubate_transformations+=1
             gameplay_events+=1
             continue
         m=ATTACK.match(line)
@@ -205,7 +207,6 @@ def inspect_game(record, log_text):
             seat=seat_of(m.group(1))
             if seat:stats[seat]["loss_reason_from_raw_log"]=m.group(2)
             continue
-        if "activated Incubator Token" in line:incubate_transformations+=1
 
     if observed_turns==0:evidence_warnings.append("No Forge Turn events")
     if record.get("status")=="complete" and outcome_winners!=[record.get("winner_seat")]:
