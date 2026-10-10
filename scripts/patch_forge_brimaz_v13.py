@@ -773,11 +773,12 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"SpellApiToAi.java"),str(ability_dir/"IncubateAi.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
-    for name in ("AiController.class","BrimazTurnPlanner.class",
+    for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
                  "PlayerControllerAi.class","BrimazMulliganPolicy.class","SpellApiToAi.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("Missing compiled "+name)
     subprocess.run(["jar","uf",str(jar),"-C",str(classes),"forge/ai/AiController.class",
+                    "-C",str(classes),"forge/ai/AiTimeoutCooldownPolicy.class",
                     "-C",str(classes),"forge/ai/BrimazTurnPlanner.class",
                     "-C",str(classes),"forge/ai/PlayerControllerAi.class",
                     "-C",str(classes),"forge/ai/BrimazMulliganPolicy.class",
