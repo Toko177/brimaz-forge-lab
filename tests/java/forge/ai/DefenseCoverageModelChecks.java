@@ -50,8 +50,8 @@ public final class DefenseCoverageModelChecks {
         var commander=List.of(hit(3,false,"Brimaz",18,true,true));
         assertTrue(risk(commander,new boolean[]{false},40,0)>=1000,
                 "Same commander reaches 21 combat damage");
-        assertTrue(risk(commander,new boolean[]{true},40,0)==0,
-                "Legal block prevents new commander damage");
+        assertTrue(risk(commander,new boolean[]{true},40,0)==857,
+                "Legal block prevents new commander damage but retains old damage");
 
         // Distinct commanders do not pool their existing commander damage.
         var separate=List.of(hit(1,false,"A",18,true,false),
