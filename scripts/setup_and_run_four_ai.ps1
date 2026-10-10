@@ -29,7 +29,7 @@ foreach ($cmd in @("gh","python","java","javac","jar","tar")) {
     throw "Missing executable $cmd on PATH. Install prerequisites first."
   }
 }
-$javaText=(& java -version 2>&1 | Out-String)
+$javaText=(cmd /c "java -version 2>&1" | Out-String)
 if ($javaText -notmatch 'version "21(\.|"|\+)') {
   throw "JDK 21 required. Actual java -version: $javaText"
 }
