@@ -46,6 +46,7 @@ policy = r'''package forge.ai;
 import forge.game.card.Card;
 import forge.game.combat.CombatUtil;
 import forge.game.keyword.Keyword;
+import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.zone.ZoneType;
 import java.util.List;
@@ -100,11 +101,12 @@ public final class MultiplayerCombatTargetPolicy {
 
     public static Player chooseTarget(final Player ai) {
         if (ai == null || ai.getGame() == null
-                || !ai.getGame().getPhaseHandler().isPlayerTurn(ai)) {
+                || !ai.getGame().getPhaseHandler().isPlayerTurn(ai)
+                || !ai.getGame().getPhaseHandler().is(PhaseType.COMBAT_DECLARE_ATTACKERS)) {
             return null;
         }
         final List<Card> ourCreatures = ai.getCreaturesInPlay();
-        if (ourCreatures.size() > 35) return null;
+        if (ourCreatures.isEmpty() || ourCreatures.size() > 35) return null;
 
         Player best = null;
         int bestScore = Integer.MIN_VALUE;
