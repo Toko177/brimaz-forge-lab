@@ -29,6 +29,8 @@ CARD = re.compile(r"\((\d+)\)")
 CREATURE_GONE = re.compile(r"^Zone Change: (.+?) \((\d+)\) was put into (.+?) from Battlefield\.")
 BRIMAZ = re.compile(r"^BRIMAZ_WINDOW: .*?turn=(\d+).*?selfTurn=(true|false).*?candidatePhyrexianTokens=(-?\d+).*?outletCardsOnBattlefield=(\d+).*")
 CHOICE = re.compile(r"^FOUR_AI_TARGET: controller=(Ai\([1-4]\)-.*?) chosen=(Ai\([1-4]\)-.*?) visibleSafeDamage=(\d+)")
+COUNTER_DECISION = re.compile(r"^FOUR_AI_COUNTER_DECISION player=(Ai\\([1-4]\\)-.*?) spell=(.*?) originalDecline=(true|false) threatensCommander=(true|false) threatensLethalLife=(true|false) policyActive=(true|false)$")
+CRITICAL_ACCEPT = re.compile(r"^FOUR_AI_CRITICAL_COUNTER accepted player=(Ai\\([1-4]\\)-.*?) hostileSpell=(.*?) protectedCommander=(.*?) imminentLife=(true|false)$")
 TITLE = "Forge four-seat action-level diagnostic (NOT a legal-action oracle)"
 
 def seat_of(text):
@@ -47,6 +49,9 @@ def base_stats(seat, deck):
         "slow_ai_evaluations":0,"slowest_evaluation_ms":0,
         "decision_slow_phases":Counter(),
         "target_checks":0,"target_switches":0,"defense_checks":0,
+        "counter_spells_considered":0,"counter_profile_declines":0,
+        "counter_commander_threats":0,"counter_lethal_life_threats":0,
+        "counter_override_acceptances_not_casts":0,
         "defensive_reserves":0,"peak_model_risk_permille":0,
         "last_life_observed":None,"winner_in_raw_log":False,
         "loss_reason_from_raw_log":None,
@@ -172,6 +177,27 @@ def inspect_game(record, log_text):
                     record_event(seat,"reserve",{"blockers":int(m.group(5)),
                       "model_risk_before":int(m.group(3)),"model_risk_after":int(m.group(4))})
             continue
+        m=COUNTER_DECISION.match(line)
+        if m:
+            who=seat_of(m.group(1))
+            if who:
+                st=stats[who]
+                st["counter_spells_considered"]+=1
+                st["counter_profile_declines"]+=int(m.group(3)=="true")
+                st["counter_commander_threats"]+=int(m.group(4)=="true")
+                st["counter_lethal_life_threats"]+=int(m.group(5)=="true")
+                if m.group(4)=="true" or m.group(5)=="true":
+                    record_event(who,"counter_threat",{"stack_spell":m.group(2),
+                        "stock_declines":m.group(3)=="true","life_lethal":m.group(5)=="true"})
+            continue
+        m=CRITICAL_ACCEPT.match(line)
+        if m:
+            who=seat_of(m.group(1))
+            if who:
+                stats[who]["counter_override_acceptances_not_casts"]+=1
+                record_event(who,"counter_override",{"stack_spell":m.group(2),
+                    "protected_commander":m.group(3),"life_lethal":m.group(4)=="true"})
+            continue
         m=CHOICE.match(line)
         if m:
             src=seat_of(m.group(1));dst=seat_of(m.group(2))
@@ -246,7 +272,10 @@ def aggregate(records):
                       "attacks_declared","combat_damage_to_players",
                       "combat_damage_received","slow_ai_evaluations",
                       "defense_checks","defensive_reserves","target_checks",
-                      "target_switches","commander_casts_observed"):
+                      "target_switches","commander_casts_observed",
+                      "counter_spells_considered","counter_profile_declines",
+                      "counter_commander_threats","counter_lethal_life_threats",
+                      "counter_override_acceptances_not_casts"):
                 dst[k]+=player[k]
             if player["winner_in_raw_log"] and g["identity"]["status"]=="complete":
                 dst["observed_natural_wins_not_certified"]+=1
