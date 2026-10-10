@@ -38,6 +38,18 @@ public final class CardPropertyLiteralFastPath {
      * Other -> !card.equals(source).
      * The caller handles pre-existing phased-out exclusion FIRST.
      */
+    public static boolean supports(final String property) {
+        if (property==null) return false;
+        switch (property) {
+            case "IsCommander":
+            case "Self":
+            case "YouCtrl":
+            case "YouOwn":
+            case "Other":return true;
+            default:return false;
+        }
+    }
+
     public static Boolean evaluate(final Card card,final String property,
                                    final Player sourceController,final Card source,
                                    final Player lkiController) {
