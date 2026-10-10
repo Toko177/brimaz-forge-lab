@@ -46,6 +46,8 @@ public final class MultiplayerCriticalCounterPolicy {
                 || hostile.getActivatingPlayer() == null
                 || !hostile.getActivatingPlayer().isOpponentOf(ai)
                 || !hostile.usesTargeting() || !hostile.isTargeting(ai)
+                || hostile.getTargets().size() != 1
+                || hostile.hasParam("DividedAsYouChoose")
                 || ai.cantLoseForZeroOrLessLife()
                 || hostile.getHostCard() == null) return false;
         final ApiType api=hostile.getApi();
