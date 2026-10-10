@@ -190,3 +190,27 @@ L'ancienne PR #15 demeure candidate de consolidation vers main.
 Ne pas fusionner V23 avant le comparatif réel et les contrôles de
 légalité de la mise à l'écart. Les premiers logs sont des échantillons,
 pas des preuves générales de gain de vitesse ou de niveau d'IA.
+
+## Nouvelles références empiriques pour le prochain chat
+
+La campagne de régression V13 relancée sur le code V23 après correction
+ du packaging Java a **réussi les 9 jobs Actions**, avec
+**16 véritables parties** : 14 fins naturelles, 2 censures et
+1 victoire Brimaz observée (sans prétention de winrate indépendant).
+Run : https://github.com/Toko177/brimaz-forge-lab/actions/runs/38089750692
+
+**Référence de victoire Brimaz à quatre IA :**
+[docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md](docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md)
+Seed **20830001**, artifact rotation 2, Brimaz siège 3,
+Forge rapporte une victoire naturelle en 78,474 secondes. Le journal
+comporte Incubateurs, Mirkwood Bats, Essence of Orthodoxy, Athreos,
+Metastatic Evangel et des attaques de jetons phyrexians.
+Le cas est une **référence empirique de synergies présentes**, pas la
+preuve qu'une heuristique particulière est causalement supérieure.
+
+Le lanceur manuel sur main permet désormais un horloge **360/420/480 s**
+(420 par défaut, 480 limitée à trois parties par rotation) et les
+**quatre profils Forge** identiques aux quatre sièges : Default,
+Experimental, Cautious, Reckless. Les profils n'ont pas encore été
+classés en force réelle. Le workflow_dispatch reste à valider en vrai
+pilot manuel complet.
