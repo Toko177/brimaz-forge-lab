@@ -1,7 +1,7 @@
 name: Commander multivariant tournament - shared 4-seat baseline
 on:
   push:
-    paths: [.github/workflows/deckbuild-tournament.yml, decks/tournament-experiments.json]
+    paths: [decks/tournament-experiments.json]
   workflow_dispatch:
     inputs:
       recipe:
@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 25
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
+      reference_run_id: ${{ steps.reference_lookup.outputs.reference_run_id }}
     steps:
       - uses: actions/checkout@v4
       - name: Confirm tournament safety and previous Commander regression
@@ -102,17 +103,48 @@ jobs:
               assert all(items[n]["structurally_and_legality_valid"] for n in needed)
               (folder/"merged.json").write_text(json.dumps({"reports":[items[n] for n in sorted(needed)]})+"\n")
           PY
-      - name: Matrix contains one reference (8 seats/pods) plus 8 matches per distinct candidate
+      - name: Discover exact compatible original Forge baseline without replaying it
+        id: reference_lookup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          found=""
+          slug="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["reference_variant"])')"
+          root="tournament/variants/$slug/forge_decks"
+          SEED="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["seed_base"])')"
+          REPEATS="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["repeats"])')"
+          ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deckbuild-ab.yml/runs?per_page=30"             --jq '.workflow_runs[] | select(.conclusion=="success") | .id')"
+          for id in $ids; do
+            mkdir -p "reference-search/$id"
+            if ! gh run download "$id" --repo "$GITHUB_REPOSITORY"               --name deckbuild-verified-inputs --dir "reference-search/$id" >/dev/null 2>&1; then
+              continue
+            fi
+            previous="reference-search/$id/forge_decks/reference-cache-key.json"
+            if [[ ! -f "$previous" ]]; then continue; fi
+            if python3 scripts/deckbuild_cache.py --mode verify --root .               --decks "$root" --manifest "$root/candidate-manifest.json"               --seed-base "$SEED" --repeats "$REPEATS"               --previous "$previous"; then found="$id"; break; fi
+          done
+          echo "reference_run_id=$found" >> "$GITHUB_OUTPUT"
+          if [[ -n "$found" ]]; then
+            echo "TOURNAMENT_REFERENCE_CACHE_HIT run $found: no new reference JVM required"
+          else
+            echo "TOURNAMENT_REFERENCE_CACHE_MISS: eight new reference games are required"
+          fi
+      - name: Plan only needed new JVM matches: eight per variant plus optional shared reference
         id: plan
+        env:
+          CACHE_RUN_ID: ${{ steps.reference_lookup.outputs.reference_run_id }}
         run: |
           python3 - <<'PY'
           import pathlib,json,os
           d=json.loads(pathlib.Path("tournament/tournament.json").read_text())
-          jobs=d["jobs"]
-          assert len(jobs)==8*(1+len(d["variants"]))
+          jobs=[j for j in d["jobs"] if not
+                (os.environ.get("CACHE_RUN_ID") and j["arm"]=="reference")]
+          expected=8*(len(d["variants"])+(0 if os.environ.get("CACHE_RUN_ID") else 1))
+          assert len(jobs)==expected
           with open(os.environ["GITHUB_OUTPUT"],"a") as f:
               f.write("matrix="+json.dumps({"include":jobs},separators=(",",":"))+"\n")
-          print("REAL_FORGE_TOURNAMENT_SHARDS",len(jobs),"shared_baseline_only",8)
+          print("TOURNAMENT_NEW_JVM_SHARDS",len(jobs),"vs",len(d["jobs"]),"without an existing reference")
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -197,6 +229,19 @@ jobs:
         with:
           pattern: tournament-real-*
           path: original-games/
+      - name: Load exact original reference game logs from prior GitHub campaign
+        if: ${{ needs.prepare.outputs.reference_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: deckbuild-game-reference-*
+          run-id: ${{ needs.prepare.outputs.reference_run_id }}
+          github-token: ${{ github.token }}
+          path: original-games/cached-reference/
+      - name: Verify every reused original reference transcript SHA256 and unchanged 4-seat matrix
+        if: ${{ needs.prepare.outputs.reference_run_id != '' }}
+        run: |
+          slug="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["reference_variant"])')"
+          python3 scripts/deckbuild_cache.py --mode audit-archive             --root . --decks "tournament/variants/$slug/forge_decks"             --manifest "tournament/variants/$slug/forge_decks/candidate-manifest.json"             --seed-base "$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["seed_base"])')"             --repeats "$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["repeats"])')"             --previous tournament/reference-cache-key.json             --archive original-games/cached-reference/
       - name: Require every actual reference and candidate artifact, seed and transcript SHA
         run: |
           python3 scripts/deckbuild_tournament.py assemble \
