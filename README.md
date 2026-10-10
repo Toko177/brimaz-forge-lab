@@ -43,7 +43,7 @@ La première campagne nécessite `8 + 8 × N` parties pour N variantes (contre `
 
 **[Deux tournois et un classement commun : SUCCESS](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040857652).** Quatre swaps de cartes ont été testés dans de vraies parties Forge sur **une référence identique de huit transcriptions SHA256**. Première campagne : 24 jeux ; deuxième campagne : **16 nouveaux jeux seulement**, les huit parties de référence ayant été récupérées et recertifiées. Les quatre candidats ont chacun 0 victoire (sur 8/8, 6/8, 8/8 et 7/8 parties naturelles) : cela ne prouve aucune amélioration de puissance. Voir les [certificats du premier tournoi](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040171940) et du [second](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040810924).
 
-**[Diagnostic CPU des combats sans modifier Forge](docs/COMBAT_CPU_PROFILING.md)** : JFR mesure le coût de la prédiction d'attaques et de bloqueurs avant toute optimisation.
+**[Diagnostic CPU des combats sans modifier Forge — résultats vérifiés](docs/COMBAT_CPU_PROFILING.md)** : [deux vraies parties Commander profilées via JFR, workflow SUCCESS](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38041169999). Sur 21 984 échantillons Java, 1 422 piles comportaient des méthodes IA et **1 056 (74,3 % de ces seules piles IA)** concernaient la prédiction de combats/bloqueurs. Ce chiffre ne représente PAS 74,3 % du CPU total. Les optimisations doivent préserver strictement les états mutables et les effets Magic.
 
 ## Comparer et améliorer rapidement ses decks Commander
 
