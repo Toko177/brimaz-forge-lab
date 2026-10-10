@@ -11,6 +11,7 @@ def sample(brimaz_cast=True,turn2=True):
       "Turn: Turn 1 (Ai(2)-Opponent A)",
       "Land: Ai(2)-Opponent A played Swamp (12)",
       "Add To Stack: Ai(2)-Opponent A cast Sol Ring",
+      "Combat: Ai(2)-Opponent A assigned Bear (22) to attack Ai(1)-Deck_Candidate.",
       "Turn: Turn 2 (Ai(1)-Deck_Candidate)",
       "Land: Ai(1)-Deck_Candidate played Plains (8)",
       "Add To Stack: Ai(1)-Deck_Candidate cast Sol Ring",
@@ -49,6 +50,7 @@ class PlayByPlayTests(unittest.TestCase):
         self.assertEqual(b["incubator_transforms_resolved"],1)
         self.assertEqual(p["all_player_actions_by_kind"]["2"]["land"],1)
         self.assertEqual(b["land_plays"],1)
+        self.assertEqual(b["attacker_declarations_targeting_brimaz"],1)
         self.assertEqual(aggregate([p])["brimaz_raw_winner_labels_UNCERTIFIED"],1)
 
     def test_clock_censored_raw_winner_never_becomes_certified_win(self):
