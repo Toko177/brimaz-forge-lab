@@ -1,0 +1,12 @@
+name: Forge combat CPU research
+on:
+  push:
+    paths: [.github/workflows/commander-combat-jfr-profile.yml]
+permissions:
+  contents: read
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tests -p 'test_combat_jfr_probe.py' -v
