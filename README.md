@@ -2,6 +2,8 @@
 
 **Lancer de vraies parties à quatre IA :** [GitHub Actions — Commander simulator](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml) · [Guide d'utilisation](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md).
 
+**Nouveau pilote V24 :** [Optimisation expérimentale des combats à quatre IA (PR #17)](https://github.com/Toko177/brimaz-forge-lab/pull/17) · [Guide pour lancer les vrais matchs localement sous Windows/Linux](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md). V24 n'est pas validée par un benchmark : nouveaux jobs GitHub bloqués avant allocation de runner.
+
 **Candidate consolidée :** [PR #15 — simulateur Forge réel à quatre IA](https://github.com/Toko177/brimaz-forge-lab/pull/15) (en brouillon, CI et validation du jeu en cours).
 
 **Dernier développement et passation :** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), branche expérimentale de contresorts en PR #13 (base V20 PR #12). La branche `main` conserve surtout l'ancienne version du moteur.
