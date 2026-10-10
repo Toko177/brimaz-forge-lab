@@ -7,6 +7,9 @@ on:
       - tests/java/forge/ai/MultiplayerCombatTargetChecks.java
       - .github/workflows/four-ai-tactical-target-pilot.yml
   workflow_dispatch:
+concurrency:
+  group: four-ai-v14-tactical-pilot
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
