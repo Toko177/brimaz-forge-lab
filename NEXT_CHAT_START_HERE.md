@@ -9,19 +9,19 @@ ci-dessous.
 
 ## Branche ACTIVE et passation
 
-- **V20, branche active :**
-  `feature/v20-counterfactual-removal-and-tournament-20261010`
-- **Passation intégrale V20 :**
-  [docs/PASSATION_2026-10-10_V20.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V20.md)
-- **PR #12 en développement :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/12
-- **Base V19 :**
-  `feature/v19-opponent-removal-urgency-20261010`,
-  [PR #11](https://github.com/Toko177/brimaz-forge-lab/pull/11).
+- **Branche la plus récente — interactions sur pile :**
+  `feature/four-ai-critical-counter-response-20261010`
+- **Passation des changements les plus récents :**
+  [docs/PASSATION_COUNTER_RESPONSE_2026-10-10.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_COUNTER_RESPONSE_2026-10-10.md)
+- **PR #13 en développement :**
+  https://github.com/Toko177/brimaz-forge-lab/pull/13
+- **Base V20 :**
+  `feature/v20-counterfactual-removal-and-tournament-20261010`,
+  [PR #12](https://github.com/Toko177/brimaz-forge-lab/pull/12).
 - **Histoire V13–V16 :**
-  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V16.md),
-  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V17.md),
-  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v20-counterfactual-removal-and-tournament-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
+  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_2026-10-10_V16.md),
+  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_2026-10-10_V17.md),
+  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
 
 ## Le simulateur peut être lancé depuis GitHub
 
@@ -29,7 +29,7 @@ ci-dessous.
   [Commander simulator — run 4 AI games](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml)
 - **Guide d'utilisation :**
   [docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md)
-- Sélectionner `source_ref` sur la branche V20 ci-dessus, un pod
+- Sélectionner `source_ref` sur la branche de développement la plus récente ci-dessus, un pod
   `artifact`/`aristo` ou `both`, une politique IA et 1–5 parties
   par rotation. Chaque partie utilise un **processus Forge réel**
   avec quatre sièges IA distincts, listes de cartes vérifiées SHA256.
@@ -55,7 +55,7 @@ avant toute affirmation de vitesse.
 
 ## Consignes au prochain ChatGPT
 
-1. **Lire d'abord la passation V20 et le statut actuel de la PR #12.**
+1. **Lire d'abord la passation de la PR #13, puis celle de V20 PR #12.**
 2. Vérifier les nouveaux GitHub Actions, branches, commits et artefacts
    directement dans le dépôt ; ne pas deviner les résultats.
 3. Continuer à **modifier le code et lancer des tests**, en visant
@@ -98,3 +98,24 @@ contrôle les artefacts et publie des résultats par pod avec incertitude
 descriptive. Il n'a PAS encore été vérifié en lancement manuel complet.
 Le mode `policy=v20_shadow` exploite la branche V20. La PR #12 doit
 rester en draft jusqu'aux résultats de ses comparaisons à état identique.
+
+## Expérience publique sur la pile — PR #13
+
+Nouvelle politique optionnelle `fourSeatCounterCritical` : si Forge a déjà
+validé la cible et le coût d'un contresort, ne pas le refuser uniquement à
+cause d'une probabilité de contre faible lorsque le sort adverse vise
+précisément à détruire/exiler/voler notre commandant. Pour les quatre IA.
+CI de deux pods appariés :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085855529
+
+**L'ancienne V20 demeure nécessaire**, notamment le test contrefactuel de
+classement des cibles et le rapport de tournoi fan-in sur main.
+Validation V20 :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085885574
+Le job agrégateur sur huit véritables parties archivées a déjà réussi :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085452376
+
+Le lanceur manuel sur main accepte `policy=critical_counter`, mais
+conserver la PR #13 en brouillon tant que les derniers logs et les
+résultats naturels ne sont pas vérifiés. Ne pas conclure à une meilleure
+IA sur des règles de score non exercées.
