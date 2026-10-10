@@ -33,7 +33,7 @@ for label,tag in (("control","V24-stock-trigger"),("optimized","V24-fast-negativ
            if x.startswith(prefixes) and "Match Duration" not in x]
     if not score or not any(x.startswith("Turn: ") for x in score):
         raise ValueError("Missing genuine Forge turns and observable events")
-    if not re.search(r"^Ai\\(1\\)-.+? vs Ai\\(2\\)-.+? vs Ai\\(3\\)-.+? vs Ai\\(4\\)-.+? - one game of Commander seed", raw, re.M):
+    if not re.search(r"^Ai\(1\)-.+? vs Ai\(2\)-.+? vs Ai\(3\)-.+? vs Ai\(4\)-.+? - one game of Commander seed", raw, re.M):
         raise ValueError("Not a genuine declared four-AI Commander match")
     hits=[int(n) for n in re.findall(r"FOUR_AI_FAST_COMBAT_TRIGGER_PRUNED count=(\d+)",raw)]
     timeout=list(re.finditer(r"AI_EVAL_TIMEOUT_V10: player=(.*?) globalTurn=(\d+) phase=(\w+)",raw))
