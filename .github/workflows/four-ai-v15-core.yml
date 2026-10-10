@@ -1,6 +1,7 @@
 name: V15 deterministic multiplayer tactical engine A/B
 on:
   pull_request:
+    branches: [feature/four-ai-multiplayer-lethal-targets-20261010]
     paths:
       - scripts/patch_forge_four_ai_targets.py
       - scripts/audit_v15_core.py
