@@ -28,6 +28,7 @@ moteur et les tests évoluent dans des branches de développement.
 | `pod` | `both`, `aristo`, `artifact` | adversaires présents |
 | `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal`, `v20_shadow`, `critical_counter` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
 | `games_per_rotation` | 1, 2, 3 ou 5 | processus Forge indépendants, chacun à 4 joueurs |
+| `ai_profile` | `Default`, `Experimental`, `Cautious`, `Reckless` | **le même profil Forge original aux quatre sièges** ; option expérimentale pour comparer la qualité des IA, pas un classement de force |
 | `clock_seconds` | `360`, `420` (défaut), `480` | horloge réelle du moteur Forge ; choisir 480 pour au plus trois parties par rotation |
 | `seed_base` | entier positif | graine de référence, dérivée pour chaque siège et répétition |
 
@@ -182,3 +183,13 @@ refusé. L'amélioration réelle reste à établir par
 Le moteur et les cartes restent régis par Forge : il ne s'agit pas
  d'un changement de règles Magic. **Ne pas choisir V23 par défaut sans
 preuve de moins de timeouts et sans absence de perte tactique.**
+
+### Contrôler le profil des quatre IA sans déséquilibrer les sièges
+
+Le paramètre `ai_profile` permet d'essayer les modes natifs Forge
+`Default`, `Experimental`, `Cautious` ou `Reckless`.
+Pour ne pas donner un avantage artificiel à Brimaz ou à un adversaire,
+**le même profil est obligatoirement transmis aux quatre joueurs**.
+Le profil exact est archivé avec le SHA du JAR et la graine.
+Aucun classement de qualité entre ces profils n'est revendiqué avant
+une campagne appariée avec rotation, fins naturelles et incertitude.
