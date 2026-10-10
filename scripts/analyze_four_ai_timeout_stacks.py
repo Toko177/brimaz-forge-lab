@@ -12,7 +12,7 @@ import re
 
 TIMEOUT=re.compile(r"^AI_EVAL_TIMEOUT_V10: player=(Ai\([1-4]\)-.*?) globalTurn=(\d+) phase=(\S+) elapsedMs=(\d+) timeoutSecs=(\d+) listed=(\d+) considered=(\d+) lastCandidate=(.*)$")
 SLOW=re.compile(r"^AI_EVAL_SLOW_V10: player=(Ai\([1-4]\)-.*?) globalTurn=(\d+) phase=(\S+) elapsedMs=(\d+).*")
-FRAME=re.compile(r"^\s*at\s+([A-Za-z0-9_$\.]+)\(([^()]*)\)\s*$")
+FRAME=re.compile(r"^\s*at\s+([A-Za-z0-9_$/\.]+)\(([^()]*)\)\s*$")
 
 def classify(frames):
     text="\n".join(frames)
