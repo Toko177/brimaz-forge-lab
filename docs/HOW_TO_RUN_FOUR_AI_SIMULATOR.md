@@ -28,6 +28,7 @@ moteur et les tests évoluent dans des branches de développement.
 | `pod` | `both`, `aristo`, `artifact` | adversaires présents |
 | `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal`, `v20_shadow`, `critical_counter` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
 | `games_per_rotation` | 1, 2, 3 ou 5 | processus Forge indépendants, chacun à 4 joueurs |
+| `clock_seconds` | `360`, `420` (défaut), `480` | horloge réelle du moteur Forge ; choisir 480 pour au plus trois parties par rotation |
 | `seed_base` | entier positif | graine de référence, dérivée pour chaque siège et répétition |
 
 **Exemple pour un test rapide :** `pod=both`, `policy=v17_strict`,
@@ -166,3 +167,18 @@ Pour un futur chat : ouvrir d'abord [NEXT_CHAT_START_HERE.md](../NEXT_CHAT_START
 puis la passation sur la branche active ; vérifier les derniers commits et
 runs plutôt que supposer cette documentation à jour.
 
+
+### Expérience V23 : IA lente qui réévalue plusieurs fois la même carte
+
+Choisir `source_ref=feature/v23-ai-timeout-cooldown-20261010`,
+`policy=v23_cooldown` pour évaluer **une hypothèse de vitesse** : une
+carte dont la propre évaluation a dépassé le délai de Forge peut être
+dépriorisée temporairement par cette IA pendant 4/8/12/16 tours
+globaux, puis redevenir candidate. La pile des contresorts n'est pas
+filtrée. Un mode V23 sur une branche trop ancienne est explicitement
+refusé. L'amélioration réelle reste à établir par
+[le pilote A/B](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v23-cooldown.yml).
+
+Le moteur et les cartes restent régis par Forge : il ne s'agit pas
+ d'un changement de règles Magic. **Ne pas choisir V23 par défaut sans
+preuve de moins de timeouts et sans absence de perte tactique.**
