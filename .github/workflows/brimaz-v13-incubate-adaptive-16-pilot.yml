@@ -1,6 +1,7 @@
 name: V13 fair adaptive think-time and all-seat Incubate 16-game pilot
 on:
   push:
+    branches: [improve/realism-and-ai-diagnostics]
     paths: [.github/workflows/brimaz-v13-incubate-adaptive-16-pilot.yml, scripts/patch_forge_brimaz_v13.py]
   workflow_dispatch:
 permissions:
