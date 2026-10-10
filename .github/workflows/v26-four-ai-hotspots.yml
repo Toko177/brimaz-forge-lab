@@ -1,11 +1,5 @@
 name: V26 real four-AI Forge CPU hotspot profiler
 on:
-  pull_request:
-    branches: [feature/v25-all-seats-real-evidence-20261011]
-    paths:
-      - .github/workflows/v26-four-ai-hotspots.yml
-      - scripts/batch.py
-      - scripts/analyze_four_ai_timeout_stacks.py
   workflow_dispatch:
 concurrency:
   group: v26-one-real-forge-jfr-profile
