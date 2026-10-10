@@ -24,17 +24,32 @@ for label,tag in (("control","V24-stock-trigger"),("optimized","V24-fast-negativ
     if len(manifest)!=1:raise ValueError("One genuine independent Forge JVM expected")
     r=manifest[0]
     raw=(root/tag/Path(r["log"]).name).read_text(encoding="utf-8",errors="replace")
+    # Match all public game events, not merely turns/spell-stack events.
+    # The weaker original fingerprint could miss differences in damage,
+    # life totals, poison, land plays and zone transitions.
+    prefixes=("Turn: ","Phase: ","Add To Stack: ","Combat: ","Game Outcome: ",
+              "Damage: ","Life: ","Zone Change: ","Land: ","Counter: ","Poison: ")
     score=[x for x in raw.splitlines()
-           if x.startswith(("Turn: ","Phase: ","Add To Stack: ","Combat: ","Game Outcome: "))
-           and "Match Duration" not in x]
+           if x.startswith(prefixes) and "Match Duration" not in x]
+    if not score or not any(x.startswith("Turn: ") for x in score):
+        raise ValueError("Missing genuine Forge turns and observable events")
+    if not re.search(r"^Ai\\(1\\)-.+? vs Ai\\(2\\)-.+? vs Ai\\(3\\)-.+? vs Ai\\(4\\)-.+? - one game of Commander seed", raw, re.M):
+        raise ValueError("Not a genuine declared four-AI Commander match")
     hits=[int(n) for n in re.findall(r"FOUR_AI_FAST_COMBAT_TRIGGER_PRUNED count=(\d+)",raw)]
     timeout=list(re.finditer(r"AI_EVAL_TIMEOUT_V10: player=(.*?) globalTurn=(\d+) phase=(\w+)",raw))
+    if len(r["seats"])!=4 or len(set(r["seats"]))!=4 or r["seats"].count("Brimaz_V3")!=1:
+        raise ValueError("Not four distinct canonical AI Commander seats")
+    if r["status"]=="complete" and r["winner_deck"] not in r["seats"]:
+        raise ValueError("Natural winner not among four seats")
+    if r["status"]!="complete" and r["winner_deck"] is not None:
+        raise ValueError("Non-natural game falsely labeled with winner")
     s[label]={
         "pod":r["pod"],"rotation":r["rotation"],"seed":r["seed"],"seats":r["seats"],
         "status":r["status"],"winner":r["winner_deck"],
         "brimaz_win":r["brimaz_win"],"wall_seconds":r["wall_seconds"],
         "events_sha256":hashlib.sha256("\n".join(score).encode()).hexdigest(),
         "events_count":len(score),
+        "full_raw_transcript_sha256":hashlib.sha256(raw.encode("utf-8")).hexdigest(),
         "ai_timeout_count":len(timeout),
         "timeout_by_player":dict(Counter(x.group(1) for x in timeout)),
         "exact_negative_combat_trigger_evaluations_pruned":hits[-1] if hits else 0,
@@ -53,6 +68,8 @@ report={
     "speed_ratio_only_when_identical_natural_game":
         round(x["wall_seconds"]/y["wall_seconds"],3)
         if same_natural and y["wall_seconds"]>0 else None,
+    "verified_event_prefixes":["Turn","Phase","Add To Stack","Combat","Game Outcome",
+                               "Damage","Life","Zone Change","Land","Counter","Poison"],
     "limits":[
         "Filtering AI predictions is NOT filtering actual triggers in the Magic rules engine.",
         "No gameplay-strength or global throughput claim from one paired seed.",
