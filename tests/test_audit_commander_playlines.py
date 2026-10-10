@@ -51,6 +51,24 @@ class PlayByPlayTests(unittest.TestCase):
         self.assertEqual(b["land_plays"],1)
         self.assertEqual(aggregate([p])["brimaz_wins"],1)
 
+    def test_clock_censored_raw_winner_never_becomes_certified_win(self):
+        import hashlib
+        raw=self.path.read_bytes()
+        manifest=[{"log":str(self.path),"log_sha256":hashlib.sha256(raw).hexdigest(),
+                   "status":"clock_censored"}]
+        (self.path.parent/"games.json").write_text(json.dumps(manifest))
+        row=extract(self.path)
+        stats=aggregate([row])
+        self.assertEqual(stats["brimaz_raw_winner_labels_UNCERTIFIED"],1)
+        self.assertEqual(stats["brimaz_raw_winner_labels_in_censored_games"],1)
+        self.assertEqual(stats["clock_censored_games_by_manifest"],1)
+
+    def test_tampered_game_manifest_fails_action_audit(self):
+        (self.path.parent/"games.json").write_text(json.dumps([{
+           "log":str(self.path),"log_sha256":"0"*64,"status":"complete"}]))
+        with self.assertRaisesRegex(ValueError,"SHA256"):
+            extract(self.path)
+
     def test_cast_timing_without_commander_is_explicit_null(self):
         self.path.write_text(sample(brimaz_cast=False))
         b=extract(self.path)["brimaz"]
