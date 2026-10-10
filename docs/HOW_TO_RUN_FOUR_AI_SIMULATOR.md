@@ -26,7 +26,7 @@ moteur et les tests évoluent dans des branches de développement.
 |---|---|---|
 | `source_ref` | nom de la branche | code Forge patché + scripts analysés |
 | `pod` | `both`, `aristo`, `artifact` | adversaires présents |
-| `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
+| `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal`, `v20_shadow` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
 | `games_per_rotation` | 1, 2, 3 ou 5 | processus Forge indépendants, chacun à 4 joueurs |
 | `seed_base` | entier positif | graine de référence, dérivée pour chaque siège et répétition |
 
@@ -73,6 +73,32 @@ Les artefacts se trouvent dans le **run Actions → Artifacts**, sous
 `commander-4ai-<run>-<pod>-rotation<N>`. Ils sont conservés
 **30 jours** ; récupérer ou réarchiver les résultats importants pour
 les conserver au-delà de la politique GitHub de rétention.
+
+### V20 : inspection des décisions à état identique
+
+Choisir `source_ref=feature/v20-counterfactual-removal-and-tournament-20261010`
+et `policy=v20_shadow` pour **conserver le classement de retrait de
+référence** tout en enregistrant, pour les mêmes cibles légales, les choix
+préférés avec le bonus V19. Les événements
+`FOUR_AI_REMOVAL_SHADOW` distinguent l'alternative calculée de
+la véritable cible choisie. Une divergence de score n'est pas un
+sort joué ni une preuve de bonne décision. Le mode `v19_removal`
+active réellement le bonus de priorité.
+
+### Rapport de tournoi sur tous les jobs
+
+Après les jobs de simulation, `tournament-summary` restaure toutes
+les archives `commander-4ai-...` du même run. Il utilise l'agrégateur
+stable présent sur `main` et **refuse les matchs ou logs absents,
+les doublons de graines et les incohérences de siège**. Ses fichiers
+`tournament.md` et `tournament.json` indiquent les parties lancées,
+les fins naturelles, les censures, les gagnants descriptifs par pod,
+les intervalles de Wilson à 95 % (descriptifs seulement) et le SHA256
+de chaque journal. En cas d'interruption de job, conserver et examiner
+les artefacts partiels sans inventer de résultat.
+
+Ce job d'agrégation est installé, mais son premier lancement
+manuel complet reste à vérifier.
 
 ## 4. Limites : un résultat de Forge n'est pas automatiquement un winrate
 
