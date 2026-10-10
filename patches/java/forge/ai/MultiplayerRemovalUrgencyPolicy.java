@@ -4,6 +4,7 @@ import forge.game.card.Card;
 import forge.game.combat.CombatUtil;
 import forge.game.player.GameLossReason;
 import forge.game.player.Player;
+import forge.game.zone.ZoneType;
 import forge.game.keyword.Keyword;
 
 /**
@@ -48,6 +49,8 @@ public final class MultiplayerRemovalUrgencyPolicy {
 
     public static int publicThreatBonus(final Player ai, final Card enemy) {
         if (ai==null || enemy==null || !enemy.isCreature()
+                || enemy.getZone()==null
+                || enemy.getZone().getZoneType()!=ZoneType.Battlefield
                 || !enemy.getController().isOpponentOf(ai)
                 || ai.getGame()==null) return 0;
         // Expensive scoring is skipped unless the card can threaten THIS
