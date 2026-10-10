@@ -140,3 +140,21 @@ IA sur des règles de score non exercées.
   changé par V19** ; six parties naturelles et deux censurées.
   Ne pas adopter V19 par défaut en affirmant un bénéfice non mesuré.
 
+
+## CANDIDATE D'INTÉGRATION — point de réunion des branches
+
+La [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15)
+vise directement `main` depuis
+`integration/four-ai-commander-simulator-20261010`, elle-même basée
+sur la V22. C'est la candidate **unique** pour sortir de l'empilement
+des PR expérimentales. Elle reste volontairement en brouillon :
+ce n'est pas une preuve de niveau humain ni une autorisation de
+fusion sans vérification.
+
+Lire :
+[docs/INTEGRATION_RELEASE_CANDIDATE.md](https://github.com/Toko177/brimaz-forge-lab/blob/integration/four-ai-commander-simulator-20261010/docs/INTEGRATION_RELEASE_CANDIDATE.md).
+
+La PR #15 exige un test d'intégration avec **une vraie partie Forge
+à quatre IA** ; vérifier son dernier GitHub Action.
+Les modifications tactiques peuvent continuer sur la V22, mais
+ne pas perdre la candidate d'intégration ni le lanceur sur main.
