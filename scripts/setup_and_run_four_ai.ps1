@@ -16,6 +16,7 @@ param(
   [ValidateSet(360,420,480)][int]$Clock=420,
   [int]$SeedBase=20261027,
   [switch]$PreflightOnly,
+  [switch]$Jfr,
   [switch]$SkipForgeDownload,
   [string]$ForgeArchive="",
   [string]$ForgeRuntimeDir=""
@@ -105,6 +106,7 @@ $params=@("scripts/run_local_four_ai.py","--jar",$jarFile.FullName,
           "--games-per-rotation","$GamesPerRotation","--parallel","$Parallel",
           "--clock","$Clock","--seed-base","$SeedBase")
 if ($PreflightOnly) {$params+="--preflight-only"}
+if ($Jfr) {$params+="--jfr"}
 Write-Host "USING_OFFICIAL_FORGE_RUNTIME $($jarFile.DirectoryName)"
 & python @params
 if ($LASTEXITCODE -ne 0) {
