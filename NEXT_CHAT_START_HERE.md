@@ -9,15 +9,15 @@ ci-dessous.
 
 ## Branche ACTIVE et passation
 
-- **Branche la plus récente — interactions sur pile :**
-  `feature/v22-four-ai-operator-smoke-and-counter-audit-20261010`
+- **Branche expérimentale la plus récente — performance V23 :**
+  `feature/v23-ai-timeout-cooldown-20261010`
 - **Passation des changements les plus récents :**
-  [docs/PASSATION_ACTIVE_V22_2026-10-10.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_ACTIVE_V22_2026-10-10.md)
-- **PR #14 en développement :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/14
-- **Base PR #13 :**
-  `feature/four-ai-critical-counter-response-20261010`,
-  [PR #13](https://github.com/Toko177/brimaz-forge-lab/pull/13).
+  [docs/PASSATION_ACTIVE_V23_2026-10-10.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v23-ai-timeout-cooldown-20261010/docs/PASSATION_ACTIVE_V23_2026-10-10.md)
+- **PR #16 expérimentale :**
+  https://github.com/Toko177/brimaz-forge-lab/pull/16
+- **Base d’intégration V22 :**
+  `integration/four-ai-commander-simulator-20261010`,
+  [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15).
 - **Histoire V13–V16 :**
   [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V16.md),
   [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V17.md),
