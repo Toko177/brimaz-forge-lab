@@ -75,7 +75,7 @@ public final class MultiOpponentDefensePolicy {
             int threats = 0;
             List<Card> active = new ArrayList<>();
             for (Card c : creatures) {
-                if (!CombatUtil.canAttackNextTurn(c)) continue;
+                if (!ComputerUtilCombat.canAttackNextTurn(c)) continue;
                 int power = Math.max(0, c.getNetCombatDamage());
                 if (c.hasDoubleStrike()) power *= 2;
                 if (power <= 0) continue;
