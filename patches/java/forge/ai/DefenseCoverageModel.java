@@ -96,6 +96,7 @@ public final class DefenseCoverageModel {
         int incomingLife=0, incomingPoison=0, highestCommander=0;
         for(int i=0;i<threats.size();i++){
             Threat a=threats.get(i);
+            if(a.commanderId!=null) highestCommander=Math.max(highestCommander,a.alreadyCommanderDamage);
             if(prevented[i])continue;
             if(a.infect) incomingPoison+=a.combatDamage;
             else incomingLife+=a.combatDamage;
