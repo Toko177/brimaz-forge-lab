@@ -16,6 +16,8 @@ from forge_result_evidence import inspect_ai_quality_signatures
 
 p=argparse.ArgumentParser()
 p.add_argument("--jar",required=True)
+p.add_argument("--runtime-dir",default=None,
+               help="Original Forge installation directory for resource lookups when using a copied patched JAR")
 p.add_argument("--pod",choices=["aristo","artifact"],default="aristo")
 p.add_argument("--clock",type=int,default=360)
 p.add_argument("--timeout",type=int,default=445)
@@ -70,6 +72,9 @@ if not brimaz_file.is_file():
         "[Commander]\n1 Brimaz, Blight of Oreskos\n",encoding="utf-8"
     )
 jar=pathlib.Path(args.jar).resolve()
+runtime_dir=pathlib.Path(args.runtime_dir).resolve() if args.runtime_dir else jar.parent
+if not runtime_dir.is_dir():
+    raise FileNotFoundError("Forge runtime directory missing: "+str(runtime_dir))
 out=root/"results"/"batch"/args.pod/args.out_tag
 out.mkdir(parents=True,exist_ok=True)
 summary=[]
@@ -91,7 +96,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         st=time.monotonic()
         proc_timeout=False
         try:
-            proc=subprocess.run(cmd,cwd=jar.parent,text=True,capture_output=True,
+            proc=subprocess.run(cmd,cwd=runtime_dir,text=True,capture_output=True,
                                 errors="replace",timeout=args.timeout)
             stdout,stderr=proc.stdout,proc.stderr
             rc=proc.returncode
