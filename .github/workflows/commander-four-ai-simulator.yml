@@ -25,6 +25,12 @@ on:
         type: choice
         options: ["1", "2", "3", "5"]
         default: "2"
+      clock_seconds:
+        description: "Forge simulation clock, seconds (420 default; 480 only for <=3 games/rotation)"
+        required: true
+        type: choice
+        options: ["360", "420", "480"]
+        default: "420"
       seed_base:
         description: "Base Forge random seed"
         required: true
@@ -47,6 +53,7 @@ jobs:
           POD: ${{ inputs.pod }}
           GAMES: ${{ inputs.games_per_rotation }}
           SEED: ${{ inputs.seed_base }}
+          CLOCK: ${{ inputs.clock_seconds }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json,os,sys
@@ -54,6 +61,9 @@ jobs:
           seed=int(os.environ["SEED"])
           assert 1<=games<=5
           assert 1<=seed<=2_000_000_000
+          clock=int(os.environ["CLOCK"])
+          assert clock in (360,420,480)
+          assert games<=3 or clock<=420, "5 matches at 480s can exceed the 49-minute worker job limit"
           pods=["aristo","artifact"] if os.environ["POD"]=="both" else [os.environ["POD"]]
           assert set(pods)<={"aristo","artifact"}
           include=[{"pod":pod,"rotation":i} for pod in pods for i in range(4)]
@@ -150,6 +160,7 @@ jobs:
           POD: ${{ matrix.pod }}
           ROTATION: ${{ matrix.rotation }}
           RUN_ID: ${{ github.run_id }}
+          CLOCK: ${{ inputs.clock_seconds }}
         shell: bash
         run: |
           set -euo pipefail
@@ -169,7 +180,7 @@ jobs:
           python3 scripts/batch.py --jar "$(cat /tmp/commander_simulator_jar)" \
             --require-canonical-decks --pod "$POD" --rotation "$ROTATION" \
             --games-per-rotation "$GAMES" --seed-base "$SEED" \
-            --clock 360 --timeout 445 \
+            --clock "$CLOCK" --timeout "$((CLOCK+85))" \
             --out-tag "operator-run-$RUN_ID-rot$ROTATION" --policy-label "$POLICY"
       - name: Analyze every genuine Forge game, all four AI seats
         if: always()
@@ -186,6 +197,7 @@ jobs:
           SOURCE_REF: ${{ inputs.source_ref }}
           POD: ${{ matrix.pod }}
           ROTATION: ${{ matrix.rotation }}
+          CLOCK: ${{ inputs.clock_seconds }}
         run: |
           python3 - <<'PY'
           import hashlib,json,os,pathlib,subprocess
@@ -197,6 +209,7 @@ jobs:
             "source_ref":os.environ["SOURCE_REF"],
             "head_sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip(),
             "policy":os.environ["POLICY"],
+            "forge_clock_seconds":int(os.environ["CLOCK"]),
             "pod":os.environ["POD"],"seat_rotation":int(os.environ["ROTATION"]),
             "forge_jar_sha256":hashlib.sha256(jar_path.read_bytes()).hexdigest()
                 if jar_path and jar_path.exists() else None,
