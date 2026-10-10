@@ -66,3 +66,20 @@ et celui des anti-créatures. Le workflow compare uniquement l'option
 À chaque futur chat, vérifier PR, derniers Actions, preuves, puis mettre
 à jour `NEXT_CHAT_START_HERE.md` et les rapports. Les PR sont empilées ;
 ne pas fusionner les feuilles avant les parents.
+
+## Premiers résultats de validation de la PR #13
+
+Run https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085855529 :
+compilation Forge 2.0.15 réussie et **11 tests tactiques** réussis.
+Dans le pod artifact rotation 1, les deux vrais jeux ont terminé
+naturellement, même gagnant (Amalia), mêmes événements observables ;
+**zéro** acceptation de contresort critique enregistrée.
+Le pod aristo rotation 2 était encore en cours au dernier contrôle.
+Ces résultats ne démontrent donc **aucun bénéfice de niveau d'IA**.
+L'option demeure expérimentale, désactivable et non fusionnée.
+
+La V20 mère comporte un résultat négatif significatif : dans trois
+configurations, 599 véritables décisions avec au moins deux cibles de
+retrait légales n'ont donné aucun changement de cible avec le bonus V19.
+L'analyse à état identique est donc plus informative que l'ancien
+simple décompte de scores positifs.
