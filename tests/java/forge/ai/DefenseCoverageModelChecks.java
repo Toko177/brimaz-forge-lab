@@ -109,6 +109,22 @@ public final class DefenseCoverageModelChecks {
         assertTrue(DefenseCoverageModel.worstRisk(twoLethalOpponents,initialHeld,
                     10,0,false,false,false)==0,
                     "Two distinct enemies' otherwise lethal attacks are blockable");
+        // Proactive variant considers risk before exact visible lethal, but
+        // leaves the strict 100% threshold unchanged for historical A/B.
+        var nearLethal=List.of(hit(9,false,null,0,true,true));
+        assertTrue(DefenseCoverageModel.bestReservation(List.of(nearLethal),
+                    new boolean[]{false},new boolean[]{true},10,0,
+                    false,false,false)==-1,
+                    "Strict V17 must not reserve below the lethal threshold");
+        assertTrue(DefenseCoverageModel.bestReservation(List.of(nearLethal),
+                    new boolean[]{false},new boolean[]{true},10,0,
+                    false,false,false,850)==0,
+                    "Optional proactive mode should defend at 90 percent life risk");
+        var lowPressure=List.of(hit(6,false,null,0,true,true));
+        assertTrue(DefenseCoverageModel.bestReservation(List.of(lowPressure),
+                    new boolean[]{false},new boolean[]{true},10,0,
+                    false,false,false,850)==-1,
+                    "Proactive mode must not hold back an attacker under 85 percent risk");
         System.out.println("FOUR_AI_V17_COVERAGE_CHECKS_PASS checks="+checks);
     }
 }
