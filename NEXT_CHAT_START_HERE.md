@@ -158,3 +158,35 @@ La PR #15 exige un test d'intégration avec **une vraie partie Forge
 à quatre IA** ; vérifier son dernier GitHub Action.
 Les modifications tactiques peuvent continuer sur la V22, mais
 ne pas perdre la candidate d'intégration ni le lanceur sur main.
+
+## V23 — nouvelle expérimentation contre les répétitions de timeout
+
+**Branche la plus récente :** `feature/v23-ai-timeout-cooldown-20261010`
+**PR #16 :** https://github.com/Toko177/brimaz-forge-lab/pull/16
+**Passation dédiée :**
+https://github.com/Toko177/brimaz-forge-lab/blob/feature/v23-ai-timeout-cooldown-20261010/docs/PASSATION_ACTIVE_V23_2026-10-10.md
+
+V23 descend de la **candidate d'intégration PR #15**, pas de l'ancienne
+V6 sur main. Le smoke E2E de la PR #15 a réussi le pipeline mais sa
+**partie a été censurée à 360 s, sans gagnant naturel**. Elle a signalé
+3 timeouts IA (5/10/15 s) sur l'IA Zimone/Dina avec `Magic Damper`
+comme dernière candidate observée, aux tours 28, 32 et 36.
+
+V23 expérimente, par siège et **uniquement après un véritable timeout**,
+un cooldown borné de 4/8/12/16 tours globaux pour l'ID de carte
+couramment évalué. La politique n'intervient pas dans le choix des
+contresorts sur la pile (`skipCounter=false`), ne blacklist jamais
+une carte définitivement, et reste **désactivée** sans
+`-Dbrimaz.aiTimeoutCooldown=true`.
+
+CI appariée (4 vraies JVM) :
+https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v23-cooldown.yml
+Lire ses derniers logs et **vérifier que Forge démarre** avant d'en
+présenter les résultats : une version initiale du patch compilait le
+helper Java sans l'insérer dans le JAR, causant un
+`NoClassDefFoundError` ; ce défaut d'assemblage a été corrigé.
+
+L'ancienne PR #15 demeure candidate de consolidation vers main.
+Ne pas fusionner V23 avant le comparatif réel et les contrôles de
+légalité de la mise à l'écart. Les premiers logs sont des échantillons,
+pas des preuves générales de gain de vitesse ou de niveau d'IA.
