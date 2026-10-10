@@ -1,0 +1,29 @@
+name: Official Forge 2.0.15 Commander card AI support audit
+on:
+  push:
+    paths:
+      - .github/workflows/forge-card-ai-compatibility.yml
+      - scripts/audit_forge_ai_card_support.py
+      - tests/test_audit_forge_ai_card_support.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-100-real-card-hints:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test strict AI:RemoveDeck handling and explicit unknown statuses
+        run: python3 -m unittest discover -s tests -p 'test_audit_forge_ai_card_support.py' -v
+      - name: Check each of the 100 original Brimaz cards against official tagged Forge 2.0.15 sources
+        run: |
+          python3 scripts/audit_forge_ai_card_support.py \
+            --deck decks/Brimaz_V3.txt \
+            --output results/forge-ai-card-compatibility.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-forge-100-card-ai-incompatibilities
+          path: results/
+          if-no-files-found: ignore
