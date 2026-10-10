@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   paired-four-player-combat:
-    name: "${{ matrix.pod } / rotation ${{ matrix.rotation } / exact seed"
+    name: "${{ matrix.pod }} / rotation ${{ matrix.rotation }} / exact seed"
     runs-on: ubuntu-latest
     timeout-minutes: 33
     strategy:
@@ -34,7 +34,7 @@ jobs:
         with:
           name: forge-seven-decks-canonical-verified
           run-id: 37966009166
-          github-token: "${{ github.token }"
+          github-token: "${{ github.token }}"
           path: canonical/
 
       - name: Verify exact seven Commander lists, without changes
@@ -85,7 +85,7 @@ jobs:
           set -euo pipefail
           export JAVA_TOOL_OPTIONS="-Dbrimaz.fastCombatTriggerScan=false"
           python3 scripts/batch.py --jar "$(cat /tmp/combat-scan-jar-path)" \
-            --require-canonical-decks --pod "${{ matrix.pod }" --rotation "${{ matrix.rotation }" \
+            --require-canonical-decks --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
             --policy-label combat-scan-control --out-tag control-scan \
             --seed-base 20261009 --clock 360 --timeout 445 --games-per-rotation 1
 
@@ -95,7 +95,7 @@ jobs:
           set -euo pipefail
           export JAVA_TOOL_OPTIONS="-Dbrimaz.fastCombatTriggerScan=true"
           python3 scripts/batch.py --jar "$(cat /tmp/combat-scan-jar-path)" \
-            --require-canonical-decks --pod "${{ matrix.pod }" --rotation "${{ matrix.rotation }" \
+            --require-canonical-decks --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
             --policy-label combat-scan-direct --out-tag fast-scan \
             --seed-base 20261009 --clock 360 --timeout 445 --games-per-rotation 1
 
@@ -105,7 +105,7 @@ jobs:
           set -euo pipefail
           export JAVA_TOOL_OPTIONS="-Dbrimaz.fastCombatTriggerScan=true -Dbrimaz.verifyCombatTriggerScan=true"
           python3 scripts/batch.py --jar "$(cat /tmp/combat-scan-jar-path)" \
-            --require-canonical-decks --pod "${{ matrix.pod }" --rotation "${{ matrix.rotation }" \
+            --require-canonical-decks --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
             --policy-label combat-scan-shadow --out-tag verified-scan \
             --seed-base 20261009 --clock 180 --timeout 265 --games-per-rotation 1
 
@@ -113,13 +113,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/compare_combat_scan.py --pod "${{ matrix.pod }" \
-            --out "results/combat_scan/${{ matrix.pod }_rotation${{ matrix.rotation }.json"
+          python3 scripts/compare_combat_scan.py --pod "${{ matrix.pod }}" \
+            --out "results/combat_scan/${{ matrix.pod }}_rotation${{ matrix.rotation }}.json"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: "combat-scan-${{ matrix.pod }-rotation${{ matrix.rotation }"
+          name: "combat-scan-${{ matrix.pod }}-rotation${{ matrix.rotation }}"
           path: |
             results/batch/
             results/combat_scan/
