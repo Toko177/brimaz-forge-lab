@@ -15,6 +15,7 @@ Turn: Turn 1 (Ai(1)-Brimaz V3)
 Land: Ai(1)-Brimaz V3 played Plains (100)
 Add To Stack: Ai(1)-Brimaz V3 cast Brimaz, Blight of Oreskos
 Add To Stack: Ai(1)-Brimaz V3 triggered Brimaz, Blight of Oreskos
+Add To Stack: Ai(1)-Brimaz V3 activated Incubator Token
 Turn: Turn 2 (Ai(2)-EDH Amalia)
 Add To Stack: Ai(2)-EDH Amalia cast Ajani's Welcome
 Turn: Turn 3 (Ai(1)-Brimaz V3)
@@ -35,6 +36,7 @@ assert a["turns_taken"]==2,a
 assert a["lands_played"]==1,a
 assert a["spells_cast"]==1,a
 assert a["commander_casts_observed"]==1,a
+assert g["brimaz"]["observed_incubator_transformations"]==1,g
 assert a["triggers_observed"]==1,a
 assert a["combat_damage_to_players"]==4,a
 assert a["slow_ai_evaluations"]==1 and a["slowest_evaluation_ms"]==2500,a
