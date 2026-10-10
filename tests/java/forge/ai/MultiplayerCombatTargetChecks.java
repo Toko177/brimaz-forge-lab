@@ -52,11 +52,19 @@ public final class MultiplayerCombatTargetChecks {
         check(MultiplayerCombatTargetPolicy.poisonPressure(9, 1, true) == 0,
               "poison ranking respects a cannot-lose-game approximation");
 
+        check(MultiplayerCombatTargetPolicy.commanderPressure(18, 3) >
+              MultiplayerCombatTargetPolicy.commanderPressure(18, 2),
+              "21 commander damage reaches a distinct lethal threshold");
+        check(MultiplayerCombatTargetPolicy.commanderPressure(0, 3) < 10000,
+              "regular commander damage is not a guaranteed elimination");
+        check(MultiplayerCombatTargetPolicy.commanderPressure(19, 0) == 0,
+              "untapped commander with no unblocked combat deals no damage");
+
         for (int seat = 1; seat <= 4; seat++) {
             check(score(10 + seat, 30, 2, 1) ==
                   score(10 + seat, 30, 2, 1),
                   "scoring must be deterministic across the four agents");
         }
-        System.out.println("FOUR_SEAT_COMBAT_TARGET_CHECKS_PASS checks=14");
+        System.out.println("FOUR_SEAT_COMBAT_TARGET_CHECKS_PASS checks=17");
     }
 }
