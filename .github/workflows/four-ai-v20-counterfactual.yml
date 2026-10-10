@@ -47,6 +47,10 @@ jobs:
           java-version: '21'
       - name: Compile-check Python scripts
         run: python3 -m py_compile scripts/patch_forge_four_ai_targets.py scripts/audit_v20_same_state_removal.py
+      - name: Validate tournament aggregation on clearly synthetic unit fixtures
+        run: |
+          python3 -m py_compile scripts/aggregate_four_ai_tournament.py scripts/audit_v20_same_state_removal.py
+          python3 tests/test_aggregate_four_ai_tournament.py
       - name: Verify human-caption indexing preserves unverified status
         run: python3 tests/test_human_caption_index.py
       - uses: actions/download-artifact@v4
