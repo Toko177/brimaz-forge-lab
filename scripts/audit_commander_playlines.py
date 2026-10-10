@@ -35,6 +35,7 @@ def extract(log, max_events=1500):
     outcomes={}
     stats=defaultdict(Counter)
     cast_buckets=defaultdict(list)
+    pending_incubator_owners=[]
     for num,line in enumerate(lines,1):
         m=TURN.match(line)
         if m:
@@ -43,6 +44,7 @@ def extract(log, max_events=1500):
             seats[seat]=player
             current={"global_turn":global_turn,"player":player,
                      "seat":seat,"local_turn":local_turn[seat]}
+            pending_incubator_owners.clear()
             continue
         m=OUTCOME.match(line)
         if m:outcomes[int(m[2])]={"player":m[1],"result":m[3]}
@@ -71,7 +73,11 @@ def extract(log, max_events=1500):
         if kind is None:continue
         # Brimaz triggered abilities may resolve during *another* player's
         # turn. Assign their effects to the controller, not the active seat.
-        if kind in ("incubate_trigger","endstep_proliferate"):
+        if kind=="incubator_transform_resolved" and pending_incubator_owners:
+            # Attribute actual completed transformation to the preceding
+            # activating player, rather than the active player's turn.
+            seat=pending_incubator_owners.pop()
+        elif kind in ("incubate_trigger","endstep_proliferate"):
             # At most one Brimaz commander deck in this audited pod.
             found=[n for n,v in seats.items() if any(t in v for t in DECK_MARK)]
             if len(found)!=1:
@@ -85,6 +91,8 @@ def extract(log, max_events=1500):
             record["detail"]=line[:LONG_EVENT]
         if len(actions)<max_events:actions.append(record)
         stats[seat][kind]+=1
+        if kind=="activate" and card=="Incubator Token":
+            pending_incubator_owners.append(seat)
         if kind=="cast":cast_buckets[seat].append(record)
     if not current:
         raise ValueError("No actual Forge 'Turn:' lines; refuse speculative reconstruction")
