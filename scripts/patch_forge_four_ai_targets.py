@@ -90,6 +90,14 @@ public final class MultiplayerCombatTargetPolicy {
         return score;
     }
 
+    /** Poison also eliminates a player at ten counters, independent of life. */
+    public static int poisonPressure(final int currentPoison, final int safeInfectDamage,
+                                     final boolean cannotLose) {
+        if (cannotLose || safeInfectDamage <= 0) return 0;
+        if (currentPoison + safeInfectDamage >= 10) return 10000;
+        return Math.min(90, safeInfectDamage * 7);
+    }
+
     public static Player chooseTarget(final Player ai) {
         if (ai == null || ai.getGame() == null
                 || !ai.getGame().getPhaseHandler().isPlayerTurn(ai)) {
@@ -101,6 +109,7 @@ public final class MultiplayerCombatTargetPolicy {
         Player best = null;
         int bestScore = Integer.MIN_VALUE;
         int bestSafe = 0;
+        int bestPoison = 0;
         int examined = 0;
         for (Player opp : ai.getOpponents()) {
             // Stock helper includes payable Incubator transformations / animated
@@ -109,15 +118,12 @@ public final class MultiplayerCombatTargetPolicy {
             if (blockers.size() > 40) return null; // conservative fallback
             int ready = 0;
             int safeDamage = 0;
+            int safePoison = 0;
             for (Card a : ourCreatures) {
                 if (!CombatUtil.canAttack(a, opp)) continue;
                 ready++;
                 int damage = Math.max(0, a.getNetCombatDamage());
-                if (damage == 0
-                        || a.hasKeyword(Keyword.INFECT)
-                        || a.hasKeyword(Keyword.WITHER)) {
-                    continue; // do not mistake poison for ordinary life damage
-                }
+                if (damage == 0) continue;
                 boolean canBeBlocked = false;
                 for (Card b : blockers) {
                     if (CombatUtil.canBlock(a, b)) {
@@ -127,7 +133,8 @@ public final class MultiplayerCombatTargetPolicy {
                 }
                 if (!canBeBlocked) {
                     if (a.hasDoubleStrike()) damage *= 2;
-                    safeDamage += damage;
+                    if (a.hasKeyword(Keyword.INFECT)) safePoison += damage;
+                    else safeDamage += damage; // wither still damages player life
                 }
             }
             if (ready == 0) continue;
@@ -139,9 +146,12 @@ public final class MultiplayerCombatTargetPolicy {
                     opp.hasInitiative(),
                     opp.canLoseLife(),
                     opp.cantLoseForZeroOrLessLife());
+            score += poisonPressure(opp.getPoisonCounters(), safePoison,
+                    opp.cantLoseForZeroOrLessLife());
             if (score > bestScore) {
                 bestScore = score;
                 bestSafe = safeDamage;
+                bestPoison = safePoison;
                 best = opp;
             }
         }
@@ -149,6 +159,7 @@ public final class MultiplayerCombatTargetPolicy {
             System.out.println("FOUR_AI_TARGET: controller=" + ai.getName()
                     + " chosen=" + best.getName()
                     + " visibleSafeDamage=" + bestSafe
+                    + " visibleSafePoison=" + bestPoison
                     + " opponentsScored=" + examined
                     + " score=" + bestScore
                     + " globalTurn=" + ai.getGame().getPhaseHandler().getTurn());
