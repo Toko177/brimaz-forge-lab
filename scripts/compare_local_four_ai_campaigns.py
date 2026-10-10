@@ -21,6 +21,14 @@ def load_campaign(root):
     if not files:
         raise ValueError("No actual Forge four-AI game manifests: "+str(root))
     data={}
+    expected={
+        (pod,rotation,repeat,provenance["base_seed"]+10000*rotation+repeat)
+        for pod in provenance["pods"]
+        for rotation in range(4)
+        for repeat in range(provenance["games_per_rotation"])
+    }
+    if len(files)!=len(provenance["pods"])*4:
+        raise ValueError("Missing one or more complete 4-seat rotation job manifests")
     for manifest in files:
         rows=json.loads(manifest.read_text(encoding="utf-8"))
         if not rows:raise ValueError("Empty manifest "+str(manifest))
@@ -35,6 +43,13 @@ def load_campaign(root):
             raw=log.read_text(encoding="utf-8",errors="replace")
             if not ("Turn: Turn " in raw and "Ai(1)-" in raw):
                 raise ValueError("Not a real logged Forge 4-seat game "+str(log))
+            if r["policy"]!=provenance["policy"]:
+                raise ValueError("Manifest policy differs from actual campaign configuration")
+            if r["clock_seconds"]!=provenance["clock_seconds"]:
+                raise ValueError("Manifest clock differs from campaign provenance")
+            if any(x!=provenance["profile_applied_identically_to_all_four_seats"]
+                   for x in r["profiles"]):
+                raise ValueError("AI profile differs across four seats")
             if r["status"]=="complete":
                 seat=r["winner_seat"]
                 if seat not in (1,2,3,4) or r["seats"][seat-1]!=r["winner_deck"]:
@@ -57,6 +72,8 @@ def load_campaign(root):
                 "event_count":len(events),
                 "log":str(log),
             }
+    if set(data)!=expected or len(data)!=provenance["planned_independent_jvms"]:
+        raise ValueError("Real campaign is incomplete, missing seeded games or contains extras")
     return provenance,data
 
 def compare(root_a,root_b):
