@@ -101,6 +101,25 @@ constitue pas à lui seul un sort contré, une bonne décision ou un
 gain de taux de victoire. Comparer avec `v17_strict` et les vrais
 journaux de jeu.
 
+### V22 : audit des réponses létales sur la pile
+
+Avec `source_ref=feature/v22-four-ai-operator-smoke-and-counter-audit-20261010`
+et `policy=critical_counter`, le lanceur active également
+`-Dbrimaz.counterDecisionAudit=true`. Le rapport individuel
+`four_seat_actions.json` distingue **par joueur** les occasions de
+contresort, refus Forge initiaux, menaces ciblées sur le commandant,
+menaces directes et exactement chiffrées sur les points de vie, et
+acceptations expérimentales. Une acceptation de l'IA n'est **pas**
+équivalente au lancement effectif du contresort.
+
+Le mode refuse de deviner des valeurs `X`, des sorts non ciblés ou
+des dommages répartis. Tous les contrôles de légalité restent à Forge.
+La [CI V22](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v22-end-to-end.yml)
+teste automatiquement toute la chaîne sur **une vraie partie Commander
+quatre IA**, mais ne remplace pas un premier essai utilisateur de
+`workflow_dispatch` sur main. La stratégie reste expérimentale tant
+que ses effets sur les parties ne sont pas établis.
+
 ### Rapport de tournoi sur tous les jobs
 
 Après les jobs de simulation, `tournament-summary` restaure toutes
