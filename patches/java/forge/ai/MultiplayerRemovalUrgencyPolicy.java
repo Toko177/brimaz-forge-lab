@@ -59,13 +59,14 @@ public final class MultiplayerRemovalUrgencyPolicy {
 
         // A possible legal blocker is enough to prevent us from treating
         // the damage as certain; do not guess the opponent's instant spells.
-        boolean canBlockAny=CombatUtil.canBeBlocked(enemy,null,ai);
-        if(canBlockAny)for(Card blocker:ai.getCreaturesInPlay()){
-            if(CombatUtil.canBlock(enemy,blocker,false)){
-                canBlockAny=true;
-                break;
+        boolean canBlockAny=false;
+        if(CombatUtil.canBeBlocked(enemy,null,ai)){
+            for(Card blocker:ai.getCreaturesInPlay()){
+                if(CombatUtil.canBlock(enemy,blocker,false)){
+                    canBlockAny=true;
+                    break;
+                }
             }
-            canBlockAny=false;
         }
         boolean noBlocker=!canBlockAny;
         // If the attack has trample, a legal block does not necessarily
