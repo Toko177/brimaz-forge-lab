@@ -203,3 +203,50 @@ jobs:
             results/operator_forensics/
           retention-days: 30
           if-no-files-found: ignore
+
+  tournament-summary:
+    name: Aggregate the genuine 4-AI match outcomes and censoring
+    needs: [plan, simulate]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate uncertainty and completeness estimator
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/test_aggregate_four_ai_tournament.py
+      - name: Restore all real per-rotation raw game manifests
+        uses: actions/download-artifact@v4
+        with:
+          pattern: commander-4ai-${{ github.run_id }}-*
+          path: merged_evidence/
+          merge-multiple: false
+      - name: Produce reproducible cross-job four-seat standings
+        env:
+          POD: ${{ inputs.pod }}
+          GAMES: ${{ inputs.games_per_rotation }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$POD" = both ]; then JOBS=8; else JOBS=4; fi
+          EXPECTED=$((JOBS * GAMES))
+          python3 scripts/aggregate_four_ai_tournament.py \
+            --input merged_evidence/ \
+            --expected-jobs "$JOBS" --expected-games "$EXPECTED" \
+            --out results/four_ai_tournament/
+      - name: Publish all statuses, deck outcomes and statistical caveats
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commander-4ai-${{ github.run_id }}-tournament-summary
+          path: results/four_ai_tournament/
+          retention-days: 30
+          if-no-files-found: ignore
