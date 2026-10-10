@@ -98,6 +98,11 @@ jobs:
                   "--manifest",str(root/"candidate-manifest.json"),
                   "--scryfall",str(target/"scryfall-snapshot.json"),
                   "--output",str(target/"preflight.json")],check=True)
+              # Separate Magic legality from actual Forge AI support. Even
+              # a perfectly legal human card may be excluded by AI:RemoveDeck:All.
+              subprocess.run(["python3","scripts/audit_forge_ai_card_support.py",
+                  "--deck",str(pathlib.Path("tournament/input")/(slug+".txt")),
+                  "--output",str(target/"ai-support.json")],check=True)
           print("ALL_TOURNAMENT_DECKS_LEGAL_LIVE_SCRYFALL",len(plan["variants"]))
           PY
       - uses: actions/download-artifact@v4
@@ -299,6 +304,11 @@ jobs:
               d=pathlib.Path("tournament/variants")/slug/"forge_decks"
               out=pathlib.Path("results/tournament-report")/slug
               out.mkdir(parents=True,exist_ok=True)
+              import shutil
+              shutil.copyfile(pathlib.Path("tournament/legality")/slug/"ai-support.json",
+                              out/"forge-ai-support.json")
+              shutil.copyfile(pathlib.Path("tournament/legality")/slug/"preflight.json",
+                              out/"preflight.json")
               subprocess.run(["python3","scripts/deckbuild_certify.py",
                   "--input",str(pathlib.Path("staging")/slug),
                   "--legality",str(pathlib.Path("tournament/legality")/slug/"merged.json"),
