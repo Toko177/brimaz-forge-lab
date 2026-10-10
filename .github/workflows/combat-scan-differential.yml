@@ -1,0 +1,128 @@
+name: Four-AI V13 combat scan differential (Forge 2.0.15)
+on:
+  pull_request:
+    paths:
+      - scripts/patch_forge_combat_scan.py
+      - scripts/compare_combat_scan.py
+      - .github/workflows/combat-scan-differential.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  paired-four-player-combat:
+    name: "${{ matrix.pod }} / rotation ${{ matrix.rotation }} / exact seed"
+    runs-on: ubuntu-latest
+    timeout-minutes: 33
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - {pod: aristo, rotation: 2}
+          - {pod: artifact, rotation: 2}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-seven-decks-canonical-verified
+          run-id: 37966009166
+          github-token: "${{ github.token }}"
+          path: canonical/
+
+      - name: Verify exact seven Commander lists, without changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p forge_decks
+          cp canonical/forge_normalized/*.dck forge_decks/
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          report=json.loads(pathlib.Path("canonical/results/forge_normalization/report.json").read_text())
+          assert not report["errors"] and len(report["decks"]) == 7
+          for deck in report["decks"]:
+              path=pathlib.Path("forge_decks") / (deck["deck"] + ".dck")
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == deck["normalized_sha256"]
+          print("ALL_700_CARDS_COVERED_BY_CANONICAL_FORGE_DECKS")
+          PY
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: forge-dist/
+          key: forge-2.0.15-linux-shared-20261009
+
+      - name: Obtain authentic upstream Forge 2.0.15
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+
+      - name: Build same Forge JAR for both policies (Charm fix in both)
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          test -n "$JAR"
+          echo "$JAR" > /tmp/combat-scan-jar-path
+          python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+          python3 scripts/patch_forge_brimaz_v13.py --jar "$JAR"
+          python3 scripts/patch_forge_combat_scan.py --jar "$JAR"
+
+      - name: Original trigger scan (all four AI seats)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export JAVA_TOOL_OPTIONS="-Dbrimaz.fastCombatTriggerScan=false"
+          python3 scripts/batch.py --jar "$(cat /tmp/combat-scan-jar-path)" \
+            --require-canonical-decks --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
+            --policy-label combat-scan-control --out-tag control-scan \
+            --seed-base 20261009 --clock 360 --timeout 445 --games-per-rotation 1
+
+      - name: Direct trigger scan (all four AI seats)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export JAVA_TOOL_OPTIONS="-Dbrimaz.fastCombatTriggerScan=true"
+          python3 scripts/batch.py --jar "$(cat /tmp/combat-scan-jar-path)" \
+            --require-canonical-decks --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
+            --policy-label combat-scan-direct --out-tag fast-scan \
+            --seed-base 20261009 --clock 360 --timeout 445 --games-per-rotation 1
+
+      - name: Shadow-check every observed combat outcome against original code
+        shell: bash
+        run: |
+          set -euo pipefail
+          export JAVA_TOOL_OPTIONS="-Dbrimaz.fastCombatTriggerScan=true -Dbrimaz.verifyCombatTriggerScan=true"
+          python3 scripts/batch.py --jar "$(cat /tmp/combat-scan-jar-path)" \
+            --require-canonical-decks --pod "${{ matrix.pod }}" --rotation "${{ matrix.rotation }}" \
+            --policy-label combat-scan-shadow --out-tag verified-scan \
+            --seed-base 20261009 --clock 180 --timeout 265 --games-per-rotation 1
+
+      - name: Check matching seed, four seats, outcome and observable transcript
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/compare_combat_scan.py --pod "${{ matrix.pod }}" \
+            --out "results/combat_scan/${{ matrix.pod }}_rotation${{ matrix.rotation }}.json"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "combat-scan-${{ matrix.pod }}-rotation${{ matrix.rotation }}"
+          path: |
+            results/batch/
+            results/combat_scan/
+          retention-days: 30
+          if-no-files-found: ignore
