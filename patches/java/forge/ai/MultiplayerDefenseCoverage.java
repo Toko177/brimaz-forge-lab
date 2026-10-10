@@ -56,18 +56,24 @@ public final class MultiplayerDefenseCoverage {
                 int power=Math.max(0,attacker.getNetCombatDamage());
                 if(attacker.hasDoubleStrike())power*=2;
                 if(power<=0)continue;
+                // canBlock(attacker, blocker) alone does not cover every
+                // global unblockable/required-two-blockers restriction.
+                // Use Forge's rule-aware public combat constraints as well.
+                boolean blockable=CombatUtil.canBeBlocked(attacker,null,ai);
                 boolean[] edges=new boolean[own.size()];
-                for(int j=0;j<own.size();j++){
-                    Card blocker=own.get(j);
-                    if(!blocker.isTapped() && !alreadyAttacking.contains(blocker)){
-                        edges[j]=CombatUtil.canBlock(attacker,blocker,false);
+                if(blockable) {
+                    for(int j=0;j<own.size();j++){
+                        Card blocker=own.get(j);
+                        if(!blocker.isTapped() && !alreadyAttacking.contains(blocker)){
+                            edges[j]=CombatUtil.canBlock(attacker,blocker,false);
+                        }
                     }
                 }
-                // Single ordinary block reliably prevents life/poison damage.
-                // Trample, menace and extraordinary assignment are deliberately
-                // not treated as guaranteed preventions in this estimate.
-                boolean singleBlockReliable= !attacker.hasKeyword(Keyword.TRAMPLE)
-                                             && !attacker.hasKeyword(Keyword.MENACE);
+                // Trample/menace and multi-block restrictions cannot be
+                // assumed fully neutralized by assigning one blocker.
+                boolean singleBlockReliable=blockable
+                        && !attacker.hasKeyword(Keyword.TRAMPLE)
+                        && CombatUtil.getMinNumBlockersForAttacker(attacker,ai)<=1;
                 current.add(new DefenseCoverageModel.Threat(
                         power,attacker.hasKeyword(Keyword.INFECT),
                         attacker.isCommander()?Integer.toString(attacker.getId()):null,
