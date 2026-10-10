@@ -13,18 +13,18 @@ GAME_PREFIXES=("Turn: ","Phase: ","Add To Stack: ","Combat: ","Game Outcome: ",
                "Damage: ","Life: ","Zone Change: ","Land: ","Counter: ","Poison: ")
 
 def events_and_timeouts(raw):
-    moves=[];before=[0];timeouts=0
+    moves=[];before=[];timeouts=0
     for line in raw.splitlines():
         if line.startswith("AI_EVAL_TIMEOUT_V10:"):
             timeouts+=1
         if line.startswith(GAME_PREFIXES) and "Match Duration" not in line:
-            moves.append(line)
             before.append(timeouts)
-    return moves,before
+            moves.append(line)
+    return moves,before,timeouts
 
 def inspect(reference,experiment,matched):
-    a,ca=events_and_timeouts(reference)
-    b,cb=events_and_timeouts(experiment)
+    a,ca,ta=events_and_timeouts(reference)
+    b,cb,tb=events_and_timeouts(experiment)
     if not a or not b:
         raise ValueError("Missing actual Forge game events")
     count=min(len(a),len(b))
@@ -41,9 +41,9 @@ def inspect(reference,experiment,matched):
       "first_mismatch_index":None if same else first,
       "reference_at_mismatch":None if same or first>=len(a) else a[first],
       "experimental_at_mismatch":None if same or first>=len(b) else b[first],
-      "reference_timeouts_before_mismatch":ca[min(first,len(a))],
-      "experimental_timeouts_before_mismatch":cb[min(first,len(b))],
-      "reference_total_timeouts":ca[-1],"experimental_total_timeouts":cb[-1],
+      "reference_timeouts_before_mismatch":ca[first] if first<len(a) else ta,
+      "experimental_timeouts_before_mismatch":cb[first] if first<len(b) else tb,
+      "reference_total_timeouts":ta,"experimental_total_timeouts":tb,
       "reference_preceding_events":a[max(0,first-3):first] if not same else [],
       "experimental_preceding_events":b[max(0,first-3):first] if not same else [],
       "reference_following_events":a[first:first+4] if not same else [],
