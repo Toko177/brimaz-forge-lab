@@ -19,6 +19,12 @@ for label,tag in (("reference","critical-counter-control"),("critical","critical
     row=rows[0]
     raw=(root/tag/Path(row["log"]).name).read_text(encoding="utf-8",errors="replace")
     forced=re.findall(r"FOUR_AI_CRITICAL_COUNTER accepted player=(.*?) hostileSpell=(.*?) protectedCommander=(.*)",raw)
+    opportunities=re.findall(
+        r"FOUR_AI_COUNTER_DECISION player=(.*?) spell=(.*?) originalDecline=(true|false) "
+        r"threatensCommander=(true|false) threatensLethalLife=(true|false) "
+        r"policyActive=(true|false)",raw)
+    threatening=[x for x in opportunities if x[3]=="true" or x[4]=="true"]
+    original_refusals=[x for x in threatening if x[2]=="true"]
     events=[x for x in raw.splitlines() if x.startswith(("Turn: ","Phase: ","Combat: ","Add To Stack: ","Game Outcome: "))
             and "Match Duration" not in x]
     out[label]={
@@ -26,6 +32,12 @@ for label,tag in (("reference","critical-counter-control"),("critical","critical
         "status":row["status"],"winner":row["winner_deck"],"brimaz_win":row["brimaz_win"],
         "wall_seconds":row["wall_seconds"],
         "actual_critical_counter_acceptances":[{"controller":x[0],"hostile":x[1],"protected":x[2]} for x in forced],
+        "counter_opportunities_inspected":len(opportunities),
+        "public_threatening_counter_opportunities":len(threatening),
+        "threats_originally_rejected":len(original_refusals),
+        "counter_evaluations_per_seat":{str(i):sum(f"Ai({i})-" in x[0] for x in opportunities) for i in range(1,5)},
+        "danger_inspections":[{"actor":x[0],"stack_spell":x[1],"original_decline":x[2],
+            "commander":x[3],"lethal_life":x[4]} for x in threatening[:20]],
         "observed_event_sha256":hashlib.sha256("\n".join(events).encode()).hexdigest(),
         "events":len(events),
     }
@@ -49,5 +61,8 @@ a.out.write_text(json.dumps(report,indent=2,ensure_ascii=False)+"\n",encoding="u
 print("FOUR_AI_CRITICAL_COUNTER_AUDIT",json.dumps({
     "pod":a.pod,"rotation":a.rotation,"both_natural":natural,"same_events":equal,
     "actual_critical_counter_acceptances":len(y["actual_critical_counter_acceptances"]),
+    "counter_opportunities_inspected":y["counter_opportunities_inspected"],
+    "public_threatening_counter_opportunities":y["public_threatening_counter_opportunities"],
+    "originally_rejected_critical_threats":y["threats_originally_rejected"],
     "winners":[x["winner"],y["winner"]]
 },ensure_ascii=False),flush=True)
