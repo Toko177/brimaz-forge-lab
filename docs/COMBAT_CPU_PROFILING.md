@@ -79,3 +79,58 @@ des bloqueurs légaux ou des effets de remplacement.
 
 Voir [PASSATION ACTIVE](PASSATION_ACTIVE_2026-10-10.md)
 pour les statuts des jobs et les rapports valides.
+
+
+## Résultats du premier profilage CPU réel — 10 octobre 2026
+
+**[GitHub Actions 38041169999 — SUCCESS, deux JVM Forge 4 joueurs](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38041169999)**.
+Les deux jobs ont compilé Forge 2.0.15 avec les mêmes correctifs
+annoncés, exécuté chacun une partie Commander, et produit
+un \`real-four-ai-cpu.jfr\`, \`cpu-profile.json\` et les logs originaux.
+Aucun deck canonique n'a été modifié ; **les résultats de ces deux
+parties profilées ne sont pas utilisés dans les winrates**.
+
+| Profil JFR | Aristo | Artifact | Total |
+|---|---:|---:|---:|
+| Durée wall, secondes | 201,80 | 131,22 | 333,02 |
+| Échantillons CPU d'exécution Java | 13 943 | 8 041 | 21 984 |
+| Échantillons dont la pile contient \`forge.ai\` | 890 | 532 | 1 422 |
+| Parmi ceux-ci, catégorisés **combat** | 688 | 368 | **1 056** |
+| Sous-catégorie \`ComputerUtilCombat\` | 491 | 271 | **762** |
+| Sous-catégorie attribution de bloqueurs | 190 | 88 | **278** |
+| Sous-catégorie prédiction d'attaques | 7 | 9 | 16 |
+
+**74,3 % des échantillons qui comportent une méthode \`forge.ai\`
+concernent la prédiction ou la décision de combat**, et non 74,3 %
+du CPU total de Forge. Il s'agit d'une proportion des **1 422
+échantillons classés IA**, pas des 21 984 échantillons Java. Les règles,
+effets statiques et opérations Java à l'extérieur de la pile IA sont
+présents parmi les autres échantillons. De même les comptes de
+méthodes « présentes dans une pile » se recouvrent.
+
+Dans **les deux pods**, les méthodes de la famille
+\`forge.ai.ComputerUtilCombat\` sont omniprésentes, notamment
+\`canDestroyBlocker\`, \`canDestroyAttacker\`,
+\`predictPowerBonusOfAttacker\` et
+\`predictToughnessBonusOfAttacker\`. Dans le groupe aristo,
+\`predictPowerBonusOfAttacker\` apparaît dans 114 échantillons
+avec cadre IA, \`canDestroyBlocker\` dans 98 et
+\`predictDamageTo\` dans 87. Dans artifact, respectivement
+48, 54 et la logique de dommages/effets est également fréquente.
+
+**Décision de développement fondée sur ces mesures :**
+ne pas « optimiser » en écartant des bloqueurs, des effets
+de remplacement ou en donnant des décisions gratuites aux IA.
+Le premier axe d'investigation est **l'élimination des
+recalculs strictement redondants** au sein de la prédiction de
+combat, avec invalidation immédiate dès qu'une créature,
+la pile, un effet continu ou une déclaration de bloqueur
+change. Une mise en cache naïve sur tout un tour serait
+dangereuse : les caractéristiques P/T et la légalité des
+blocs peuvent changer pendant une même décision.
+
+Avant de changer le moteur, établir des tests comparatifs
+sur des positions tactiques, puis mesurer le CPU JFR
+et les issues naturelles. Les profils JFR ne prouvent
+pas encore qu'une optimisation particulière conserverait
+les mêmes décisions et la même légalité.
