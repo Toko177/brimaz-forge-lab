@@ -6,7 +6,7 @@ on:
         description: "Source branch containing the latest simulator code"
         type: string
         required: true
-        default: feature/v18-gameplay-forensics-and-release-gate-20261010
+        default: feature/v19-opponent-removal-urgency-20261010
       pod:
         description: "Which opponent pods to simulate"
         type: choice
@@ -17,7 +17,7 @@ on:
         description: "Shared four-AI combat policy"
         type: choice
         required: true
-        options: [v17_strict, v17_proactive, v16, v15]
+        options: [v17_strict, v17_proactive, v19_removal, v16, v15]
         default: v17_strict
       games_per_rotation:
         description: "Independent games per seat rotation (1–5)"
@@ -117,6 +117,8 @@ jobs:
             tar -xjf forge.tar.bz2 -C forge-dist
           fi
       - name: Compile and apply documented Java 21 AI patches
+        env:
+          POLICY: ${{ inputs.policy }}
         shell: bash
         run: |
           set -euo pipefail
@@ -126,6 +128,11 @@ jobs:
           python3 scripts/patch_forge_charm_context.py --jar "$JAR"
           python3 scripts/patch_forge_brimaz_v13.py --jar "$JAR"
           python3 scripts/patch_forge_four_ai_targets.py --jar "$JAR"
+          if [ "$POLICY" = "v19_removal" ]; then
+            test -f scripts/patch_forge_multiplayer_removal.py ||
+              { echo "V19 policy requested but V19 patch absent from branch" >&2; exit 2; }
+            python3 scripts/patch_forge_multiplayer_removal.py --jar "$JAR"
+          fi
       - name: Run genuine Commander games (all four positions distributed)
         env:
           POLICY: ${{ inputs.policy }}
@@ -143,6 +150,7 @@ jobs:
             v16) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=true -Dbrimaz.fourSeatDefenseCoverage=false";;
             v17_strict) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false";;
             v17_proactive) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=true";;
+            v19_removal) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.fourSeatRemovalUrgency=true -Dbrimaz.removalUrgencyTrace=true";;
             *) echo "Unknown AI policy" >&2; exit 2;;
           esac
           export JAVA_TOOL_OPTIONS
