@@ -25,6 +25,66 @@ complet **n'a pas encore été certifié**.
   Le lanceur **vérifie les sept empreintes SHA256** et refuse une
   liste manquante ou modifiée, notamment celles des trois adversaires.
 
+## Installation automatisée sur Windows (PowerShell)
+
+La branche V24 contient maintenant **`scripts/setup_and_run_four_ai.ps1`**,
+un lanceur de préparation qui vérifie automatiquement l'archive Forge
+2.0.15 (SHA256 officiel épinglé), retrouve ou extrait le vrai JAR
+desktop, télécharge les **sept decks canoniques de ton dépôt privé**
+avec `gh run download`, refuse de remplacer une liste de deck
+différente, vérifie Java 21 et transmet les options au vrai moteur.
+
+Depuis un clone V24 avec `gh auth login` déjà effectué :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -PreflightOnly
+```
+
+Puis pour **huit vraies parties** (deux pods, quatre rotations, une
+partie chacune, deux JVM simultanées) :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Pod both -Policy v17_strict -GamesPerRotation 1 -Parallel 2 -Clock 420
+```
+
+On peut utiliser une archive téléchargée antérieurement sans
+la retélécharger avec `-ForgeArchive "C:\\Forge\\forge-installer-2.0.15.tar.bz2" -SkipForgeDownload`.
+Le programme n'exige pas que la politique V24 soit activée :
+`v17_strict` est le point de départ le plus prudent.
+
+Ce script lui-même n'a **pas encore été exécuté sur un PC Windows**.
+Il automatise les prérequis ; il ne garantit ni débit, ni parties
+naturellement terminées, ni compétence stratégique humaine.
+
+## Profilage CPU Java 21 avec JFR
+
+Pour savoir quelles **méthodes Java réellement exécutées** prennent
+du temps, plutôt que d'accuser le dernier candidat observé pendant
+un timeout, lancer une campagne avec `-Jfr` dans le script PowerShell
+ou `--jfr` dans le lanceur Python.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Pod aristo -Policy v17_strict -GamesPerRotation 1 -Parallel 2 -Clock 420 -Jfr
+```
+
+Chaque véritable JVM enregistre un fichier `.jfr` plafonné à
+**128 Mio** par partie, archivé avec ses vrais logs et sa graine.
+Le lanceur crée également sous `jfr_summaries/` des vues Java 21 :
+
+- `hot_methods` : les méthodes les plus présentes dans
+  les échantillons d'exécution ;
+- `cpu_load` : utilisation CPU par thread ;
+- `summary` : quantité des événements enregistrés.
+
+On pourra ainsi inspecter objectivement `ComputerUtilCombat`,
+`AiBlockController`, les capacités statiques et la gestion des
+remplacements, et prioriser les vrais points chauds.
+
+**JFR peut modifier les chronométrages.** Le comparateur de
+campagnes désactive explicitement les ratios de vitesse lorsque
+JFR est actif ; ces parties servent au diagnostic, pas à proclamer
+un gain de performance.
+
 ## Pré-validation, sans lancer une partie
 
 Depuis la racine du clone :
