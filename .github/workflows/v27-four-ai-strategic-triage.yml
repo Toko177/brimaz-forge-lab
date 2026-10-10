@@ -6,6 +6,8 @@ on:
       - .github/workflows/v27-four-ai-strategic-triage.yml
       - scripts/triage_real_four_ai_strategy.py
       - tests/test_triage_real_four_ai_strategy.py
+      - scripts/first_real_four_ai_divergence.py
+      - tests/test_first_real_four_ai_divergence.py
   workflow_dispatch:
 concurrency:
   group: v27-raw-four-seat-action-triage
@@ -28,6 +30,7 @@ jobs:
           set -euo pipefail
           python3 -m py_compile scripts/triage_real_four_ai_strategy.py scripts/forensic_four_seat.py
           python3 tests/test_triage_real_four_ai_strategy.py
+          python3 tests/test_first_real_four_ai_divergence.py
           python3 tests/test_forensic_four_seat.py
           python3 tests/test_aggregate_four_ai_tournament.py
       - name: Obtain exactly sixteen original Forge 2.0.15 four-AI JVM game logs
@@ -48,6 +51,9 @@ jobs:
           python3 scripts/triage_real_four_ai_strategy.py \
             --input results/v27_real_strategic/four_seat_actions.json \
             --output results/v27_real_strategic/
+          python3 scripts/first_real_four_ai_divergence.py \
+            --input downloaded/ \
+            --output results/v27_real_strategic/first_gameplay_divergence.json
           python3 scripts/analyze_four_ai_timeout_stacks.py \
             --input downloaded/ --out results/v27_real_strategic/
           python3 - <<'PY'
@@ -55,6 +61,8 @@ jobs:
           p=pathlib.Path("results/v27_real_strategic")
           game=json.loads((p/"tournament.json").read_text())
           triage=json.loads((p/"strategic_triage.json").read_text())
+          divergence=json.loads((p/"first_gameplay_divergence.json").read_text())
+          assert divergence["real_forge_four_ai_games_compared"]==16
           assert game["games_started"]==16 and triage["game_count"]==16
           assert len(triage["per_deck"])==7
           assert len(triage["pod_counts"])==2
@@ -63,6 +71,7 @@ jobs:
              "natural":game["games_naturally_complete_unindependently_certified"],
              "censored_or_fault":game["censored_or_engine_failed_count"],
              "suspected_issues":triage["prioritized_investigations"],
+             "natural_changed_winner_pairs":divergence["different_natural_winner_pairs"],
           }))
           PY
       - name: Classify readiness separately from technical capability (may be blocked)
