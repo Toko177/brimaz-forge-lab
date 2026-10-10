@@ -2111,3 +2111,125 @@ Magic défectueuses.
    Ne pas cacher le problème en supprimant
    des réponses ou en augmentant seulement
    le budget CPU. 
+
+
+## 32. TOURNOI MULTIVARIANTES CERTIFIÉ EN CONDITIONS RÉELLES (10/10/2026)
+
+### Premier tournoi : deux terrains expérimentaux
+
+Workflow https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040171940
+**SUCCESS, 26 jobs** (prepare + 24 vraies JVM Commander 4 joueurs
++ report). Scryfall a certifié les deux candidates avant les parties.
+\`deckbuild_tournament.py assemble\` a validé les 24 vrais journaux
+pour une seule référence partagée par les deux candidats.
+Le ranker a validé les **huit SHA256 de référence identiques**.
+
+**Résultats exacts indépendamment certifiés :**
+- Brimaz référence : 8/8 naturelles, **0/8 victoires**,
+  0 timeout, 1 déclaration d'attaque invalide rattrapée.
+- \`surveil-land\` = 1 Plains → 1 Shadowy Backstreet :
+  **8/8 naturelles, 0/8 victoire**, 5 timeouts IA,
+  1 attaque invalide rattrapée.
+- \`fetch-land\` = 1 Swamp → 1 Fabled Passage :
+  **6/8 naturelles, 2 censurées, 0/6 victoire**,
+  6 timeouts IA, 1 attaque invalide rattrapée.
+- Classement exploratoire **ne choisit aucun vainqueur
+  statistique**. Ces changements de terrain n'ont
+  démontré aucune augmentation réelle du niveau du deck.
+- Résultat GitHub : artefact
+  \`commander-multivariant-certified-ranking\` ;
+  certificats \`surveil-land/certificate.json\` et
+  \`fetch-land/certificate.json\` + rapports A/B et
+  \`ranking.json/.md\`.
+
+### Deuxième tournoi : nouvelles idées de mana et réanimation
+
+Workflow https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040810924
+**SUCCESS**.
+- \`two-mana-rock\` = 1 Gold Myr → 1 Fellwar Stone :
+  **8/8 naturelles, 0/8 victoire**, 0 timeout IA,
+  2 attaques invalides rattrapées.
+- \`reanimation-package\` =
+  1 Vulpine Harvester → 1 Victimize :
+  **7/8 naturelles, 1 censurée, 0/7 victoire**,
+  3 timeouts, 0 attaque invalide rattrapée.
+- Référence : les **mêmes huit parties originelles**,
+  8/8 naturelles 0/8 victoire, 0 timeout,
+  1 attaque invalidée.
+- La préparation a affiché EXACTEMENT
+  \`TOURNAMENT_REFERENCE_CACHE_HIT run=38040171940 source=tournament\`
+  puis \`TOURNAMENT_NEW_JVM_SHARDS 16 vs 24\`.
+  Aucun jeu de référence n'a été rejoué ; ses
+  huit journaux ont été téléchargés, contrôlés
+  par SHA256 et recertifiés dans chaque nouveau
+  rapport A/B. C'est un gain de **8 JVM économisées
+  pour deux candidats** sur la deuxième campagne.
+- Les 4 variantes cumulées ont utilisé
+  **40 nouvelles vraies parties Forge** :
+  8 références originales + 4×8 candidates,
+  là où 4 comparaisons A/B sans cache
+  auraient joué 64 parties.
+
+### AUDIT CROISÉ : quatre candidats / UN SEUL ensemble exact de huit références
+
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040857652
+**SUCCESS**.
+Le job a téléchargé les deux artefacts originaux
+et les 4 \`comparison.json\`, puis appelé
+\`scripts/deckbuild_rank.py\`.
+Il a prouvé :
+\`variants_compared=4\`,
+\`unique_original_reference_games=8\`,
+\`reference_fingerprint=f7c8e3d85c430933470a7c9818f503fef47e3c9df41a815ac7e19c3173a71c1d\`.
+L'empreinte des **huit transcriptions de référence
+est exactement identique** d'un candidat à l'autre.
+Artefact :
+\`commander-four-variants-one-identical-original-baseline\`,
+contient \`four-variants.json/.md\`.
+
+**Interprétation à conserver :**
+Aucun des quatre essais ponctuels n'a gagné
+sur les rares parties qualifiées, mais ce
+résultat **ne constitue pas un essai statistique
+du même deck sur 32 parties** (quatre decks
+différents, réutilisation d'une référence fixe).
+La vraie qualité de jeu des IA et les
+matchups peuvent fortement biaiser les
+observations ; ne jamais annoncer
+« toutes les bonnes cartes ont été testées »
+ou « Brimaz ne peut pas gagner ». Le moteur
+de sélection rapide multi-variantes est en
+revanche certifié de bout en bout.
+
+### Optimisation Forge : commencer par les mesures CPU, PAS couper les règles
+
+L'analyse hors-ligne de 33 échantillons de
+pile à timeout des 32 jeux V12 a trouvé,
+parmi les frames récurrents, 
+\`CardState.getReplacementEffects\` (20),
+\`AiBlockController.assignBlockers\` (10) et
+\`CardState.getStaticAbilities\` (9). Les
+comptes se recouvrent et les échantillons
+ne sont pas représentatifs de toutes les
+décisions, seulement des timeouts.
+
+Un profileur **JDK Flight Recorder** sans
+modification du moteur Magic a été ajouté :
+\`scripts/combat_jfr_probe.py\` et
+\`tests/test_combat_jfr_probe.py\` (5 tests
+Python verts dans le run 38041127709).
+La vraie campagne de 2 pods :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38041169999
+au dernier contrôle était EN COURS.
+Il conserve le JFR/les logs de quatre joueurs
+et attribue les samples CPU aux blocs de
+combat/attaques/mana. Ne pas prétendre
+que le profilage améliore l'IA ni compter
+ces parties JFR dans le winrate.
+
+Guide : [COMBAT_CPU_PROFILING.md](COMBAT_CPU_PROFILING.md).
+Prochaine étape moteur après analyse JFR :
+localiser un point de recalcul strictement
+redondant puis mesurer avant/après avec tests
+tactiques TOUS les sièges et parties EDH
+certifiées, sans supprimer d'action légale.
