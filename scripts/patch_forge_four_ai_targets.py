@@ -103,7 +103,9 @@ defense_anchor = """        return notNeededAsBlockers;
     }
 
     public void reinforceWithBanding(final Combat combat) {"""
-defense_replacement = """        if (!nextTurn && Boolean.getBoolean("brimaz.fourSeatDefensiveReserve")) {
+defense_replacement = """        if (!nextTurn && Boolean.getBoolean("brimaz.fourSeatDefenseCoverage")) {
+            MultiplayerDefenseCoverage.reserve(ai, notNeededAsBlockers, currentAttackers);
+        } else if (!nextTurn && Boolean.getBoolean("brimaz.fourSeatDefensiveReserve")) {
             MultiOpponentDefensePolicy.reserve(ai, notNeededAsBlockers, currentAttackers);
         }
         return notNeededAsBlockers;
@@ -271,17 +273,25 @@ with tempfile.TemporaryDirectory() as td:
     (folder / "MultiplayerCombatTargetPolicy.java").write_text(policy, encoding="utf-8")
     defense_java = pathlib.Path(__file__).resolve().parents[1] / "patches/java/forge/ai/MultiOpponentDefensePolicy.java"
     (folder / "MultiOpponentDefensePolicy.java").write_text(defense_java.read_text(encoding="utf-8"), encoding="utf-8")
+    for helper in ("DefenseCoverageModel.java", "MultiplayerDefenseCoverage.java"):
+        (folder / helper).write_text(
+            (pathlib.Path(__file__).resolve().parents[1] / "patches/java/forge/ai" / helper).read_text(encoding="utf-8"),
+            encoding="utf-8")
     classes = root / "classes"
     classes.mkdir()
     subprocess.run(
         ["javac", "--release", "21", "-cp", str(jar), "-d", str(classes),
          str(folder / "AiAttackController.java"),
          str(folder / "MultiplayerCombatTargetPolicy.java"),
-         str(folder / "MultiOpponentDefensePolicy.java")],
+         str(folder / "MultiOpponentDefensePolicy.java"),
+         str(folder / "DefenseCoverageModel.java"),
+         str(folder / "MultiplayerDefenseCoverage.java")],
         check=True, timeout=240,
     )
     for name in ("AiAttackController.class", "MultiplayerCombatTargetPolicy.class",
-                 "MultiOpponentDefensePolicy.class"):
+                 "MultiOpponentDefensePolicy.class",
+                 "DefenseCoverageModel.class", "DefenseCoverageModel$Threat.class",
+                 "DefenseCoverageModel$Risk.class", "MultiplayerDefenseCoverage.class"):
         if not (classes / "forge/ai" / name).is_file():
             raise RuntimeError("Missing compiled " + name)
     # Avoid losing nested classes from the upstream AI controller: only
@@ -290,7 +300,11 @@ with tempfile.TemporaryDirectory() as td:
                     "forge/ai/AiAttackController.class",
                     "-C", str(classes),
                     "forge/ai/MultiplayerCombatTargetPolicy.class",
-                    "-C", str(classes), "forge/ai/MultiOpponentDefensePolicy.class"],
+                    "-C", str(classes), "forge/ai/MultiOpponentDefensePolicy.class",
+                    "-C", str(classes), "forge/ai/DefenseCoverageModel.class",
+                    "-C", str(classes), "forge/ai/DefenseCoverageModel$Threat.class",
+                    "-C", str(classes), "forge/ai/DefenseCoverageModel$Risk.class",
+                    "-C", str(classes), "forge/ai/MultiplayerDefenseCoverage.class"],
                    check=True, timeout=120)
     print("FOUR_AI_TARGET_CLASS_SHA256", hashlib.sha256(
           (classes/"forge/ai/MultiplayerCombatTargetPolicy.class").read_bytes()).hexdigest())
