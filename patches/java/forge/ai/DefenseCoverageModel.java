@@ -130,17 +130,40 @@ public final class DefenseCoverageModel {
         int base=worstRisk(threeOpponents,currentlyHeld,life,poison,
                            lifeProtected,poisonProtected,commanderProtected);
         if(base<1000) return -1; // no projected loss after existing blockers
-        int best=-1, bestGain=0;
+        final int baseTotal=totalRisk(threeOpponents,currentlyHeld,life,poison,
+                lifeProtected,poisonProtected,commanderProtected);
+        int best=-1, bestGain=0, bestTotalGain=0;
         for(int b=0;b<candidate.length;b++){
             if(!candidate[b] || currentlyHeld[b])continue;
             currentlyHeld[b]=true;
             int after=worstRisk(threeOpponents,currentlyHeld,life,poison,
                                 lifeProtected,poisonProtected,commanderProtected);
+            int afterTotal=totalRisk(threeOpponents,currentlyHeld,life,poison,
+                                     lifeProtected,poisonProtected,commanderProtected);
             currentlyHeld[b]=false;
             int gain=base-after;
-            if(gain>bestGain){bestGain=gain;best=b;}
+            int totalGain=baseTotal-afterTotal;
+            // Two opponents can be equally lethal. A one-step minimax-only
+            // comparison sees zero gain from blocking just one of them and
+            // never reaches the two-blocker solution. Break ties by the
+            // reduction in total public-board threat.
+            if (gain>bestGain || (gain==bestGain && totalGain>bestTotalGain)) {
+                bestGain=gain;bestTotalGain=totalGain;best=b;
+            }
         }
         return best;
+    }
+
+    public static int totalRisk(List<List<Threat>> opponents, boolean[] available,
+                                int life, int poison,
+                                boolean lifeProtected, boolean poisonProtected,
+                                boolean commanderProtected) {
+        int sum=0;
+        for(List<Threat> threats:opponents){
+            sum+=forecast(threats,available,life,poison,
+                          lifeProtected,poisonProtected,commanderProtected).riskPermille;
+        }
+        return sum;
     }
 
     public static int worstRisk(List<List<Threat>> opponents, boolean[] available,
