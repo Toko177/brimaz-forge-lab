@@ -1,6 +1,7 @@
 name: Four AI multiplayer combat target pilot V14
 on:
   pull_request:
+    branches: [improve/realism-and-ai-diagnostics]
     paths:
       - scripts/patch_forge_four_ai_targets.py
       - scripts/audit_four_ai_targets.py
