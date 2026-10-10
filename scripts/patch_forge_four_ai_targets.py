@@ -64,6 +64,10 @@ old_invoke = """            try {
                 executor.shutdownNow();
             }"""
 new_invoke = """            if (Boolean.getBoolean("brimaz.deterministicForcedAttacks")) {
+                if (!tasks.isEmpty()) {
+                    System.out.println("FOUR_AI_SERIAL_FORCED_ATTACKS controller="
+                            + ai.getName() + " candidates=" + tasks.size());
+                }
                 // Ordered evaluation avoids racing modifications to Combat.
                 for (Callable<Integer> task : tasks) {
                     try {
