@@ -124,11 +124,17 @@ def extract(log, max_events=1500):
     # Full-game table politics proxy: attacker declarations TARGETING a player.
     # Not equivalent to number of attacking creatures, their power, or threat.
     attacks_to=Counter()
+    attacks_from_opponents=Counter()
     for action in actions:
         if action["kind"]=="attack" and "target" in action:
             m=re.search(r"Ai\((\d+)\)",action["target"])
-            if m and action["acting_seat"]!=int(m[1]):
-                attacks_to[int(m[1])]+=1
+            if not m:continue
+            target=int(m[1])
+            acting=action["acting_seat"]
+            if acting==target:continue
+            attacks_to[target]+=1
+            if acting!=seat:
+                attacks_from_opponents[target]+=1
     if len(actions)==max_events and total_actions>max_events:
         raise ValueError("Action buffer exhausted: full chronological audit required")
     return {
@@ -150,6 +156,9 @@ def extract(log, max_events=1500):
          "attacks_declared":stats[seat]["attack"],
          "attacker_declarations_targeting_brimaz":attacks_to[seat],
          "attacker_declarations_targeting_other_players":sum(v for k,v in attacks_to.items() if k!=seat),
+         "opponent_declarations_targeting_brimaz":attacks_from_opponents[seat],
+         "opponent_declarations_targeting_other_opponents":sum(
+             v for k,v in attacks_from_opponents.items() if k!=seat),
          "notes":[
            "No hidden hand/mana data is present in ordinary Forge logs; slow deployment does not by itself prove legal options were ignored.",
            "Resolved triggered abilities are counted on the active player turn, not necessarily their controller; cross-player stack resolution may require controller trace instrumentation.",
@@ -178,6 +187,10 @@ def aggregate(rows):
       "first_cast_turn_histogram":dict(sorted(Counter(str(x) for x in first).items())),
       "attack_declarations_received_by_brimaz":sum(r["brimaz"]["attacker_declarations_targeting_brimaz"] for r in rows),
       "attack_declarations_targeting_other_players":sum(r["brimaz"]["attacker_declarations_targeting_other_players"] for r in rows),
+      "enemy_attack_declarations_aimed_at_brimaz":sum(
+          r["brimaz"]["opponent_declarations_targeting_brimaz"] for r in rows),
+      "enemy_attack_declarations_aimed_at_other_enemies":sum(
+          r["brimaz"]["opponent_declarations_targeting_other_opponents"] for r in rows),
       "games_with_zero_incubate_trigger":sum(not r["brimaz"]["incubate_triggers_resolved"] for r in rows),
       "games_with_zero_proliferate_trigger":sum(not r["brimaz"]["endstep_proliferate_triggers_resolved"] for r in rows),
       "games_with_zero_incubator_transforms":sum(not r["brimaz"]["incubator_transforms_resolved"] for r in rows),
