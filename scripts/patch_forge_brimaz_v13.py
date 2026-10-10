@@ -336,6 +336,30 @@ public final class BrimazTurnPlanner {
                 sa.setActivatingPlayer(ai);
                 if (!sa.canPlay() || !sa.canCastTiming(ai)
                         || !ComputerUtilCost.canPayCost(sa, ai, false)) continue;
+                // V29 READ-ONLY tactical opportunity audit: when the
+                // current policy has ALREADY decided to cast Brimaz legally,
+                // check whether a three-card mana/token engine option was
+                // ALSO offered and legal/payable under Forge's own checks.
+                // No override of the selected spell or hidden-card peeking.
+                if (Boolean.getBoolean("brimaz.commanderTempoShadow")) {
+                    int legalEngineOptions = 0;
+                    StringBuilder engineNames = new StringBuilder();
+                    for (SpellAbility candidate : available) {
+                        if (!usefulBlockedSpell(ai,candidate)) continue;
+                        candidate.setActivatingPlayer(ai);
+                        if (!candidate.canPlay() || !candidate.canCastTiming(ai)
+                                || !ComputerUtilCost.canPayCost(candidate,ai,false)) continue;
+                        if (legalEngineOptions++ > 0) engineNames.append(",");
+                        engineNames.append(candidate.getHostCard().getName().replace(" ","_"));
+                    }
+                    System.out.println("FOUR_AI_COMMANDER_TEMPO_SHADOW player=" + ai.getName()
+                        + " globalTurn=" + phase.getTurn()
+                        + " life=" + ai.getLife()
+                        + " greatestVisibleEnemyPower=" + opponentDamageThreat
+                        + " legalEngineAlternatives=" + legalEngineOptions
+                        + " engineNames=" + (legalEngineOptions>0?engineNames.toString():"none")
+                        + " selected=Brimaz");
+                }
                 System.out.println("BRIMAZ_DEVELOPMENT: cast-commander turn="
                         + phase.getTurn() + " player=" + ai.getName());
                 return sa;
