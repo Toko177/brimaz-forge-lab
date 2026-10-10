@@ -245,6 +245,27 @@ def main():
     subprocess.run([sys.executable,str(ROOT/"scripts/analyze_four_ai_timeout_stacks.py"),
              "--input",str(dest/"games"),"--out",str(dest/"timeouts")],
              check=True,cwd=ROOT)
+    # This strict, evidence-based exploratory-readiness report is separate
+    # from the true-game process exit and natural win counts. Small/censored
+    # pilots can legitimately be blocked without erasing raw results.
+    readiness=subprocess.run([
+        sys.executable,str(ROOT/"scripts/assess_simulator_readiness.py"),
+        "--forensics",str(dest/"forensics/four_seat_actions.json"),
+        "--out",str(dest/"readiness.json"),
+        "--min-games","8"
+    ],cwd=ROOT,text=True,capture_output=True)
+    (dest/"readiness.stdout.log").write_text(readiness.stdout,encoding="utf-8")
+    (dest/"readiness.stderr.log").write_text(readiness.stderr,encoding="utf-8")
+    if (dest/"readiness.json").is_file():
+        state=json.loads((dest/"readiness.json").read_text(encoding="utf-8"))
+        print("FOUR_AI_EXPLORATORY_READINESS_GATE",json.dumps({
+             "gate":state["engine_pilot_gate"],
+             "natural":state["naturally_finished_count"],
+             "blocking_issues":state["blocking_issues"],
+             "human_like_ai_demonstrated":state["human_like_ai_demonstrated"],
+        },ensure_ascii=False),flush=True)
+    else:
+        raise RuntimeError("Readiness report generation failed; inspect preserved stdout/stderr")
     if args.scryfall_legality_report:
         certificate_dir=dest/"certification"
         proc=subprocess.run([
