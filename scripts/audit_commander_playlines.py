@@ -20,7 +20,7 @@ COMBAT=re.compile(r"^Combat: (Ai\((\d+)\)-.+?) assigned (.+?) to attack (.+?)\.$
 OUTCOME=re.compile(r"^Game Outcome: (Ai\((\d+)\)-.+?) has (won|lost) ")
 PHYREXIAN="Whenever you cast a Phyrexian creature or artifact creature spell, incubate X"
 PROLIFERATE="At the beginning of each end step, if a Phyrexian died under your control"
-TRANSFORM=" - Transform Phyrexian Token "
+TRANSFORM=" - Transform Phyrexian Token ("
 DECK_MARK=("Deck_Candidate","Deck_Reference","Brimaz_V3")
 LONG_EVENT=140
 
