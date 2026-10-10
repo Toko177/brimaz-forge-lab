@@ -1,3 +1,24 @@
+# REPRISE PRIORITAIRE — V25/V26, 11 octobre 2026
+
+**Github Actions fonctionne de nouveau :** [V24 véritable benchmark réussi](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38093688269) ; quatre véritables matches Forge 2.0.15 à quatre IA (deux paires A/B). **30 921** prédictions de déclenchement impossibles évitées ; **2 paires naturelles aux événements observés identiques**, ratios de vitesse descriptifs **1,041×** et **1,022×**. Tests Java V24 **16/16** réussis, 7 decks canoniques SHA vérifiés. C'est un *résultat technique*, pas une preuve de compétence tactique humaine.
+
+**Branche active de validation A/B approfondie :**
+`feature/v25-all-seats-real-evidence-20261011` — [PR #18](https://github.com/Toko177/brimaz-forge-lab/pull/18),
+[CI sur 16 vrais JVM](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616).
+2 pods × 4 rotations × V24 OFF/ON. Comparaison désormais sensible aux points de vie, dégâts, zones, poison et terres. Un job fan-in exigera 16 journaux réels complets et produira le rapport de tournoi. **Ne pas faire de commit sur V25 durant ce run**, cela peut annuler les jobs en cours.
+
+**Branche distincte de profilage CPU :**
+`feature/v26-real-forge-jfr-cpu-20261011` — [PR #19](https://github.com/Toko177/brimaz-forge-lab/pull/19),
+[un vrai match avec JFR](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094816646).
+Identifie les méthodes CPU réelles, sans confondre `lastCandidate` avec cause d'un timeout. **Ne pas faire de commit sur V26 tant que le job JFR s'exécute**.
+
+**Constats des 3 premières rotations V25 déjà naturelles et identiques** (aristo) : rotation 1 **145 253** prédictions évitées, ratio **1,016×** ; rotation 2 **223 975**, **1,025×** ; rotation 3 **106 362**, **0,991×**. Le gain réel dépend du match et peut être négatif ; compléter les 8 paires avant de généraliser.
+
+**Candidate fusion vers main toujours DRAFT :** [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15).
+Ne pas fusionner d'heuristique sans effets tactiques légalement valides. Les règles et les issues sont celles du vrai Forge, pas un proxy. Une fin naturelle observée n'est pas la certification exhaustive de toutes les règles Oracle.
+
+---
+
 ## REPRISE PRIORITAIRE — V24 exécutable sur Windows, 11 octobre 2026
 
 **Priorité 1 :** résoudre le blocage des **GitHub Actions
