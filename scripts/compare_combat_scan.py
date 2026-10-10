@@ -35,9 +35,9 @@ def load(tag):
         line for line in log.splitlines()
         if line.startswith(("Turn: ", "Phase: ", "Add To Stack: ",
                             "Game Outcome: ", "Game Result: "))
-        and not line.startswith("Game Result: ")
+        and not line.startswith(("Game Result: ", "Game Outcome: Match Duration "))
     ]
-    signature = hashlib.sha256("\n".join(events).encode("utf-8")).hexdigest()
+    # Exclude measured elapsed time: a real speedup changes this value\n    # without changing any decision, play, phase or rule outcome.\n    signature = hashlib.sha256("\n".join(events).encode("utf-8")).hexdigest()
     return entry, log, signature, len(events)
 
 control, control_log, control_sig, control_events = load("control-scan")
