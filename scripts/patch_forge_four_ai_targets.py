@@ -39,6 +39,59 @@ if source.count(anchor) != 1:
     raise ValueError("Forge AiAttackController target-choice source drift")
 source = source.replace(anchor, replacement, 1)
 
+
+# V15: forced mandatory attacks previously allocate an unbounded worker-pool
+# per combat, then execute against a shared mutable combat object. Offer an
+# opt-in deterministic serial path and bound fallback parallelism to 4 workers.
+old_start = """            ExecutorService executor = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors(), r -> {
+                    Thread t = Executors.defaultThreadFactory().newThread(r);
+                    t.setDaemon(true);
+                    return t;
+                }
+            );
+            List<Callable<Integer>> tasks = new ArrayList<>();"""
+new_start = """            List<Callable<Integer>> tasks = new ArrayList<>();"""
+if source.count(old_start) != 1:
+    raise ValueError("Forge mandatory-attacker executor source drift")
+source = source.replace(old_start, new_start, 1)
+
+old_invoke = """            try {
+                executor.invokeAll(tasks, ai.getGame().getAITimeout(), TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                executor.shutdownNow();
+            }"""
+new_invoke = """            if (Boolean.getBoolean("brimaz.deterministicForcedAttacks")) {
+                // Ordered evaluation avoids racing modifications to Combat.
+                for (Callable<Integer> task : tasks) {
+                    try {
+                        task.call();
+                    } catch (Exception error) {
+                        throw new IllegalStateException("Mandatory attack failed", error);
+                    }
+                }
+            } else {
+                ExecutorService executor = Executors.newFixedThreadPool(
+                    Math.min(4, Math.max(1, this.attackers.size())), r -> {
+                        Thread t = Executors.defaultThreadFactory().newThread(r);
+                        t.setDaemon(true);
+                        return t;
+                    }
+                );
+                try {
+                    executor.invokeAll(tasks, ai.getGame().getAITimeout(), TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    executor.shutdownNow();
+                }
+            }"""
+if source.count(old_invoke) != 1:
+    raise ValueError("Forge mandatory-attacker invocation source drift")
+source = source.replace(old_invoke, new_invoke, 1)
+
 # Static evaluation takes only public/visible input. The original Forge
 # attacker/blocker algorithm remains authoritative after this choice.
 policy = r'''package forge.ai;
@@ -99,6 +152,14 @@ public final class MultiplayerCombatTargetPolicy {
         return Math.min(90, safeInfectDamage * 7);
     }
 
+    /** One commander reaches a lethal 21 *combat* damage accumulated. */
+    public static int commanderPressure(final int alreadyDealt,
+                                        final int visibleUnblockedCommanderDamage) {
+        if (visibleUnblockedCommanderDamage <= 0) return 0;
+        if (alreadyDealt + visibleUnblockedCommanderDamage >= 21) return 10000;
+        return Math.min(90, visibleUnblockedCommanderDamage * 7);
+    }
+
     public static Player chooseTarget(final Player ai) {
         if (ai == null || ai.getGame() == null
                 || !ai.getGame().getPhaseHandler().isPlayerTurn(ai)
@@ -112,6 +173,7 @@ public final class MultiplayerCombatTargetPolicy {
         int bestScore = Integer.MIN_VALUE;
         int bestSafe = 0;
         int bestPoison = 0;
+        int bestCommander = 0;
         int examined = 0;
         for (Player opp : ai.getOpponents()) {
             // Stock helper includes payable Incubator transformations / animated
@@ -121,6 +183,7 @@ public final class MultiplayerCombatTargetPolicy {
             int ready = 0;
             int safeDamage = 0;
             int safePoison = 0;
+            int topCommanderThreat = 0;
             for (Card a : ourCreatures) {
                 if (!CombatUtil.canAttack(a, opp)) continue;
                 ready++;
@@ -135,6 +198,10 @@ public final class MultiplayerCombatTargetPolicy {
                 }
                 if (!canBeBlocked) {
                     if (a.hasDoubleStrike()) damage *= 2;
+                    if (a.isCommander() && !a.hasKeyword(Keyword.INFECT)) {
+                        topCommanderThreat = Math.max(topCommanderThreat,
+                                commanderPressure(opp.getCommanderDamage(a), damage));
+                    }
                     if (a.hasKeyword(Keyword.INFECT)) safePoison += damage;
                     else safeDamage += damage; // wither still damages player life
                 }
@@ -150,10 +217,12 @@ public final class MultiplayerCombatTargetPolicy {
                     opp.cantLoseForZeroOrLessLife());
             score += poisonPressure(opp.getPoisonCounters(), safePoison,
                     opp.cantLoseForZeroOrLessLife());
+            score += topCommanderThreat;
             if (score > bestScore) {
                 bestScore = score;
                 bestSafe = safeDamage;
                 bestPoison = safePoison;
+                bestCommander = topCommanderThreat;
                 best = opp;
             }
         }
@@ -162,6 +231,7 @@ public final class MultiplayerCombatTargetPolicy {
                     + " chosen=" + best.getName()
                     + " visibleSafeDamage=" + bestSafe
                     + " visibleSafePoison=" + bestPoison
+                    + " commanderThreat=" + bestCommander
                     + " opponentsScored=" + examined
                     + " score=" + bestScore
                     + " globalTurn=" + ai.getGame().getPhaseHandler().getTurn());
