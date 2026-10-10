@@ -100,11 +100,12 @@ def patch_jar(original,output,policy):
                         "--jar",str(output)],check=True,cwd=ROOT)
     return sha(output),scripts
 
-def run_job(campaign_root,jar,pod,rotation,seed_base,count,clock,profile,policy,flags,tag):
+def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag):
     source_tag=f"{tag}-rot{rotation}"
     env=os.environ.copy()
     env["JAVA_TOOL_OPTIONS"]=" ".join((env.get("JAVA_TOOL_OPTIONS",""),flags)).strip()
     cmd=[sys.executable,str(ROOT/"scripts/batch.py"),"--jar",str(jar),
+         "--runtime-dir",str(runtime_dir),
          "--pod",pod,"--rotation",str(rotation),
          "--games-per-rotation",str(count),
          "--seed-base",str(seed_base),"--clock",str(clock),
@@ -170,6 +171,7 @@ def main():
     dest.mkdir(parents=True,exist_ok=False)
     output_jar=dest/"forge-2.0.15-4AI-patched.jar"
     jar_sha,patches=patch_jar(args.jar.resolve(),output_jar,args.policy)
+    runtime_dir=args.jar.resolve().parent
     flags=policy_flags(args.policy)
     meta={
         "title":"Genuine independent Forge 2.0.15 four-AI Commander games",
@@ -179,6 +181,7 @@ def main():
         "planned_independent_jvms":len(pods)*4*args.games_per_rotation,
         "clock_seconds":args.clock,"base_seed":args.seed_base,
         "java":java,"original_forge_sha256":sha(args.jar.resolve()),
+        "original_forge_runtime_directory":str(runtime_dir),
         "patched_forge_sha256":jar_sha,"patches":patches,
         "canonical_seven_deck_sha256":deck_hashes,
         "java_tool_options":flags,
@@ -190,7 +193,7 @@ def main():
     tag="local-"+campaign_id
     tasks=[(pod,rot) for pod in pods for rot in range(4)]
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
-        futures={pool.submit(run_job,dest,output_jar,pod,rot,args.seed_base,
+        futures={pool.submit(run_job,dest,output_jar,runtime_dir,pod,rot,args.seed_base,
                 args.games_per_rotation,args.clock,args.profile,args.policy,
                 flags,tag):(pod,rot) for pod,rot in tasks}
         jobs=[]
