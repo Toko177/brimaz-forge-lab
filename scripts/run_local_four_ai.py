@@ -131,6 +131,8 @@ def main():
     p.add_argument("--decks",type=Path,default=ROOT/"forge_decks")
     p.add_argument("--canonical-report",type=Path,
                    default=ROOT/"canonical/results/forge_normalization/report.json")
+    p.add_argument("--scryfall-legality-report",type=Path,
+                   help="Optional separate Scryfall legality results JSON for genuine natural-win certification")
     p.add_argument("--pod",choices=["both",*PODS],default="both")
     p.add_argument("--policy",choices=POLICIES,default="v17_strict")
     p.add_argument("--profile",choices=["Default","Experimental","Cautious","Reckless"],
@@ -153,6 +155,8 @@ def main():
         p.error("batch.py uses the repository forge_decks directory; copy canonical decks there")
     java=java_version()
     deck_hashes=validate_decks(args.decks,args.canonical_report)
+    if args.scryfall_legality_report and not args.scryfall_legality_report.is_file():
+        raise FileNotFoundError("Scryfall legality report missing: "+str(args.scryfall_legality_report))
     pods=PODS if args.pod=="both" else (args.pod,)
     if not args.jar.is_file():
         raise FileNotFoundError("Original Forge desktop fat JAR not found: "+str(args.jar))
@@ -184,6 +188,7 @@ def main():
         "original_forge_runtime_directory":str(runtime_dir),
         "patched_forge_sha256":jar_sha,"patches":patches,
         "canonical_seven_deck_sha256":deck_hashes,
+        "scryfall_legality_report_file":str(args.scryfall_legality_report.resolve()) if args.scryfall_legality_report else None,
         "java_tool_options":flags,
         "source_commit":subprocess.run(["git","rev-parse","HEAD"],
                             cwd=ROOT,capture_output=True,text=True).stdout.strip(),
@@ -217,6 +222,30 @@ def main():
     subprocess.run([sys.executable,str(ROOT/"scripts/analyze_four_ai_timeout_stacks.py"),
              "--input",str(dest/"games"),"--out",str(dest/"timeouts")],
              check=True,cwd=ROOT)
+    if args.scryfall_legality_report:
+        certificate_dir=dest/"certification"
+        proc=subprocess.run([
+            sys.executable,str(ROOT/"scripts/certify_commander_games.py"),
+            "--input",str(dest/"games"),
+            "--legality",str(args.scryfall_legality_report),
+            "--out",str(certificate_dir)],
+            cwd=ROOT,text=True,capture_output=True)
+        (dest/"certification.stdout.log").write_text(proc.stdout,encoding="utf-8")
+        (dest/"certification.stderr.log").write_text(proc.stderr,encoding="utf-8")
+        cert_file=certificate_dir/"certificate.json"
+        if not cert_file.is_file():
+            raise RuntimeError("Natural-game certification produced no report: "+proc.stderr)
+        results=json.loads(cert_file.read_text(encoding="utf-8"))["summary"]
+        data=json.loads((dest/"summary/tournament.json").read_text(encoding="utf-8"))
+        natural=data["games_naturally_complete_unindependently_certified"]
+        if results["accepted_natural_games"]!=natural or results["checked_games"]!=data["games_started"]:
+            raise RuntimeError("REAL_FOUR_AI_CERTIFICATION_REJECTED: "
+                 f"Forge natural={natural}, independently accepted={results['accepted_natural_games']}. "
+                 "See preserved certification logs for rules/deck discrepancies.")
+        print("REAL_FOUR_AI_SCRYFALL_AND_FORGE_NATURAL_GATE",
+              json.dumps({"checked":results["checked_games"],"accepted_natural":natural,
+                          "censored_or_failed":data["games_started"]-natural}),
+              flush=True)
     print("REAL_FOUR_AI_CAMPAIGN_COMPLETE",str(dest),flush=True)
     if jobs_bad:raise SystemExit(2)
 
