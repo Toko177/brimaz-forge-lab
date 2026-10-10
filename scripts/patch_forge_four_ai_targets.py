@@ -103,7 +103,7 @@ defense_anchor = """        return notNeededAsBlockers;
     }
 
     public void reinforceWithBanding(final Combat combat) {"""
-defense_replacement = """        if (Boolean.getBoolean("brimaz.fourSeatDefensiveReserve")) {
+defense_replacement = """        if (!nextTurn && Boolean.getBoolean("brimaz.fourSeatDefensiveReserve")) {
             MultiOpponentDefensePolicy.reserve(ai, notNeededAsBlockers, currentAttackers);
         }
         return notNeededAsBlockers;

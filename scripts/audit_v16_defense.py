@@ -29,6 +29,9 @@ for label,tag in (("V15","V15-defensive-control"),("V16","V16-defensive-reserve"
         trace=[l for l in log.splitlines()
                if l.startswith(("Turn: ","Phase: ","Add To Stack: ","Combat: ","Game Outcome: "))
                and "Match Duration" not in l]
+        checks=re.findall(
+            r"FOUR_AI_DEFENSE_CHECK controller=(.*?) candidates=(\d+) "
+            r"dangerousOpponents=(\d+) required=(\d+) turn=(\d+)",log)
         reserve=re.findall(
             r"FOUR_AI_DEFENSE_RESERVE controller=(.*?) held=(\d+) "
             r"dangerousOpponents=(\d+) maxVisibleLifePressure=(\d+) turn=(\d+)",log)
@@ -40,6 +43,8 @@ for label,tag in (("V15","V15-defensive-control"),("V16","V16-defensive-reserve"
           "winner":row["winner_deck"],"brimaz_win":row["brimaz_win"],
           "wall_seconds":row["wall_seconds"],"events":len(trace),
           "trace_sha256":hashlib.sha256("\n".join(trace).encode("utf-8")).hexdigest(),
+          "defense_evaluations":len(checks),
+          "controllers_checked":dict(collections.Counter(x[0] for x in checks)),
           "reserve_decisions":len(reserve),"reserved_blockers":sum(int(x[1]) for x in reserve),
           "ai_reserving":dict(collections.Counter(x[0] for x in reserve)),
           "max_dangerous_opponents":max([int(x[2]) for x in reserve] or [0]),
@@ -67,6 +72,7 @@ out={
     "paired_games":len(pairs),"true_forge_jvm_executions":2*len(pairs),
     "tactical_reserve_actually_triggered":any(k["V16"]["reserve_decisions"] for k in pairs),
     "total_reserved_blockers":sum(k["V16"]["reserved_blockers"] for k in pairs),
+    "total_defense_evaluations":sum(k["V16"]["defense_evaluations"] for k in pairs),
     "observably_identical_natural_pairs":sum(k["identical_observed_complete_game"] for k in pairs),
     "pairs":pairs,
     "limits":[

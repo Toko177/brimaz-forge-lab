@@ -109,9 +109,10 @@ public final class MultiOpponentDefensePolicy {
             int existing = 0;
             for (Card defender : own) {
                 if (alreadyAttacking.contains(defender)
-                        || allowedAttackers.contains(defender)) continue;
+                        || allowedAttackers.contains(defender)
+                        || defender.isTapped()) continue;
                 for (Card attacker : active) {
-                    if (CombatUtil.canBlock(attacker, defender, true)) {
+                    if (CombatUtil.canBlock(attacker, defender, false)) {
                         existing++;
                         break;
                     }
@@ -121,6 +122,11 @@ public final class MultiOpponentDefensePolicy {
                                           allowedAttackers.size());
             maxRequired = Math.max(maxRequired, needed);
         }
+        System.out.println("FOUR_AI_DEFENSE_CHECK controller=" + ai.getName()
+                + " candidates=" + allowedAttackers.size()
+                + " dangerousOpponents=" + opponentCount
+                + " required=" + maxRequired
+                + " turn=" + ai.getGame().getPhaseHandler().getTurn());
         if (maxRequired == 0) return;
 
         int reserved = 0;
@@ -131,7 +137,7 @@ public final class MultiOpponentDefensePolicy {
                 if (defender.hasKeyword(Keyword.VIGILANCE)) continue;
                 int largestSave = 0;
                 for (Card attacker : dangerousOppAttackers) {
-                    if (CombatUtil.canBlock(attacker, defender, true)) {
+                    if (CombatUtil.canBlock(attacker, defender, false)) {
                         int dmg = Math.max(0, attacker.getNetCombatDamage());
                         if (attacker.hasDoubleStrike()) dmg *= 2;
                         largestSave = Math.max(largestSave, dmg);
