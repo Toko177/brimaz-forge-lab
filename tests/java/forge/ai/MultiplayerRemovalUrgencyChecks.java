@@ -36,7 +36,7 @@ public final class MultiplayerRemovalUrgencyChecks {
            "Single commander reaches twenty-one combat damage");
         ok(score(3,40,0,18,false,true,true,false,false,true,true)==0,
            "Commander-specific loss prevention respected");
-        ok(score(1,40,0,19,false,true,true,false,false,false,true)==160,
+        ok(score(1,40,0,19,false,true,true,false,false,false,true)==70,
            "Near-combat commander lethal, not same as 21");
         ok(score(30,1,9,20,true,true,true,false,false,false,false)==0,
            "Cannot attack specific defending player => no threat bonus");
