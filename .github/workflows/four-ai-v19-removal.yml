@@ -127,7 +127,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/audit_v17_proactive.py --rotation "${{ matrix.rotation }}" --pod "${{ matrix.pod }}" \
+          python3 scripts/audit_v19_removal.py --rotation "${{ matrix.rotation }}" --pod "${{ matrix.pod }}" \
             --out "results/v19_removal/${{ matrix.pod }}_rotation${{ matrix.rotation }}.json"
       - uses: actions/upload-artifact@v4
         if: always()
