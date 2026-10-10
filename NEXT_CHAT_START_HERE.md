@@ -1,3 +1,62 @@
+# NOUVEAU DÉVELOPPEMENT PRIORITAIRE — 11 octobre 2026
+
+## V28 : mesure de la vraie charge de CardProperty
+
+V28 https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095587094
+a **RÉUSSI** sa compilation + 4 tests Java + vrai Forge 2.0.15
+quatre IA / sept decks canoniques (420s, partie censurée,
+**aucun gagnant**). **41 345 798 appels** à
+`CardProperty.cardHasProperty`, dont cinq propriétés
+exactes représentent environ **94,7 % des appels** :
+
+| Expression | Appels |
+|---|---:|
+| `IsCommander` | 23 959 728 |
+| `Self` | 7 518 016 |
+| `YouCtrl` | 5 380 719 |
+| `YouOwn` | 1 518 191 |
+| `Other` | 770 792 |
+
+Cela recoupe la vraie trace JFR où `CardProperty.cardHasProperty`
+était présente dans 46,18 % des échantillons de méthodes exécutées.
+L'instrumentation elle-même ralentit : **ne pas comparer le
+temps de partie V28 à un temps de référence non instrumenté**.
+
+## V29 et V30 : deux expériences réelles EN COURS
+
+- [PR #22 V29](https://github.com/Toko177/brimaz-forge-lab/pull/22),
+  branche `feature/v29-real-commander-recast-legal-alternatives-20261011`,
+  [CI de quatre vrais Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38096203285) :
+  quand le planificateur sélectionne Brimaz légalement et de
+  façon payable, il **observe uniquement** s'il existait au
+  **même état** l'option individuellement payable `Orzhov Signet`,
+  `Spawning Pit` ou `Krark-Clan Ironworks`. Ne change AUCUN
+  choix. Quatre parties réelles pour A/B contrôles/trace.
+  Les occasions d'alternative ne signifient pas qu'un changement
+  est stratégique supérieur.
+- [PR #23 V30](https://github.com/Toko177/brimaz-forge-lab/pull/23),
+  branche `feature/v30-exact-card-property-fastpath-20261011`,
+  [CI de six vrais Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38096353743) :
+  raccourcis strictement **limités à ces cinq propriétés
+  littérales exactes**, OFF par défaut. La **méthode originale
+  CardProperty** est conservée dans le même bytecode sous
+  `cardHasPropertyV30Stock`, sans modifier son corps.
+  Triples comparaisons par pod : stock, fast, fast + appel
+  stock sur **chaque règle accélérée au même état**,
+  exception fatale à la moindre différence de booléen ;
+  sauvegarde des journaux, gains seulement si parties naturelles
+  et mêmes événements. **Ne pas fusionner V30, qui modifie le
+  chemin des règles Magic, avant résultats de CI et de
+  non-régression étendus.** Aucun gain V30 n'est prouvé à ce jour.
+
+Ne pas modifier les branches V29/V30 pendant la CI (GitHub
+`cancel-in-progress: true`). Lire d'abord leur état final
+puis corriger les échecs réels de compilation, de règles ou
+de comparaison. La grande candidate de fusion vers main
+est toujours **PR #15 DRAFT**.
+
+---
+
 # NOUVEAU POINT DE REPRISE — 11 octobre 2026, après V25/V27
 
 **La candidate d'intégration vers main reste la PR #15 DRAFT**, pas
