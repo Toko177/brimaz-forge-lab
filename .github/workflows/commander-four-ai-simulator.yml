@@ -25,6 +25,12 @@ on:
         type: choice
         options: ["1", "2", "3", "5"]
         default: "2"
+      ai_profile:
+        description: "Forge AI behavior profile, identically applied to all four seats"
+        required: true
+        type: choice
+        options: ["Default", "Experimental", "Cautious", "Reckless"]
+        default: "Default"
       clock_seconds:
         description: "Forge simulation clock, seconds (420 default; 480 only for <=3 games/rotation)"
         required: true
@@ -54,6 +60,7 @@ jobs:
           GAMES: ${{ inputs.games_per_rotation }}
           SEED: ${{ inputs.seed_base }}
           CLOCK: ${{ inputs.clock_seconds }}
+          AI_PROFILE: ${{ inputs.ai_profile }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json,os,sys
@@ -161,6 +168,7 @@ jobs:
           ROTATION: ${{ matrix.rotation }}
           RUN_ID: ${{ github.run_id }}
           CLOCK: ${{ inputs.clock_seconds }}
+          AI_PROFILE: ${{ inputs.ai_profile }}
         shell: bash
         run: |
           set -euo pipefail
@@ -180,6 +188,7 @@ jobs:
           python3 scripts/batch.py --jar "$(cat /tmp/commander_simulator_jar)" \
             --require-canonical-decks --pod "$POD" --rotation "$ROTATION" \
             --games-per-rotation "$GAMES" --seed-base "$SEED" \
+            --profile-brimaz "$AI_PROFILE" --profile-opponents "$AI_PROFILE" \
             --clock "$CLOCK" --timeout "$((CLOCK+85))" \
             --out-tag "operator-run-$RUN_ID-rot$ROTATION" --policy-label "$POLICY"
       - name: Analyze every genuine Forge game, all four AI seats
@@ -210,6 +219,7 @@ jobs:
             "head_sha":subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip(),
             "policy":os.environ["POLICY"],
             "forge_clock_seconds":int(os.environ["CLOCK"]),
+            "uniform_ai_profile":os.environ["AI_PROFILE"],
             "pod":os.environ["POD"],"seat_rotation":int(os.environ["ROTATION"]),
             "forge_jar_sha256":hashlib.sha256(jar_path.read_bytes()).hexdigest()
                 if jar_path and jar_path.exists() else None,
