@@ -10,18 +10,18 @@ ci-dessous.
 ## Branche ACTIVE et passation
 
 - **Branche la plus récente — interactions sur pile :**
-  `feature/four-ai-critical-counter-response-20261010`
+  `feature/v22-four-ai-operator-smoke-and-counter-audit-20261010`
 - **Passation des changements les plus récents :**
-  [docs/PASSATION_COUNTER_RESPONSE_2026-10-10.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_COUNTER_RESPONSE_2026-10-10.md)
-- **PR #13 en développement :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/13
-- **Base V20 :**
-  `feature/v20-counterfactual-removal-and-tournament-20261010`,
-  [PR #12](https://github.com/Toko177/brimaz-forge-lab/pull/12).
+  [docs/PASSATION_ACTIVE_V22_2026-10-10.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_ACTIVE_V22_2026-10-10.md)
+- **PR #14 en développement :**
+  https://github.com/Toko177/brimaz-forge-lab/pull/14
+- **Base PR #13 :**
+  `feature/four-ai-critical-counter-response-20261010`,
+  [PR #13](https://github.com/Toko177/brimaz-forge-lab/pull/13).
 - **Histoire V13–V16 :**
-  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_2026-10-10_V16.md),
-  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_2026-10-10_V17.md),
-  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/four-ai-critical-counter-response-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
+  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V16.md),
+  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V17.md),
+  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
 
 ## Le simulateur peut être lancé depuis GitHub
 
@@ -119,3 +119,24 @@ Le lanceur manuel sur main accepte `policy=critical_counter`, mais
 conserver la PR #13 en brouillon tant que les derniers logs et les
 résultats naturels ne sont pas vérifiés. Ne pas conclure à une meilleure
 IA sur des règles de score non exercées.
+
+## V22 — vrai test de bout en bout et trace des décisions sur la pile
+
+- **Passation V22 active :** https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_ACTIVE_V22_2026-10-10.md
+- Nouveau modèle optionnel de contresort : menace publique ciblée
+  sur notre commandant, ou dommages/perte de vie **chiffrés exactement,
+  ciblant exclusivement notre joueur**, qui atteignent son total de vie.
+  Les règles Forge restent seules maîtresses des cibles, du coût et
+  de la pile ; évite X, répartitions et mains cachées.
+- Les quatre IA journalisent leurs décisions de contresort
+  (`FOUR_AI_COUNTER_DECISION`) : menaces, refus initiaux,
+  acceptations **sans confondre choix et sort lancé**.
+- **CI V22 de bout en bout :** https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v22-end-to-end.yml
+  / PR #14. Elle exécute 1 vraie partie Forge 4 IA avec 7 SHA de decks,
+  compilation et agrégation ; vérifier le **dernier** run.
+- Le lanceur manuel sur main prend `source_ref` V22 et active la
+  télémétrie des contresorts avec `policy=critical_counter`.
+- V20 : **804 évaluations de cibles légales de référence, zéro choix
+  changé par V19** ; six parties naturelles et deux censurées.
+  Ne pas adopter V19 par défaut en affirmant un bénéfice non mesuré.
+
