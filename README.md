@@ -2,6 +2,8 @@
 
 **Lancer de vraies parties à quatre IA :** [GitHub Actions — Commander simulator](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml) · [Guide d'utilisation](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md).
 
+**Candidate consolidée :** [PR #15 — simulateur Forge réel à quatre IA](https://github.com/Toko177/brimaz-forge-lab/pull/15) (en brouillon, CI et validation du jeu en cours).
+
 **Dernier développement et passation :** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), branche expérimentale de contresorts en PR #13 (base V20 PR #12). La branche `main` conserve surtout l'ancienne version du moteur.
 
 
