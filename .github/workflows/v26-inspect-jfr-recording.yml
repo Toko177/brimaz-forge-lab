@@ -1,0 +1,44 @@
+name: Inspect already recorded four-AI Java21 hot methods
+on:
+  pull_request:
+    branches: [feature/v25-all-seats-real-evidence-20261011]
+    paths:
+      - .github/workflows/v26-inspect-jfr-recording.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect-authentic-jfr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 38094816646
+          github-token: ${{ github.token }}
+          name: four-ai-v26-genuine-forge-jfr-hot-methods
+          path: real-jfr/
+      - name: Print exact archived hot-methods and real per-thread CPU sample summaries
+        run: |
+          set -euo pipefail
+          HOT="$(find real-jfr -name hot_methods.txt -type f -print -quit)"
+          THREAD="$(find real-jfr -name cpu_threads.txt -type f -print -quit)"
+          STACK="$(find real-jfr -name ai_timeout_stacks.json -type f -print -quit)"
+          test -s "$HOT" && test -s "$THREAD" && test -s "$STACK"
+          echo "=== AUTHENTIC JAVA21 JFR HOT METHODS FROM COMPLETED FOUR-AI FORGE GAME ==="
+          sed -n '1,145p' "$HOT"
+          echo "=== FOUR-AI THREAD CPU SAMPLE SUMMARY ==="
+          sed -n '1,55p' "$THREAD"
+          echo "=== REAL JAVA TIMEOUT STACK CATEGORIES ==="
+          python3 - "$STACK" <<'PY'
+          import json,sys
+          x=json.load(open(sys.argv[1]))
+          print("GAME_JVM_SAMPLES",x["real_game_log_count"])
+          print("ACTUAL_AI_TIMEOUTS",x["timeout_count"])
+          print("STACK_CATEGORIES_NOT_CAUSAL",x["timeout_java_stack_category_counts_not_causes"])
+          for t in x["timeouts"]:
+            print("TIMEOUT_DETAIL",t["player"],t["phase"],t["allowed_seconds"],
+                  t["java_frames"][:12])
+          PY
