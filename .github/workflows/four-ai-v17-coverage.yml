@@ -1,6 +1,7 @@
 name: V17 four-seat blocker coverage and opponent forecast A/B
 on:
   pull_request:
+    branches: [feature/v16-multiplayer-defense-and-handoff-20261010]
     paths:
       - scripts/patch_forge_four_ai_targets.py
       - scripts/audit_v17_coverage.py
