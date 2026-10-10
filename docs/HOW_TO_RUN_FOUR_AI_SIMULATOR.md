@@ -26,7 +26,7 @@ moteur et les tests évoluent dans des branches de développement.
 |---|---|---|
 | `source_ref` | nom de la branche | code Forge patché + scripts analysés |
 | `pod` | `both`, `aristo`, `artifact` | adversaires présents |
-| `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal`, `v20_shadow` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
+| `policy` | `v15`, `v16`, `v17_strict`, `v17_proactive`, `v19_removal`, `v20_shadow`, `critical_counter` | heuristiques partagées par les quatre IA ; V19 expérimentale cible les menaces adverses |
 | `games_per_rotation` | 1, 2, 3 ou 5 | processus Forge indépendants, chacun à 4 joueurs |
 | `seed_base` | entier positif | graine de référence, dérivée pour chaque siège et répétition |
 
@@ -84,6 +84,22 @@ préférés avec le bonus V19. Les événements
 la véritable cible choisie. Une divergence de score n'est pas un
 sort joué ni une preuve de bonne décision. Le mode `v19_removal`
 active réellement le bonus de priorité.
+
+### Mode `critical_counter` — interaction défensive sur la pile
+
+Choisir `source_ref=feature/four-ai-critical-counter-response-20261010`
+et `policy=critical_counter` pour tester la protection de
+**chaque commandant IA** contre un sort adverse public ciblé
+(destruction, changement de zone ou vol).
+Ce mode compile et applique `scripts/patch_forge_counter_critical.py`
+avant la partie. Il **ne saute pas** les vérifications Forge sur la
+cible du contresort, la priorité, le coût, ni la contrecarrabilité.
+L'exception se limite à un refus probabiliste en fin de décision.
+
+**Expérimental :** un log `FOUR_AI_CRITICAL_COUNTER accepted` ne
+constitue pas à lui seul un sort contré, une bonne décision ou un
+gain de taux de victoire. Comparer avec `v17_strict` et les vrais
+journaux de jeu.
 
 ### Rapport de tournoi sur tous les jobs
 
