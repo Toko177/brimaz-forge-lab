@@ -36,7 +36,7 @@ jobs:
         with:
           pattern: four-ai-v17-*
           run-id: 38081333961
-          github-token: ${{ github.token }
+          github-token: ${{ github.token }}
           path: archived_v17/
           merge-multiple: false
       - name: Confirm exact four paired real game matrices were restored
