@@ -27,13 +27,24 @@ needle="""        if (dontCounter) {
         }
 
         return new AiAbilityDecision(100, AiPlayDecision.WillPlay);"""
-repl="""        if (dontCounter && Boolean.getBoolean("brimaz.fourSeatCounterCritical")
-                && MultiplayerCriticalCounterPolicy.isCommanderRemovalThreat(ai, tgtSA)) {
+repl="""        final boolean v22CommanderRemoval = MultiplayerCriticalCounterPolicy.isCommanderRemovalThreat(ai, tgtSA);
+        final boolean v22LethalLife = MultiplayerCriticalCounterPolicy.isLethalTargetedLifeSpell(ai, tgtSA);
+        if (Boolean.getBoolean("brimaz.counterDecisionAudit") && tgtSA != null) {
+            System.out.println("FOUR_AI_COUNTER_DECISION player="+ai.getName()
+                    +" spell="+(tgtSA.getHostCard()==null?"none":tgtSA.getHostCard().getName())
+                    +" originalDecline="+dontCounter
+                    +" threatensCommander="+v22CommanderRemoval
+                    +" threatensLethalLife="+v22LethalLife
+                    +" policyActive="+Boolean.getBoolean("brimaz.fourSeatCounterCritical"));
+        }
+        if (dontCounter && Boolean.getBoolean("brimaz.fourSeatCounterCritical")
+                && (v22CommanderRemoval || v22LethalLife)) {
             // Original stack-target legality and affordability already passed
             // above. Only override the low-CMC/profile chance to ignore this.
             System.out.println("FOUR_AI_CRITICAL_COUNTER accepted player="+ai.getName()
                     +" hostileSpell="+(tgtSA.getHostCard()==null ? "ability" : tgtSA.getHostCard().getName())
-                    +" protectedCommander="+tgtSA.getTargetCard().getName());
+                    +" protectedCommander="+(v22CommanderRemoval && tgtSA.getTargetCard()!=null ? tgtSA.getTargetCard().getName() : "none")
+                    +" imminentLife="+v22LethalLife);
             dontCounter = false;
         }
         if (dontCounter) {
