@@ -1,3 +1,48 @@
+## REPRISE PRIORITAIRE — V24 exécutable sur Windows, 11 octobre 2026
+
+**Priorité 1 :** résoudre le blocage des **GitHub Actions
+sans runner** (les récents jobs V24 échouent en 2–3 secondes,
+`runner_id=0`, étapes vides, pas de logs : la cause exacte
+n'est pas connue). La compilation et le gain de V24 restent
+**NON VALIDÉS** ; voir [PR #17](https://github.com/Toko177/brimaz-forge-lab/pull/17).
+
+**Priorité 2 :** si le runner reste indisponible, utiliser les
+NOUVEAUX scripts sur
+`feature/v24-combat-trigger-fast-negatives-20261011` :
+
+- `scripts/setup_and_run_four_ai.ps1 -CompileOnly` :
+  vrai source Forge 2.0.15, vrai JAR, injection de bytecode
+  et **16 assertions Java**. Non encore exécuté.
+- `scripts/setup_and_run_four_ai.ps1 -PreflightOnly` :
+  Java 21, distribution Forge SHA256, les 7 decks authentiques
+  depuis `gh run download`, sans partie.
+- `scripts/setup_and_run_four_ai.ps1 -Pod both
+  -GamesPerRotation 1 -Parallel 2 -Policy v17_strict` :
+  **8 vraies JVM Forge à 4 IA**, deux pods, 4 rotations, profils
+  identiques. Conserver les fichiers sous `results/local_campaigns`.
+- Relancer les mêmes graines avec `-Policy v24_trigger_prune`,
+  analyser avec `scripts/compare_local_four_ai_campaigns.py`.
+  Aucun ratio de vitesse si les événements naturels divergent.
+- `-Jfr` : `jfr view hot-methods`, CPU par thread et vraies
+  piles des timeouts dans les fichiers de campagne. Les
+  chronométrages JFR ne prouvent pas une accélération.
+- Facultatif `--scryfall-legality-report` dans le CLI Python
+  pour certifier séparément chaque victoire naturelle.
+- `readiness.json` présente un diagnostic indépendant sur la
+  disponibilité des 4 IA et les limites de qualité humaine.
+
+**Passation technique à jour :**
+https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/PASSATION_ACTIVE_V24_2026-10-11.md
+
+**Guide de démarrage Windows/Linux :**
+https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md
+
+La [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15)
+reste la candidate d'intégration, V24 PR #17 reste en brouillon.
+**Ne pas confondre le code commité avec des tests réellement passés.**
+
+---
+
 # DERNIÈRE REPRISE ACTIVE — V24, 11 octobre 2026
 
 **Lire en premier cette nouvelle branche et sa passation, AVANT les
