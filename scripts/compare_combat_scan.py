@@ -49,6 +49,8 @@ for x in (control, fast, verify):
     if x["seed"] != control["seed"] or x["seats"] != control["seats"]:
         raise ValueError("Paired seeds/seats changed")
 mismatch = "COMBAT_TRIGGER_SCAN_MISMATCH" in verify_log
+checks = re.findall(r"COMBAT_TRIGGER_SHADOW_CHECKED\\s+(\\d+)", verify_log)
+shadow_checks = int(checks[-1]) if checks else 0
 identical = control_sig == fast_sig
 speed_ok = identical and all(x["status"] == "complete" for x in (control, fast))
 ratio = (round(control["wall_seconds"] / fast["wall_seconds"], 4)
@@ -56,7 +58,7 @@ ratio = (round(control["wall_seconds"] / fast["wall_seconds"], 4)
 report = {
     "pod": args.pod, "rotation": control["rotation"], "seed": control["seed"],
     "all_four_ai_seats_share_patched_ComputerUtilCombat": True,
-    "shadow_test_mismatch": mismatch,
+    "shadow_test_mismatch": mismatch,\n    "shadow_checks_performed": shadow_checks,
     "observed_game_events_equal_control_fast": identical,
     "events_control": control_events, "events_fast": fast_events,
     "event_hash_control": control_sig, "event_hash_fast": fast_sig,
@@ -85,5 +87,7 @@ out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding
 print("COMBAT_SCAN_DIFFERENTIAL", json.dumps(report, ensure_ascii=False), flush=True)
 if mismatch:
     raise SystemExit("Direct scan disagreed with original reference scan")
+if shadow_checks <= 0:
+    raise SystemExit("No verified combat trigger evaluations occurred; refuse empty equivalence claim")
 if verify["status"] in ("engine_fault", "engine_failed", "process_timeout"):
     raise SystemExit("Shadow verification failed or timed out; inspect logs")
