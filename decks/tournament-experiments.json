@@ -1,12 +1,12 @@
 {
   "variants": [
     {
-      "id": "two-mana-rock",
-      "swaps": "1 Gold Myr -> 1 Fellwar Stone"
+      "id": "playable-recursion-artifacts",
+      "swaps": "1 Diabolic Intent -> 1 Myr Sire; 1 Phyrexian Reclamation -> 1 Unearth; 1 Tortured Existence -> 1 Scrap Trawler; 1 Phyrexian Delver -> 1 Solemn Simulacrum"
     },
     {
-      "id": "reanimation-package",
-      "swaps": "1 Vulpine Harvester -> 1 Victimize"
+      "id": "playable-phyrexian-engine",
+      "swaps": "1 Diabolic Intent -> 1 Phyrexian Awakening; 1 Phyrexian Reclamation -> 1 Myr Sire; 1 Tortured Existence -> 1 Zulaport Cutthroat; 1 Phyrexian Delver -> 1 Woe Strider"
     }
   ]
 }
