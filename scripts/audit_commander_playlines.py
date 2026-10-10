@@ -66,6 +66,7 @@ def extract(log, max_events=1500):
         kind=None
         player=None
         card=None
+        target=None
         if (m:=CAST.match(line)):
             kind="cast";player=m[1];card=m[3]
         elif (m:=ACTIVATE.match(line)):
@@ -73,7 +74,7 @@ def extract(log, max_events=1500):
         elif (m:=LAND.match(line)):
             kind="land";player=m[1];card=m[3]
         elif (m:=COMBAT.match(line)):
-            kind="attack";player=m[1];card=m[3]
+            kind="attack";player=m[1];card=m[3];target=m[4]
         elif line.startswith("Resolve Stack: ") and PHYREXIAN in line:
             kind="incubate_trigger";card="Brimaz-trigger"
         elif line.startswith("Resolve Stack: ") and PROLIFERATE in line:
@@ -101,6 +102,8 @@ def extract(log, max_events=1500):
             seat=(int(re.search(r"Ai\((\d+)\)",player)[1]) if player else current["seat"])
         record={**current,"acting_seat":seat,"kind":kind,
                 "card":card,"line":num}
+        if target is not None:
+            record["target"]=target
         if kind in ("attack","ai_timeout","invalid_attack_fallback"):
             record["detail"]=line[:LONG_EVENT]
         if len(actions)<max_events:actions.append(record)
@@ -118,6 +121,14 @@ def extract(log, max_events=1500):
     casts=[x for x in mine if x["kind"]=="cast"]
     commander_casts=[x for x in casts if x["card"]=="Brimaz, Blight of Oreskos"]
     total_actions=sum(sum(x.values()) for x in stats.values())
+    # Full-game table politics proxy: attacker declarations TARGETING a player.
+    # Not equivalent to number of attacking creatures, their power, or threat.
+    attacks_to=Counter()
+    for action in actions:
+        if action["kind"]=="attack" and "target" in action:
+            m=re.search(r"Ai\((\d+)\)",action["target"])
+            if m and action["acting_seat"]!=int(m[1]):
+                attacks_to[int(m[1])]+=1
     if len(actions)==max_events and total_actions>max_events:
         raise ValueError("Action buffer exhausted: full chronological audit required")
     return {
@@ -137,6 +148,8 @@ def extract(log, max_events=1500):
          "cast_cards":dict(Counter(x["card"] for x in casts)),
          "land_plays":stats[seat]["land"],
          "attacks_declared":stats[seat]["attack"],
+         "attacker_declarations_targeting_brimaz":attacks_to[seat],
+         "attacker_declarations_targeting_other_players":sum(v for k,v in attacks_to.items() if k!=seat),
          "notes":[
            "No hidden hand/mana data is present in ordinary Forge logs; slow deployment does not by itself prove legal options were ignored.",
            "Resolved triggered abilities are counted on the active player turn, not necessarily their controller; cross-player stack resolution may require controller trace instrumentation.",
