@@ -104,6 +104,7 @@ import forge.game.card.Card;
 import forge.game.combat.CombatUtil;
 import forge.game.keyword.Keyword;
 import forge.game.phase.PhaseType;
+import forge.game.player.GameLossReason;
 import forge.game.player.Player;
 import forge.game.zone.ZoneType;
 import java.util.List;
@@ -202,7 +203,7 @@ public final class MultiplayerCombatTargetPolicy {
                 }
                 if (!canBeBlocked) {
                     if (a.hasDoubleStrike()) damage *= 2;
-                    if (a.isCommander() && !a.hasKeyword(Keyword.INFECT)) {
+                    if (a.isCommander() && !opp.cantLoseCheck(GameLossReason.CommanderDamage)) {
                         topCommanderThreat = Math.max(topCommanderThreat,
                                 commanderPressure(opp.getCommanderDamage(a), damage));
                     }
@@ -220,7 +221,7 @@ public final class MultiplayerCombatTargetPolicy {
                     opp.canLoseLife(),
                     opp.cantLoseForZeroOrLessLife());
             score += poisonPressure(opp.getPoisonCounters(), safePoison,
-                    opp.cantLoseForZeroOrLessLife());
+                    opp.cantLoseCheck(GameLossReason.Poisoned));
             score += topCommanderThreat;
             if (score > bestScore) {
                 bestScore = score;
