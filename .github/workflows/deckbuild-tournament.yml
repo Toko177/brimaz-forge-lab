@@ -148,7 +148,7 @@ jobs:
           else
             echo "TOURNAMENT_REFERENCE_CACHE_MISS: eight new reference games are required"
           fi
-      - name: Plan only needed new JVM matches: eight per variant plus optional shared reference
+      - name: "Plan only needed new JVM matches: eight per variant plus optional shared reference"
         id: plan
         env:
           CACHE_RUN_ID: ${{ steps.reference_lookup.outputs.reference_run_id }}
