@@ -126,6 +126,10 @@ jobs:
           test -n "$JAR"
           echo "$JAR" >/tmp/commander_simulator_jar
           python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+          if [ "$POLICY" = "v23_cooldown" ] && [ ! -f "patches/java/forge/ai/AiTimeoutCooldownPolicy.java" ]; then
+            echo "V23 cooldown requested but selected source_ref lacks the Java policy" >&2
+            exit 2
+          fi
           python3 scripts/patch_forge_brimaz_v13.py --jar "$JAR"
           python3 scripts/patch_forge_four_ai_targets.py --jar "$JAR"
           if [ "$POLICY" = "v19_removal" ] || [ "$POLICY" = "v20_shadow" ]; then
