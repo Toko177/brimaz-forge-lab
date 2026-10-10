@@ -9,19 +9,19 @@ ci-dessous.
 
 ## Branche ACTIVE et passation
 
-- **V18, branche active :**
-  `feature/v18-gameplay-forensics-and-release-gate-20261010`
-- **Passation intégrale V18 :**
-  [docs/PASSATION_2026-10-10_V18.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v18-gameplay-forensics-and-release-gate-20261010/docs/PASSATION_2026-10-10_V18.md)
-- **PR #10 en développement :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/10
-- **Base V17.1 :**
-  `feature/v17-defense-robustness-20261010`,
-  [PR #9](https://github.com/Toko177/brimaz-forge-lab/pull/9).
+- **V19, branche active :**
+  `feature/v19-opponent-removal-urgency-20261010`
+- **Passation intégrale V19 :**
+  [docs/PASSATION_2026-10-10_V19.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V19.md)
+- **PR #11 en développement :**
+  https://github.com/Toko177/brimaz-forge-lab/pull/11
+- **Base V18 :**
+  `feature/v18-gameplay-forensics-and-release-gate-20261010`,
+  [PR #10](https://github.com/Toko177/brimaz-forge-lab/pull/10).
 - **Histoire V13–V16 :**
-  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v18-gameplay-forensics-and-release-gate-20261010/docs/PASSATION_2026-10-10_V16.md),
-  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v18-gameplay-forensics-and-release-gate-20261010/docs/PASSATION_2026-10-10_V17.md),
-  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v18-gameplay-forensics-and-release-gate-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
+  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V16.md),
+  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V17.md),
+  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v19-opponent-removal-urgency-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
 
 ## Le simulateur peut être lancé depuis GitHub
 
@@ -29,7 +29,7 @@ ci-dessous.
   [Commander simulator — run 4 AI games](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml)
 - **Guide d'utilisation :**
   [docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md)
-- Sélectionner `source_ref` sur la branche V18 ci-dessus, un pod
+- Sélectionner `source_ref` sur la branche V19 ci-dessus, un pod
   `artifact`/`aristo` ou `both`, une politique IA et 1–5 parties
   par rotation. Chaque partie utilise un **processus Forge réel**
   avec quatre sièges IA distincts, listes de cartes vérifiées SHA256.
@@ -55,7 +55,7 @@ avant toute affirmation de vitesse.
 
 ## Consignes au prochain ChatGPT
 
-1. **Lire d'abord la passation V18 et le statut actuel de la PR #10.**
+1. **Lire d'abord la passation V19 et le statut actuel de la PR #11.**
 2. Vérifier les nouveaux GitHub Actions, branches, commits et artefacts
    directement dans le dépôt ; ne pas deviner les résultats.
 3. Continuer à **modifier le code et lancer des tests**, en visant
@@ -73,3 +73,14 @@ Pour contexte antérieur, conserver :
 `docs/RAPPORT_TRANSFERT_INTEGRAL_2026-10-09.md` et
 `docs/PASSATION_ACTIVE_2026-10-10.md` sur la branche V13.
 
+
+## V19 — amélioration expérimentale des décisions anti-créatures
+
+La PR #11 propose de mieux sélectionner les **cibles de retrait déjà
+légales** en présence d'une menace visible de perte à cause des blessures,
+du poison ou des 21 blessures d'un commandant. Ce calcul s'applique aux
+**quatre IA** mais ne modifie pas les règles Magic. Comparaison A/B :
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38083587718
+
+Le manuel sur main accepte `policy=v19_removal` ; ne pas considérer ce mode
+comme supérieur tant que ses résultats et son audit ne sont pas examinés.
