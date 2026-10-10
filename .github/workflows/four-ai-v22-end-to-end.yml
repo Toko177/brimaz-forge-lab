@@ -1,7 +1,7 @@
-name: V22 real 4-AI simulator end-to-end operator smoke
+name: Integration gate real 4-AI Forge Commander simulator
 on:
   pull_request:
-    branches: [feature/four-ai-critical-counter-response-20261010]
+    branches: [main]
     paths:
       - scripts/patch_forge_counter_critical.py
       - patches/java/forge/ai/ability/MultiplayerCriticalCounterPolicy.java
