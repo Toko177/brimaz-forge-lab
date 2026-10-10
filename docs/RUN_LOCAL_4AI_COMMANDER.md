@@ -72,6 +72,56 @@ le même `--seed-base` et les mêmes rotations et analyser
 pas un déroulement identique ; les proportions de victoire ne doivent
 pas être comparées comme des observations indépendantes.
 
+## Comparer deux politiques sur de VRAIES parties appariées
+
+Pour tester deux stratégies sans mélanger profils, decks ou graines,
+effectuer **deux campagnes réelles** avec les mêmes paramètres, en
+changeant uniquement `--policy`. Exemple :
+
+```powershell
+python scripts/run_local_four_ai.py --jar "C:\\Forge\\forge-gui-desktop-2.0.15-jar-with-dependencies.jar" --pod both --policy v17_strict --profile Default --games-per-rotation 2 --parallel 2 --clock 420 --seed-base 20261027
+python scripts/run_local_four_ai.py --jar "C:\\Forge\\forge-gui-desktop-2.0.15-jar-with-dependencies.jar" --pod both --policy v24_trigger_prune --profile Default --games-per-rotation 2 --parallel 2 --clock 420 --seed-base 20261027
+python scripts/compare_local_four_ai_campaigns.py --reference "results/local_campaigns/CAMPAGNE_REFERENCE" --experiment "results/local_campaigns/CAMPAGNE_V24" --output "results/v24_paired.json"
+```
+
+Remplacer `CAMPAGNE_REFERENCE` et `CAMPAGNE_V24` par les vrais
+répertoires horodatés, produits lors de chaque exécution. Le comparateur
+**refuse les campagnes incomplètes**, les decks dont les SHA diffèrent,
+les parties manquantes, les profils asymétriques, les graines, rotations
+ou durées de partie différentes. Il conserve séparément les fins
+naturelles, les censures et les erreurs. Un ratio de vitesse n'est
+présenté que pour deux parties naturellement terminées avec les mêmes
+événements observables. Cela ne prouve pas une victoire causale.
+
+### Certification optionnelle des vraies victoires
+
+Si le rapport de légalité Scryfall a déjà été produit depuis les **sept
+decks exacts** par `scripts/validate_commander_legality.py`, ajouter :
+
+```powershell
+--scryfall-legality-report "results/legality/report.json"
+```
+
+à la commande de lancement de tournoi. Le programme appelle alors
+`scripts/certify_commander_games.py` pour recouper chaque résultat
+avec les listes Commander légales, la déclaration de match à quatre IA,
+le gagnant dans le journal Forge, le dépassement de l'horloge, les
+exceptions et les issues naturelles. Toute victoire que Forge indique
+comme naturelle **mais que le certificateur rejette** bloque la validation
+de la campagne. Les censures sont archivées sans victoire fabriquée.
+Ce contrôle reste un certificat documentaire, pas une preuve formelle
+de conformité de chaque interaction à l'Oracle Magic.
+
+### Corrigé : JAR modifié et ressources Forge
+
+Le JAR compilé est stocké dans la campagne pour que sa SHA256 reste
+unique ; **le processus Java est désormais lancé depuis le répertoire
+de l'installation Forge d'origine** grâce à `--runtime-dir` dans
+`batch.py`. Cela permet de conserver la résolution des ressources
+de Forge sans modifier ou écraser l'installation source. Lancer toutes
+les JVM depuis un simple répertoire temporaire sans ses ressources
+aurait pu empêcher le démarrage du moteur.
+
 ## Sécurité et sorties
 
 Le programme fait une **copie** du JAR original avant de le patcher.
