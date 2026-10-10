@@ -32,7 +32,7 @@ def combine(root):
                 raise ValueError("Mismatched real Forge A/B "+field+" "+str(key))
         if len(ref["seats"])!=4 or len(set(ref["seats"]))!=4 or ref["seats"].count("Brimaz_V3")!=1:
             raise ValueError("Bad 4 AI seats in "+str(key))
-        if ref["seats"].index("Brimaz_V3")!=rotation:
+        if ref["seats"].index("Brimaz_V3")!=(4-rotation)%4:
             raise ValueError("Seat rotation doesn't match Brimaz Commander position "+str(key))
         if ref["status"] not in GOOD or exp["status"] not in GOOD:
             raise ValueError("Engine fault, unparsed or process timeout in "+str(key))
