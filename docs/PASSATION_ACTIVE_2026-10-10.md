@@ -2233,3 +2233,82 @@ localiser un point de recalcul strictement
 redondant puis mesurer avant/après avec tests
 tactiques TOUS les sièges et parties EDH
 certifiées, sans supprimer d'action légale.
+
+
+## 33. Vérification définitive CPU JFR sur deux vrais EDH quatre IA
+
+**[Workflow JFR 38041169999 SUCCESS : les deux jobs ont terminé](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38041169999).**
+Chaque JVM Forge 2.0.15 originale plus les mêmes correctifs V13/Charm
+a effectué une véritable partie quatre joueurs ; les fichiers
+\`real-four-ai-cpu.jfr\`, \`cpu-profile.json\` et \`original-forge-game.log\`
+sont conservés en artefacts
+\`combat-jfr-aristo\` et \`combat-jfr-artifact\`.
+Les résultats sont des diagnostics CPU, **pas des parties éligibles
+au comptage du winrate**, et les échantillons ne prouvent pas la
+qualité tactique des choix.
+
+Mesures:
+- aristo, seed 20310001, 201,80s wall, **13 943** échantillons
+  d'exécution Java, **890** piles incluant \`forge.ai\`,
+  dont **688** attribuées aux familles combat
+  (\`ComputerUtilCombat\` 491, bloqueurs 190,
+  attaques 7, non-combat IA 202).
+- artifact, seed 20520001, 131,22s wall, **8 041**
+  échantillons Java, **532** IA, dont **368**
+  combat (\`ComputerUtilCombat\` 271, bloqueurs 88,
+  attaques 9, non-combat IA 164).
+- TOTAL 21 984 échantillons Java, **1 422 piles contenant
+  l'IA Forge**, **1 056 échantillons IA classés combat,
+  soit 74,3 % des piles IA**, **pas 74,3 % du CPU
+  entier du moteur**. \`ComputerUtilCombat\` : 762 ;
+  attribution bloqueurs : 278 ; attaques : 16.
+- Fréquence de présence dans les piles IA :
+  aristo \`predictPowerBonusOfAttacker\` 114,
+  \`canDestroyBlocker\` 98, \`predictDamageTo\` 87,
+  \`canDestroyAttacker\` 71,
+  \`getSafeBlockers\` 59;
+  artifact \`canDestroyBlocker\` 54,
+  \`canDestroyAttacker\` 52,
+  \`predictPowerBonusOfAttacker\` 48,
+  \`predictToughnessBonusOfAttacker\` 44.
+  Les comptes de méthodes peuvent se chevaucher
+  dans la même pile : ne pas les additionner.
+- [Guide CPU détaillé](COMBAT_CPU_PROFILING.md).
+  \`scripts/combat_jfr_probe.py\`,
+  \`tests/test_combat_jfr_probe.py\` 5 tests verts
+  dans la [CI 38041127709](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38041127709).
+
+**Prochaine optimisation majeure du moteur à évaluer :**
+réduire les appels réellement redondants
+à \`ComputerUtilCombat.canDestroyBlocker\`,
+\`canDestroyAttacker\`, prédiction de bonus P/T
+**SANS** mémoriser des valeurs périmées après
+changement de bloc, cible, phase, effets statiques
+ou contenu de pile ; couvrir des positions tactiques
+avec modifications d'état et plusieurs blocages
+avant de modifier l'IA Forge. Ne pas mettre en cache
+un état mutable par simple carte/nom ou global
+sur le tour : risque de résultats Magic faux.
+Ne pas enchaîner une nouvelle V14 simplement
+pour essayer une heuristique sans vérification.
+
+### Rappels des résultats de cette itération
+
+[Premier tournoi partagé 38040171940](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040171940)
+SUCCESS : 8 références +16 candidates, soit 24 JVM ; 0/8 victoire
+\`1 Plains→Shadowy Backstreet\`, 0/6 victoire
+\`1 Swamp→Fabled Passage\` (2 censures).
+
+[Second tournoi avec cache 38040810924](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040810924)
+SUCCESS : 16 nouvelles JVM candidate, références originales
+8/8 **réutilisées et recertifiées par SHA256** ; 0/8 victoire
+\`1 Gold Myr→Fellwar Stone\`, 0/7
+\`1 Vulpine Harvester→Victimize\` (1 censure).
+
+[Audit croisé 38040857652](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38040857652)
+SUCCESS : **quatre variantes distinctes** comparables
+sur **exactement les huit mêmes journaux de référence**, et
+40 parties Forge totales au lieu de 64 si chacune des 4
+comparaisons A/B avait tout rejoué. Aucune candidate n'a
+une supériorité statistiquement démontrée ; l'IA demeure
+une limitation du laboratoire.
