@@ -17,7 +17,7 @@ on:
         description: "Shared four-AI combat policy"
         type: choice
         required: true
-        options: [v17_strict, v17_proactive, v19_removal, v20_shadow, critical_counter, v23_cooldown, v16, v15]
+        options: [v17_strict, v17_proactive, v19_removal, v20_shadow, critical_counter, v23_cooldown, v24_trigger_prune, v16, v15]
         default: v17_strict
       games_per_rotation:
         description: "Independent games per seat rotation (1–5)"
@@ -159,6 +159,12 @@ jobs:
               { echo "Critical counter source patch absent from selected branch" >&2; exit 2; }
             python3 scripts/patch_forge_counter_critical.py --jar "$JAR"
           fi
+          if [ "$POLICY" = "v24_trigger_prune" ]; then
+            test -f scripts/patch_forge_combat_trigger_prune.py &&
+            test -f patches/java/forge/ai/CombatTriggerNegativePrune.java ||
+              { echo "V24 combat predictor source patch missing from selected branch" >&2; exit 2; }
+            python3 scripts/patch_forge_combat_trigger_prune.py --jar "$JAR"
+          fi
       - name: Run genuine Commander games (all four positions distributed)
         env:
           POLICY: ${{ inputs.policy }}
@@ -182,6 +188,7 @@ jobs:
             v20_shadow) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.fourSeatRemovalUrgency=false -Dbrimaz.removalShadowAudit=true";;
             critical_counter) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.fourSeatCounterCritical=true -Dbrimaz.counterDecisionAudit=true";;
             v23_cooldown) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.aiTimeoutCooldown=true";;
+            v24_trigger_prune) JAVA_TOOL_OPTIONS="$BASE -Dbrimaz.fourSeatDefensiveReserve=false -Dbrimaz.fourSeatDefenseCoverage=true -Dbrimaz.coverageProactive=false -Dbrimaz.aiTimeoutCooldown=false -Dbrimaz.fastCombatTriggerNegativePrune=true -Dbrimaz.fastCombatTriggerTrace=true";;
             *) echo "Unknown AI policy" >&2; exit 2;;
           esac
           export JAVA_TOOL_OPTIONS
