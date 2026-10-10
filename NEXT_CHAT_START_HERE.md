@@ -1,3 +1,72 @@
+# NOUVEAU POINT DE REPRISE — 11 octobre 2026, après V25/V27
+
+**La candidate d'intégration vers main reste la PR #15 DRAFT**, pas
+les dernières branches expérimentales. Les vrais tests CI ont
+désormais établi les résultats suivants :
+
+- **V24** Java21 Forge2.0.15 : 2 vraies paires naturelles aux événements
+  identiques, 30 921 calculs hypothétiques inutiles évités, ratio
+  descriptif 1,041× / 1,022× :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38093688269.
+- **V25** 16 véritables JVM (2 pods × 4 positions × 2 politiques) :
+  **14 naturelles, 2 censurées**, **1 518 901** calculs évités,
+  **6/8 paires identiques**, médiane descriptive des seules 6 paires
+  identiques **0,9959×** — **aucune accélération globale démontrée**.
+  2 paires divergentes : aristo rotation0 gagnants différents,
+  artifact rotation0 censurée. La première divergence survient après
+  1 timeout dans chaque match, aux indices 850 et 882 :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616.
+- **V27** PR #21 : audit rigoureux de ces 16 vrais journaux,
+  `scripts/first_real_four_ai_divergence.py`,
+  `scripts/triage_real_four_ai_strategy.py` : **19 occurrences
+  joueur-partie avec évaluations lentes**, **4 parties aux relances
+  répétées de Brimaz**, **2 parties aux fenêtres de jetons
+  phyrexians sans outlet observé**. Ne pas conclure à une action
+  légale manquée sans interroger Forge au même état. Réparation
+  de `assess_simulator_readiness.py` : une vraie `clock_censored`
+  ne compte plus comme erreur Java ; **exploratory 4-AI pilot PASS**
+  sur 16 parties, mais **expert AI/Oracle indépendant/winrate
+  statistiquement valide NON démontrés** :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095705276.
+- **V26** PR #19 : JFR réel sur 4 IA, 305,55 s, 2 timeouts
+  (combat + static rules) : la méthode
+  `CardProperty.cardHasProperty` concentre **11 059
+  échantillons, soit 46,18 % du top des méthodes échantillonnées**.
+  `CardState.getStaticAbilities` 2,51 %. Ce n'est qu'un jeu
+  mesuré ; ne pas généraliser.
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095235384.
+- **V28** PR #20 : en cours sur
+  `feature/v28-real-card-property-hotpath-profile-20261011`.
+  Source exact Forge2.0.15 ; télémétrie des chaînes `property`
+  **en lecture seule**, OFF par défaut, aucun changement de
+  l'Oracle ni du retour de CardProperty :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095587094.
+  Lire son vrai résultat avant tout conseil sur les optimisations
+  possibles. **NE PAS CACHER LES PROPRIÉTÉS DES CARTES SANS
+  INVALIDATION DES STATICS, LKI, ZONES ET CONTROLEURS.**
+
+**Priorité prochaine :** utiliser le diagnostic légal à état
+identique pour les décisions de combats, les contre-réponses et
+la relance répétée de Brimaz (4 vrais jeux). Ne pas renforcer
+une heuristique sans choix réellement modifié et vérifié légal
+par Forge. La vitesse (V24) ne suffit pas à rendre une IA experte.
+
+**Branches:**
+- V25 `feature/v25-all-seats-real-evidence-20261011` PR #18;
+- V26 `feature/v26-real-forge-jfr-cpu-20261011` PR #19;
+- V27 `feature/v27-four-ai-strategic-forensics-20261011` PR #21;
+- V28 `feature/v28-real-card-property-hotpath-profile-20261011` PR #20.
+
+Voir les passations
+`docs/PASSATION_ACTIVE_V27_2026-10-11.md` (V27) et
+`docs/PASSATION_ACTIVE_V28_2026-10-11.md` (V28),
+ainsi que
+[le guide pour lancer 4 IA en local](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md).
+Ne pas confondre résultats d'un test synthétique avec les
+16 vrais processus JVM archivés.
+
+---
+
 # NOUVEAU RÉSULTAT — V25 divergence + CPU JFR, 11 octobre 2026
 
 Le [run 16 vrais matchs V25](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616)
