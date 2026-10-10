@@ -7,19 +7,19 @@ developpements actuels du simulateur Commander a quatre IA.
 ## Etat de reference
 
 1. Branche de developpement la plus avancee a cette date :
-   `feature/v16-multiplayer-defense-and-handoff-20261010`.
+   `feature/v17-multiplayer-threat-coverage-20261010`.
 2. **Passation technique detaillee :**
-   [docs/PASSATION_2026-10-10_V16.md sur la branche V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v16-multiplayer-defense-and-handoff-20261010/docs/PASSATION_2026-10-10_V16.md).
-3. Pull request en cours : [PR #7](https://github.com/Toko177/brimaz-forge-lab/pull/7).
+   [docs/PASSATION_2026-10-10_V17.md sur la branche V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v17-multiplayer-threat-coverage-20261010/docs/PASSATION_2026-10-10_V17.md).
+3. Pull request en cours : [PR #8](https://github.com/Toko177/brimaz-forge-lab/pull/8).
 4. Version de base du laboratoire : `improve/realism-and-ai-diagnostics`
    ([PR #1](https://github.com/Toko177/brimaz-forge-lab/pull/1)).
 5. Rapport historique a conserver : `docs/RAPPORT_TRANSFERT_INTEGRAL_2026-10-09.md`.
 6. Passation historique tres detaillee : `docs/PASSATION_ACTIVE_2026-10-10.md`.
-   Elle precede V14-V16 et doit etre completee par le document V16.
+   Elle precede V14-V16 et doit etre completee par le document V17.
 
 ## Instructions de reprise dans un futur chat
 
-- **Lire le document V16 sur la branche cible**, puis controler l'etat effectif du depot.
+- **Lire le document V17 sur la branche cible**, puis controler l'etat effectif du depot.
   Ne pas supposer que les CI, PR ou SHA sont encore identiques a ceux notes ici.
 - Utiliser l'app GitHub connectee pour verifier les branches, commits, PR, Actions,
   journaux et artefacts de parties reelles ; **ne pas se contenter de main**.
@@ -30,5 +30,14 @@ developpements actuels du simulateur Commander a quatre IA.
 - Garder ce pointeur a jour lorsque la branche active change, et mettre a jour la
   passation dans GitHub avant chaque fin de session de developpement.
 
-**Point d'entree pratique :** ouvrir d'abord la PR #7 et le document V16 ;
+**Point d'entree pratique :** ouvrir d'abord la PR #8 et le document V17 ;
 suivre ensuite leurs commits, runs et artefacts les plus recents.
+
+## Point de validation supplementaire
+
+La branche V17 est issue de la V16, qui etait elle-meme issue des developpements V13–V15.
+La V17 ajoute le calcul de couverture des bloqueurs pour trois adversaires
+et conserve les proprietes Java precedentes (notamment pour revenir a la V16).
+Son benchmark Forge utilise le workflow `.github/workflows/four-ai-v17-coverage.yml`.
+La PR #8 doit rester en brouillon tant que les resultats tactiques et les
+fins de parties naturelles ne sont pas examines.
