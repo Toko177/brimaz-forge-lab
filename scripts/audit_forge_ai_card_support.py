@@ -24,10 +24,21 @@ OVERRIDES={
  "Krark-Clan Ironworks":"conditional cast and 1-for-1 token sacrifice; mana routing not proven",
  "Throne of Geth":"conditional sacrifice only; not fully supported",
 }
-KNOWN_UNWHITELISTED={"Diabolic Intent","Phyrexian Reclamation","Phyrexian Delver"}
+KNOWN_UNWHITELISTED={"Diabolic Intent","Phyrexian Reclamation","Phyrexian Delver","Tortured Existence"}
+# Official pinned Forge uses both faces for MDFC and special reverse-side
+# names; only entries verified against the exact 2.0.15 source tree.
+SPECIAL_FILES={
+    "Elesh Norn":"e/elesh_norn_the_argent_etchings.txt",
+    "Agadeem's Awakening":"a/agadeems_awakening_agadeem_the_undercrypt.txt",
+    "Malakir Rebirth":"m/malakir_rebirth_malakir_mire.txt",
+    "Witch Enchanter":"w/witch_enchanter_witch_blessed_meadow.txt",
+    "Brightclimb Pathway":"b/brightclimb_pathway_grimclimb_pathway.txt",
+}
 
 def slug(name):
     if " // " in name:name=name.split(" // ",1)[0]
+    if name in SPECIAL_FILES:return SPECIAL_FILES[name]
+    name=name.replace("’","").replace("'","")
     unaccent=unicodedata.normalize("NFKD",name)
     text="".join(x for x in unaccent if not unicodedata.combining(x))
     text=re.sub(r"[^a-z0-9]+","_",text.lower()).strip("_")
@@ -77,7 +88,7 @@ def load_card(name,timeout=15):
                     if line.startswith("Name:")),"")
         # Some filenames normalize differently: never silently claim another
         # card's AI tag as evidence about the user's deck card.
-        if first not in (name,name.split(" // ",1)[0]):
+        if first!=name and not first.startswith(name+" // "):
             return name,None,"name mismatch from pinned Forge"
         return name,text,None
     except (HTTPError,URLError,TimeoutError,ValueError) as e:
