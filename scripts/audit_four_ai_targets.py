@@ -37,7 +37,8 @@ for policy, tag in (("control", "V13-target-control"),
                  and "Match Duration" not in line]
         choices = re.findall(
             r"FOUR_AI_TARGET: controller=(.*?) chosen=(.*?) "
-            r"visibleSafeDamage=(\d+) opponentsScored=(\d+) score=(-?\d+) globalTurn=(\d+)",
+            r"visibleSafeDamage=(\d+) visibleSafePoison=(\d+) "
+            r"opponentsScored=(\d+) score=(-?\d+) globalTurn=(\d+)",
             log)
         by_key[key] = {
             "manifest": x,
