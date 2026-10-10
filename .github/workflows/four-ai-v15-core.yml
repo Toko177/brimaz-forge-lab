@@ -5,6 +5,7 @@ on:
       - scripts/patch_forge_four_ai_targets.py
       - scripts/audit_v15_core.py
       - scripts/index_human_edh_captions.py
+      - tests/test_human_caption_index.py
       - human_reference/videos.json
       - tests/java/forge/ai/MultiplayerCombatTargetChecks.java
       - .github/workflows/four-ai-v15-core.yml
@@ -33,6 +34,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Verify human-caption indexing preserves unverified status
+        run: python3 tests/test_human_caption_index.py
       - uses: actions/download-artifact@v4
         with:
           name: forge-seven-decks-canonical-verified
