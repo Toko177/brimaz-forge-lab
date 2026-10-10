@@ -15,6 +15,8 @@ on:
       - tests/test_deckbuild_tournament.py
       - scripts/audit_commander_playlines.py
       - tests/test_audit_commander_playlines.py
+      - scripts/audit_forge_ai_card_support.py
+      - tests/test_audit_forge_ai_card_support.py
       - tests/test_deckbuild_preflight.py
       - tests/test_deckbuild_rank.py
       - scripts/deckbuild_swaps.py
@@ -43,5 +45,7 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_deckbuild_tournament.py' -v
       - name: Check genuine Commander per-turn action audit does not invent moves or double-count games
         run: python3 -m unittest discover -s tests -p 'test_audit_commander_playlines.py' -v
+      - name: Verify tagged cards are not silently treated as playable by stock Forge AI
+        run: python3 -m unittest discover -s tests -p 'test_audit_forge_ai_card_support.py' -v
       - name: Verify existing strict Commander evidence fixtures still pass
         run: python3 -m unittest discover -s tests -p 'test_forge_evidence.py' -v
