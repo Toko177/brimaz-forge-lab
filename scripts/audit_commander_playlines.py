@@ -176,6 +176,8 @@ def aggregate(rows):
           r["launcher_status"]=="clock_censored" for r in rows),
       "brimaz_games_without_cast":sum(x is None for x in first),
       "first_cast_turn_histogram":dict(sorted(Counter(str(x) for x in first).items())),
+      "attack_declarations_received_by_brimaz":sum(r["brimaz"]["attacker_declarations_targeting_brimaz"] for r in rows),
+      "attack_declarations_targeting_other_players":sum(r["brimaz"]["attacker_declarations_targeting_other_players"] for r in rows),
       "games_with_zero_incubate_trigger":sum(not r["brimaz"]["incubate_triggers_resolved"] for r in rows),
       "games_with_zero_proliferate_trigger":sum(not r["brimaz"]["endstep_proliferate_triggers_resolved"] for r in rows),
       "games_with_zero_incubator_transforms":sum(not r["brimaz"]["incubator_transforms_resolved"] for r in rows),
