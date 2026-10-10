@@ -96,6 +96,24 @@ if source.count(old_invoke) != 1:
     raise ValueError("Forge mandatory-attacker invocation source drift")
 source = source.replace(old_invoke, new_invoke, 1)
 
+# V16: add a publicly visible, four-opponent-threat-aware safety gate at
+# the end of Forge's normal keep-back-blockers computation. Magic's existing
+# restriction/attack and block legality checks remain the ultimate authority.
+defense_anchor = """        return notNeededAsBlockers;
+    }
+
+    public void reinforceWithBanding(final Combat combat) {"""
+defense_replacement = """        if (Boolean.getBoolean("brimaz.fourSeatDefensiveReserve")) {
+            MultiOpponentDefensePolicy.reserve(ai, notNeededAsBlockers, currentAttackers);
+        }
+        return notNeededAsBlockers;
+    }
+
+    public void reinforceWithBanding(final Combat combat) {"""
+if source.count(defense_anchor) != 1:
+    raise ValueError("Forge four-seat defensive-reserve source anchor drift")
+source = source.replace(defense_anchor, defense_replacement, 1)
+
 # Static evaluation takes only public/visible input. The original Forge
 # attacker/blocker algorithm remains authoritative after this choice.
 policy = r'''package forge.ai;
@@ -251,15 +269,19 @@ with tempfile.TemporaryDirectory() as td:
     folder.mkdir(parents=True)
     (folder / "AiAttackController.java").write_text(source, encoding="utf-8")
     (folder / "MultiplayerCombatTargetPolicy.java").write_text(policy, encoding="utf-8")
+    defense_java = pathlib.Path(__file__).resolve().parents[1] / "patches/java/forge/ai/MultiOpponentDefensePolicy.java"
+    (folder / "MultiOpponentDefensePolicy.java").write_text(defense_java.read_text(encoding="utf-8"), encoding="utf-8")
     classes = root / "classes"
     classes.mkdir()
     subprocess.run(
         ["javac", "--release", "21", "-cp", str(jar), "-d", str(classes),
          str(folder / "AiAttackController.java"),
-         str(folder / "MultiplayerCombatTargetPolicy.java")],
+         str(folder / "MultiplayerCombatTargetPolicy.java"),
+         str(folder / "MultiOpponentDefensePolicy.java")],
         check=True, timeout=240,
     )
-    for name in ("AiAttackController.class", "MultiplayerCombatTargetPolicy.class"):
+    for name in ("AiAttackController.class", "MultiplayerCombatTargetPolicy.class",
+                 "MultiOpponentDefensePolicy.class"):
         if not (classes / "forge/ai" / name).is_file():
             raise RuntimeError("Missing compiled " + name)
     # Avoid losing nested classes from the upstream AI controller: only
@@ -267,7 +289,8 @@ with tempfile.TemporaryDirectory() as td:
     subprocess.run(["jar", "uf", str(jar), "-C", str(classes),
                     "forge/ai/AiAttackController.class",
                     "-C", str(classes),
-                    "forge/ai/MultiplayerCombatTargetPolicy.class"],
+                    "forge/ai/MultiplayerCombatTargetPolicy.class",
+                    "-C", str(classes), "forge/ai/MultiOpponentDefensePolicy.class"],
                    check=True, timeout=120)
     print("FOUR_AI_TARGET_CLASS_SHA256", hashlib.sha256(
           (classes/"forge/ai/MultiplayerCombatTargetPolicy.class").read_bytes()).hexdigest())
