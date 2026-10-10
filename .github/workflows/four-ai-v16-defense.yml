@@ -1,6 +1,7 @@
 name: V16 four-seat multiplayer lethal-defense pilot
 on:
   pull_request:
+    branches: [feature/human-video-fetch-and-tax-analysis-20261010]
     paths:
       - scripts/patch_forge_four_ai_targets.py
       - scripts/audit_v16_defense.py
