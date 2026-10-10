@@ -137,8 +137,10 @@ def aggregate(rows):
     first=[r["brimaz"]["first_commander_cast_personal_turn"] for r in rows]
     return {
       "games":games,
-      "brimaz_wins":sum(any(v["result"]=="won" for k,v in r["outcomes"].items()
-                    if int(k)==r["brimaz"]["seat"]) for r in rows),
+      "brimaz_raw_winner_labels_UNCERTIFIED":sum(
+          any(v["result"]=="won" for k,v in r["outcomes"].items()
+              if int(k)==r["brimaz"]["seat"]) for r in rows),
+      "raw_winner_label_warning":"Raw Game Outcome labels can be present even in clock-censored/artificially stopped games. NEVER count them as accepted victories; use deckbuild_certify.py only.",
       "brimaz_games_without_cast":sum(x is None for x in first),
       "first_cast_turn_histogram":dict(sorted(Counter(str(x) for x in first).items())),
       "games_with_zero_incubate_trigger":sum(not r["brimaz"]["incubate_triggers_resolved"] for r in rows),
