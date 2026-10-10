@@ -1,5 +1,12 @@
 # Brimaz Forge Lab
 
+> **REPRISE DU PROJET (10 octobre 2026 et après) :**
+> ouvrir d'abord [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) pour
+> retrouver la branche active, les PR et la **passation V16**.
+> Ce README de la branche main décrit encore surtout V1–V6 ; ne pas prendre
+> main pour le moteur IA courant.
+
+
 Projet : simulation réelle de Magic: The Gathering Commander à **quatre IA Forge 2.0.15**, avec contrôle de légalité des 100 cartes, parallélisation GitHub Actions, audit des décisions IA et certification des parties.
 
 ## Point d'entrée pour reprendre le projet
