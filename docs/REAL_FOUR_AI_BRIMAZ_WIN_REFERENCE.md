@@ -13,10 +13,10 @@ vrai moteur **Forge 2.0.15 / Java 21** avec quatre sièges IA et les
 - Graine Forge : **20830001** ; politique `V13-incubate-adaptive`,
   quatre profils IA `Default`.
 - Sièges :
-  1. EDH Urza (`Kaal_23328062`),
-  2. EDH Amalia (`Kaal_11485202`),
+  1. EDH Urza (`Kaal_11485202`),
+  2. EDH Amalia (`Kaal_22193355`),
   3. **Brimaz V3**,
-  4. EDH Lathril (`Kaal_22193355`).
+  4. EDH Lathril (`Kaal_23328062`).
 - Résultat brut :
   `Game Result: Game 1 ended in 78474 ms. Ai(3)-Brimaz V3 has won!`.
 - Journal `Game Outcome:` : Urza, Amalia et Lathril ont
