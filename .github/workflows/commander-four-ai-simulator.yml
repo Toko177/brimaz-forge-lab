@@ -49,7 +49,7 @@ jobs:
           SEED: ${{ inputs.seed_base }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json,os
+          import json,os,sys
           games=int(os.environ["GAMES"])
           seed=int(os.environ["SEED"])
           assert 1<=games<=5
@@ -58,7 +58,7 @@ jobs:
           assert set(pods)<={"aristo","artifact"}
           include=[{"pod":pod,"rotation":i} for pod in pods for i in range(4)]
           print("matrix="+json.dumps({"include":include},separators=(",",":")))
-          print(f"COMMANDER_SIM_PLAN: {len(include)} independent Forge jobs, {len(include)*games} real matches",flush=True)
+          print(f"COMMANDER_SIM_PLAN: {len(include)} independent Forge jobs, {len(include)*games} real matches",file=sys.stderr,flush=True)
           PY
 
   simulate:
