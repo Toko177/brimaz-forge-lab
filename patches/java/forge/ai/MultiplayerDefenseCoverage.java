@@ -89,31 +89,50 @@ public final class MultiplayerDefenseCoverage {
         int baseline=DefenseCoverageModel.worstRisk(
                 threatsByOpponent,alreadyHeld,ai.getLife(),ai.getPoisonCounters(),
                 lifeProtected,poisonProtected,commanderProtected);
+        // Proactive mode is intentionally an explicit experiment. At 85%
+        // of a visible loss threshold, retain at most one viable defender;
+        // when a projected loss is already visible, permit two.
+        boolean proactive=Boolean.getBoolean("brimaz.coverageProactive");
+        int threshold=proactive?850:1000;
+        int maxReserve=(proactive && baseline<1000)?1:2;
         int reserved=0;
         int after=baseline;
-        while(reserved<2){
+        while(reserved<maxReserve){
             int pick=DefenseCoverageModel.bestReservation(
                     threatsByOpponent,alreadyHeld,candidates,ai.getLife(),ai.getPoisonCounters(),
-                    lifeProtected,poisonProtected,commanderProtected);
+                    lifeProtected,poisonProtected,commanderProtected,threshold);
             if(pick<0)break;
             Card held=own.get(pick);
+            alreadyHeld[pick]=true;
+            int trialRisk=DefenseCoverageModel.worstRisk(
+                    threatsByOpponent,alreadyHeld,ai.getLife(),ai.getPoisonCounters(),
+                    lifeProtected,poisonProtected,commanderProtected);
+            alreadyHeld[pick]=false;
+            // Do not sacrifice significant offensive power to prevent
+            // trivial nonlethal pressure. A near-lethal hold must reduce
+            // expected loss pressure by >=15%, more for strong attackers.
+            int benefit=after-trialRisk;
+            if(proactive && baseline<1000
+                    && benefit<Math.max(150,Math.max(0,held.getNetCombatDamage())*25)) {
+                break;
+            }
             allowedAttackers.remove(held);
             candidates[pick]=false;
             alreadyHeld[pick]=true;
             reserved++;
-            after=DefenseCoverageModel.worstRisk(
-                    threatsByOpponent,alreadyHeld,ai.getLife(),ai.getPoisonCounters(),
-                    lifeProtected,poisonProtected,commanderProtected);
+            after=trialRisk;
         }
         System.out.println("FOUR_AI_V17_COVERAGE controller="+ai.getName()
                 +" threatPlayers="+eligibleOpponents
                 +" baselinePermille="+baseline
                 +" afterPermille="+after
                 +" reserved="+reserved
-                +" turn="+ai.getGame().getPhaseHandler().getTurn());
+                +" turn="+ai.getGame().getPhaseHandler().getTurn()
+                +" proactive="+proactive);
         if(reserved>0){
             System.out.println("FOUR_AI_V17_RESERVE controller="+ai.getName()
-                    +" held="+reserved+" riskReduction="+(baseline-after));
+                    +" held="+reserved+" riskReduction="+(baseline-after)
+                    +" proactive="+proactive);
         }
     }
 }
