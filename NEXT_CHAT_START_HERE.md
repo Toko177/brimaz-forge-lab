@@ -1,3 +1,47 @@
+# NOUVEAU RÉSULTAT — V25 divergence + CPU JFR, 11 octobre 2026
+
+Le [run 16 vrais matchs V25](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616)
+a révélé au moins **une paire de parties naturelles aux gagnants différents** :
+`aristo` rotation 0, contrôle **Brimaz_V3** contre V24
+**Kaal_9594008**, avec **1 timeout IA dans chacune**, malgré
+757 948 calculs de trigger hypothétiques évités. On ne peut donc
+PAS affirmer une équivalence complète des trajectoires sous V24,
+même si les cas du pilote initial étaient identiques.
+Forge inclut des recherches IA sensibles au temps ; différencier
+non-déterminisme, timeout et véritable décision sémantique exige
+l'analyse de la **première divergence** des journaux.
+Nouveau script :
+`scripts/first_real_four_ai_divergence.py` sur
+`feature/v27-four-ai-strategic-forensics-20261011`.
+Les branches V27/V28 sont en préparation ; **pas encore des
+benchmarks validés**.
+
+**Profilage Java21 JFR réel RÉUSSI :**
+https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094816646
+et [lecture des hot methods](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095235384).
+Un match aristo rotation 1, 305,55 s, 2 timeouts IA dans combat
+et capacités statiques. Le top CPU :
+`forge.game.card.CardProperty.cardHasProperty` **11 059
+échantillons (46,18 %)**, puis `FCollection.addAll` 3,55 %,
+`CardState.getStaticAbilities` 2,51 %, et
+`Card.updateStaticAbilities` 2,19 %. Cela pointe vers les
+vérifications des propriétés Magic et l'évaluation des bloqueurs.
+**Ne pas mettre en cache les résultats de propriétés de cartes sans
+preuve d'invalidation : les règles du jeu en dépendent.**
+La branche V28
+`feature/v28-real-card-property-hotpath-profile-20261011`
+ajoute un profilage de fréquence **lecture seule, opt-in** pour
+identifier quelles chaînes `property` expliquent ces appels,
+sans modifier les résultats.
+
+Les candidats V25, V26, V27/V28 sont des branches expérimentales
+au-dessus de V24/PR17, et **la candidate principale de fusion
+reste PR #15 en brouillon**. Pas de preuve de compétence
+stratégique humaine. Les suites JFR ne sont pas comparables
+directement en temps aux parties sans profilage.
+
+---
+
 # REPRISE PRIORITAIRE — V25/V26, 11 octobre 2026
 
 **Github Actions fonctionne de nouveau :** [V24 véritable benchmark réussi](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38093688269) ; quatre véritables matches Forge 2.0.15 à quatre IA (deux paires A/B). **30 921** prédictions de déclenchement impossibles évitées ; **2 paires naturelles aux événements observés identiques**, ratios de vitesse descriptifs **1,041×** et **1,022×**. Tests Java V24 **16/16** réussis, 7 decks canoniques SHA vérifiés. C'est un *résultat technique*, pas une preuve de compétence tactique humaine.
