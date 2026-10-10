@@ -16,6 +16,7 @@ param(
   [ValidateSet(360,420,480)][int]$Clock=420,
   [int]$SeedBase=20261027,
   [switch]$PreflightOnly,
+  [switch]$CompileOnly,
   [switch]$Jfr,
   [switch]$SkipForgeDownload,
   [string]$ForgeArchive="",
@@ -64,6 +65,12 @@ if (-not $jarFile) {
   $jarFile=Get-ChildItem -LiteralPath $runtime -Recurse -File -Filter "forge-gui-desktop-*-jar-with-dependencies.jar" | Select-Object -First 1
 }
 if (-not $jarFile) {throw "No Forge desktop fat JAR found in $runtime"}
+if ($CompileOnly) {
+  Write-Host "Compiling Forge 2.0.15 V24 from pinned sources, verifying JAR bytecode and 16 Java assertions..."
+  & python scripts/verify_v24_real_jar_compile.py --jar $jarFile.FullName
+  if ($LASTEXITCODE -ne 0) {throw "Forge V24 Java compilation or invariants FAILED"}
+  return
+}
 
 $artifactPath=Join-Path $repoRoot "canonical"
 $sourceDecks=Join-Path $artifactPath "forge_normalized"
