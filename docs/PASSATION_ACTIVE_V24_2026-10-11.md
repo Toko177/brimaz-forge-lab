@@ -172,3 +172,87 @@ passé la nouvelle CI faute de runner.
    et légalité Oracle**. Une victoire observée ou un ratio sur deux
    parties n'est pas un taux réel prouvé.
 
+
+
+## 7. Session suivante — voie de validation et comparaison locale complète
+
+**Toujours sur V24 / PR #17, 11 octobre 2026 :**
+
+En raison des jobs GitHub Actions qui échouent avec `runner_id=0`,
+aucune nouvelle prétention de victoire ou d'accélération n'est établie.
+Plusieurs améliorations d'exploitation ont été ajoutées **au code réel**
+mais restent à valider sur machine :
+
+- `scripts/setup_and_run_four_ai.ps1` : lancement Windows depuis le
+  clone GitHub, vérification SHA256 de l'archive originale Forge
+  2.0.15, extraction du véritable fat JAR, téléchargement via
+  `gh run download` des **sept decks canoniques** déjà validés
+  dans le dépôt privé, refus d'écraser un deck divergent.
+  Pré-requis : `gh auth login`, PowerShell, Python et JDK 21.
+- `-PreflightOnly` : vérifier l'installation sans aucun match.
+- `-CompileOnly` : appeler
+  `scripts/verify_v24_real_jar_compile.py`, patcher une **copie**
+  de l'original, contrôler les classes Java injectées dans le JAR,
+  confirmer par `javap` la présence de l'appel de V24
+  dans `ComputerUtilCombat`, et lancer les 16 invariants Java.
+  Ne simule aucun match ; ce test **n'a pas encore été exécuté**.
+- `scripts/run_local_four_ai.py` : copie de JAR versionnée mais
+  exécution des JVM avec le `--runtime-dir` de Forge d'origine ;
+  cela résout la dépendance éventuelle aux ressources du dossier
+  d'installation. Le patching ne modifie jamais l'installation
+  source. Si un JAR original de confiance est fourni, les
+  7 decks/pods/rotations/profils restent identiques pour les
+  quatre sièges.
+- `scripts/compare_local_four_ai_campaigns.py` : comparaison de
+  campagnes **réelles** Forge sur les mêmes graines, 4 rotations,
+  deux pods, sept SHA256 de listes identiques, politique/profile/clock
+  explicites ; refus des rapports incomplets, de l'asymétrie des
+  profils IA et des parties privées de logs. Ratios de vitesse
+  uniquement lorsque les deux parties sont naturelles et les
+  événements identiques.
+  Test de régression :
+  `tests/test_compare_local_four_ai_campaigns.py` avec des
+  fixtures **SYNTHÉTIQUES, jamais comptées comme parties réelles**.
+- `--scryfall-legality-report results/legality/report.json` :
+  certification indépendante optionnelle des sorties naturelles
+  par `certify_commander_games.py`; discordance entre gagnant
+  déclaré et preuves documentaires → erreur, conservation de
+  chaque journal. Une partie censurée ne devient jamais un win.
+- `--jfr` / `-Jfr` : profilage CPU **par vrai processus Java 21**,
+  enregistrement `.jfr` plafonné à 128 MiB, vues
+  `jfr view hot-methods` et `thread-cpu-load`, conservation
+  des piles d'échantillonnage. Les rapports de vitesse ne sont
+  PAS comparables lorsqu'un profilage JFR est activé.
+- `scripts/analyze_four_ai_timeout_stacks.py` catégorise les
+  véritables piles `AI_EVAL_TIMEOUT_V10` entre combat, triggers,
+  statics, remplacements, et indique explicitement que la
+  dernière carte visitée **n'est pas une cause CPU prouvée**.
+  Test synthétique `tests/test_analyze_four_ai_timeout_stacks.py`.
+- `assess_simulator_readiness.py` produit désormais un
+  `readiness.json` dans chaque campagne locale. Les
+  résultats distinguent la validité de l'exécution, les
+  défaites/censures, les quatre sièges actifs et les
+  limites de compétence stratégique humaine.
+
+**Documentation détaillée pour le PC Windows :**
+[RUN_LOCAL_4AI_COMMANDER.md](RUN_LOCAL_4AI_COMMANDER.md).
+
+**Instruction pratique lors du prochain chat :**
+1. Vérifier l'état GitHub Actions / les quotas et les budgets dans
+   GitHub Settings → Billing & Licensing → Usage / Budgets →
+   Actions pour ce dépôt privé. Les erreurs observées sont
+   pré-exécution et peuvent correspondre à divers blocages de
+   provisionnement ; **aucune cause de facturation n'est
+   confirmée**. Éviter de relancer des jobs sans runner.
+2. Si les runners restent indisponibles, lancer sous PowerShell :
+   `scripts/setup_and_run_four_ai.ps1 -CompileOnly`, puis
+   `-PreflightOnly`, puis `-Pod both -GamesPerRotation 1
+   -Policy v17_strict` (8 vrais processus).
+3. Comparer la politique `v24_trigger_prune` sur ces mêmes
+   graines/decks/profils, rapport A/B par événements et
+   censures. Exécuter un petit run `-Jfr` séparé uniquement
+   pour l'échantillonnage CPU.
+4. **Ne pas fusionner la PR #17**, ni dire que les 16 assertions
+   ont réussi, tant que ces tests ne se sont pas exécutés.
+5. Conserver la candidate d'intégration **PR #15** et éviter
+   d'accumuler des branches spéculatives non testées.
