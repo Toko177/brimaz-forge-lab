@@ -69,7 +69,16 @@ def extract(log, max_events=1500):
         elif line.startswith("AI Attack declaration invalid"):
             kind="invalid_attack_fallback";card=None
         if kind is None:continue
-        seat=(int(re.search(r"Ai\((\d+)\)",player)[1]) if player else current["seat"])
+        # Brimaz triggered abilities may resolve during *another* player's
+        # turn. Assign their effects to the controller, not the active seat.
+        if kind in ("incubate_trigger","endstep_proliferate"):
+            # At most one Brimaz commander deck in this audited pod.
+            found=[n for n,v in seats.items() if any(t in v for t in DECK_MARK)]
+            if len(found)!=1:
+                raise ValueError("Cannot tie Brimaz trigger to unique owner")
+            seat=found[0]
+        else:
+            seat=(int(re.search(r"Ai\((\d+)\)",player)[1]) if player else current["seat"])
         record={**current,"acting_seat":seat,"kind":kind,
                 "card":card,"line":num}
         if kind in ("attack","ai_timeout","invalid_attack_fallback"):
