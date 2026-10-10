@@ -49,7 +49,7 @@ class PlayByPlayTests(unittest.TestCase):
         self.assertEqual(b["incubator_transforms_resolved"],1)
         self.assertEqual(p["all_player_actions_by_kind"]["2"]["land"],1)
         self.assertEqual(b["land_plays"],1)
-        self.assertEqual(aggregate([p])["brimaz_wins"],1)
+        self.assertEqual(aggregate([p])["brimaz_raw_winner_labels_UNCERTIFIED"],1)
 
     def test_clock_censored_raw_winner_never_becomes_certified_win(self):
         import hashlib
