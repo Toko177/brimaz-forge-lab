@@ -45,6 +45,16 @@ class ExactForgeAIHints(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"100"):
                 parse_deck(p)
 
+    def test_real_forge_filenames_include_both_mdfc_faces(self):
+        self.assertEqual(slug("Malakir Rebirth"),"m/malakir_rebirth_malakir_mire.txt")
+        self.assertEqual(slug("Witch Enchanter"),"w/witch_enchanter_witch_blessed_meadow.txt")
+        self.assertEqual(slug("Agadeem's Awakening"),"a/agadeems_awakening_agadeem_the_undercrypt.txt")
+
+    def test_apostrophe_card_rules_names_remove_punctuation_without_extra_underscore(self):
+        self.assertEqual(slug("Ashnod's Altar"),"a/ashnods_altar.txt")
+        self.assertEqual(slug("Karn's Bastion"),"k/karns_bastion.txt")
+        self.assertEqual(slug("Urza's Saga"),"u/urzas_saga.txt")
+
     def test_card_name_normalization_handles_accents(self):
         self.assertEqual(slug("Bartolomé del Presidio"),
                          "b/bartolome_del_presidio.txt")
