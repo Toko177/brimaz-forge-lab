@@ -9,6 +9,21 @@ on:
         required: true
         default: "decks/tournament-experiments.json"
         type: string
+      reference_file:
+        description: "Any 100-card Commander reference deck in this repository"
+        required: true
+        default: "decks/Brimaz_V3.txt"
+        type: string
+      commander:
+        description: "Exact single commander name; other commanders use stock Forge AI"
+        required: true
+        default: "Brimaz, Blight of Oreskos"
+        type: string
+      seed_base:
+        description: "Independent future confirmation batch uses a NEW seed base"
+        required: true
+        default: "21410000"
+        type: string
       repeats:
         description: "Matches per pod/seat (1, 2 or 4)"
         default: "1"
@@ -50,16 +65,19 @@ jobs:
               p=pathlib.Path("opponents")/(d["deck"]+".dck")
               assert p.is_file() and hashlib.sha256(p.read_bytes()).hexdigest()==d["normalized_sha256"]
           PY
-      - name: Build immutable baseline and 2-8 distinct experimental variants
+      - name: Build immutable reference and 2-8 distinct Commander candidate decks
         env:
           RECIPE: ${{ inputs.recipe || 'decks/tournament-experiments.json' }}
+          REFERENCE_FILE: ${{ inputs.reference_file || 'decks/Brimaz_V3.txt' }}
+          COMMANDER: ${{ inputs.commander || 'Brimaz, Blight of Oreskos' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
           REPEATS: ${{ inputs.repeats || '1' }}
         run: |
           python3 scripts/deckbuild_tournament.py prepare \
-            --base decks/Brimaz_V3.txt --commander "Brimaz, Blight of Oreskos" \
+            --base "$REFERENCE_FILE" --commander "$COMMANDER" \
             --recipe "$RECIPE" --opponents opponents/ \
             --root tournament --repo-root . \
-            --seed-base 21410000 --repeats "$REPEATS"
+            --seed-base "$SEED_BASE" --repeats "$REPEATS"
       - name: Scryfall Commander bracket audit of EVERY candidate and zero-simulation mana preflight
         run: |
           python3 - <<'PY'
