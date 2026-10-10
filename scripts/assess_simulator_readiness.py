@@ -23,8 +23,19 @@ def evaluate(report, *, min_games=8, min_distinct_seeds=2):
     genuine=sum(g["identity"]["status"]=="complete" for g in games)
     if genuine < max(4,min_games*3//4):
         issues.append(f"Only {genuine} naturally completed game transcripts")
-    if any(g["warnings"] for g in games):
-        issues.append("At least one game has a log/manifest discrepancy or an engine fault")
+    # A natural-language warning on a clock-censored match is EXPECTED:
+    # it honestly says there was no natural winner. Treating this note as an
+    # engine fault made every 14-natural/2-censored V25 sample fail readiness.
+    # Other warnings on a censored game (NPE, winner mismatch) remain fatal.
+    unexpected_warnings=[
+        {"pod":g["identity"].get("pod"),"seed":g["identity"]["seed"],"warning":w}
+        for g in games
+        for w in g["warnings"]
+        if not (g["identity"]["status"]=="clock_censored"
+                and w=="No natural finished-game claim: clock_censored")
+    ]
+    if unexpected_warnings:
+        issues.append("At least one genuine match has an unexpected log/manifest discrepancy or engine fault")
     if any(g["identity"]["observed_turn_events"]<4 for g in games):
         issues.append("At least one game has fewer than 4 observable global turns")
     for g in games:
@@ -59,6 +70,8 @@ def evaluate(report, *, min_games=8, min_distinct_seeds=2):
         "distinct_decks":sorted(all_decks),
         "distinct_seed_count":len(seeds),
         "observed_slow_decisions_by_deck":dict(slow_by_deck),
+        "unexpected_warnings":unexpected_warnings,
+        "expected_clock_censored_games_kept_in_denominator":games_by_status.get("clock_censored",0),
         "blocking_issues":issues,
         "known_quality_gaps":issue_gaps,
         "methodology":"A functional engine pilot is not a winrate, expert decision or universal rules certification",
