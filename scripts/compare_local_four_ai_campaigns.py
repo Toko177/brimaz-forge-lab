@@ -81,7 +81,7 @@ def compare(root_a,root_b):
     meta_b,games_b=load_campaign(root_b)
     for key in ("original_forge_sha256","canonical_seven_deck_sha256",
                 "profile_applied_identically_to_all_four_seats","pods",
-                "games_per_rotation","base_seed","clock_seconds"):
+                "games_per_rotation","base_seed","clock_seconds","jfr_enabled"):
         if meta_a.get(key)!=meta_b.get(key):
             raise ValueError("Not a fair canonical Forge A/B: "+key)
     if games_a.keys()!=games_b.keys():
@@ -102,7 +102,8 @@ def compare(root_a,root_b):
             "winner_changed_if_both_natural":(a["winner"]!=b["winner"]) if natural else None,
             "wall_speed_ratio_only_same_natural_game":
                 round(a["wall_seconds"]/b["wall_seconds"],4)
-                if matching and b["wall_seconds"]>0 else None,
+                if matching and b["wall_seconds"]>0
+                   and not meta_a.get("jfr_enabled",False) else None,
         })
     natural_pairs=[x for x in pairs if x["both_natural"]]
     identical=[x for x in pairs if x["same_observable_events_if_natural"]]
@@ -121,6 +122,7 @@ def compare(root_a,root_b):
         "limitations":[
           "Matched seeds may diverge due to AI search scheduling and changing behavior.",
           "A speed ratio is presented ONLY for two natural games with identical tracked events.",
+          "JFR profiling changes JVM behavior; no unprofiled speed ratio is shown when recording is enabled.",
           "Two paired games are not independent draws for a reliable winrate estimate.",
           "Censored, process-timeout and engine-fault games are not counted as wins/losses.",
           "Source equivalence and Oracle rules are not independently certified here.",
