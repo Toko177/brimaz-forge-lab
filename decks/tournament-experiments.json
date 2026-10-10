@@ -1,0 +1,12 @@
+{
+  "variants": [
+    {
+      "id": "surveil-land",
+      "swaps": "1 Plains -> 1 Shadowy Backstreet"
+    },
+    {
+      "id": "fetch-land",
+      "swaps": "1 Swamp -> 1 Fabled Passage"
+    }
+  ]
+}
