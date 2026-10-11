@@ -1,0 +1,76 @@
+name: One-time prune fully merged legacy branch refs
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/one-time-prune-branches.yml]
+permissions:
+  contents: write
+  pull-requests: read
+jobs:
+  safe-prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate ALL refs before any delete and preserve provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_REPOSITORY" = "Toko177/brimaz-forge-lab"
+          open_prs="$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" --jq length)"
+          test "$open_prs" = "0" || { echo "Open PRs; refusing branch deletion" >&2; exit 1; }
+          cat > /tmp/expected_legacy_branches.txt <<'REFS'
+5cf9b9505c8a8aebd10e74407301e2ff48626017 feature/combat-trigger-fast-v13-20261010
+c8b1548613e131a930e144fe16038253a1354cda feature/combat-trigger-scan-differential-20261010
+1979a1aa8525d141f4ed6f5365b065c7ee3963c3 feature/four-ai-critical-counter-response-20261010
+3967f4dd8db2e7c067178642c39c11335b96a7aa feature/four-ai-multiplayer-lethal-targets-20261010
+603fa90936f9950617c7bf9aa7922d35eeb9cd07 feature/human-video-fetch-and-tax-analysis-20261010
+1040a8993ca72ba27b544228e7c5b2ab5584450a feature/simulator-core-v15-human-playbooks-20261010
+2fc15c1e51d143d7c90412c6786960994ec349e2 feature/v16-multiplayer-defense-and-handoff-20261010
+80983780a5dd25cfec06aadbd536ac02852627a4 feature/v17-defense-robustness-20261010
+c60717061ef13a20c6b1fbf21e6f92a7305db793 feature/v17-multiplayer-threat-coverage-20261010
+02c04fa4c770c60f88825862a142e6b593d84d1c feature/v18-gameplay-forensics-and-release-gate-20261010
+1002ca9061909b767612832a55971b80713e6484 feature/v19-opponent-removal-urgency-20261010
+9c7a40bb38999641249c6ef3d5138f98bb828d04 feature/v20-counterfactual-removal-and-tournament-20261010
+87271edf804fc21426f9d8fad552e4d1542b3e4d feature/v22-four-ai-operator-smoke-and-counter-audit-20261010
+f4793590d9e3ac98e95db48673bed142dbfca449 feature/v23-ai-timeout-cooldown-20261010
+da81daa37ccaabe0d3ec03bb62a72e48c251ed44 feature/v24-combat-trigger-fast-negatives-20261011
+31d21ce47be0a872ff59d02fd9714b1766657704 feature/v25-all-seats-real-evidence-20261011
+92789509bd04af434dde19b93f5a5f42090eed70 feature/v26-real-forge-jfr-cpu-20261011
+107e8ec8c692c06bbf06ef26afddae5b258e274d feature/v27-four-ai-strategic-forensics-20261011
+edb866a8607b978b501106585be14b7648c22478 feature/v28-real-card-property-hotpath-profile-20261011
+678623d2010c574ece31185776d6d0109076884d feature/v29-real-commander-recast-legal-alternatives-20261011
+377996e2fc5a382914ed2dcfc3c2d7c66bfc471b feature/v30-exact-card-property-fastpath-20261011
+377996e2fc5a382914ed2dcfc3c2d7c66bfc471b feature/v31-eight-seat-property-rules-rollout-20261011
+dfc2bb6f9c40ea559c57afba0647e3d1668df2cd feature/v31-reproducible-4ai-operator-20261011
+a6eda1bb2ec149fa8d6eb56abd5628c8fa5c8bd2 feature/v32-persistent-canonical-commander-decks-20261011
+12c0c8f3efc3451bd5d85a8c92518047f3c4065b feature/v33-multiplayer-strategic-planner-20261011
+ff1988da86825818a173f8442589f2901865127e feature/v34-repository-cleanup-20261011
+b2bea601ed3b2d4f36c04de2043663d7062a6db3 improve/realism-and-ai-diagnostics
+6f78399acfb85b72f7e2d8a875425d9cc9ed4eeb integration/consolidated-main-20261011
+78c01775b78bd4332ea01aa80da38f18b8949382 integration/four-ai-commander-simulator-20261010
+4bb332115162e3c9eb7b0d394497d48b9aa38152 integration/main-merge-20261011
+REFS
+          echo "Validating exactly 30 historical branch names and immutable SHA..."
+          test "$(wc -l </tmp/expected_legacy_branches.txt)" -eq 30
+          while read -r expected branch; do
+            test "$branch" != "main"
+            test "$branch" != "archive/experimental-branches-20261011"
+            current="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$branch" --jq .object.sha)"
+            test "$current" = "$expected" || { echo "Branch moved: $branch" >&2; exit 2; }
+            git cat-file -e "$expected^{commit}"
+            git merge-base --is-ancestor "$expected" "$GITHUB_SHA" ||
+              { echo "Not archived in main: $branch" >&2; exit 3; }
+            echo "ARCHIVED_REF_SAFE $branch $expected"
+          done </tmp/expected_legacy_branches.txt
+          echo "All 30 heads verified present in main. Starting deletion."
+          while read -r expected branch; do
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" --silent
+            echo "PRUNED_MERGED_REF $branch"
+          done </tmp/expected_legacy_branches.txt
+          echo "LEGACY_BRANCH_PRUNE_COMPLETED count=30 main_preserved=true archive_preserved=true"
