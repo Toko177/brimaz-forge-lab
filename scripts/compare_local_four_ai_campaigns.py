@@ -76,6 +76,21 @@ def load_campaign(root):
         raise ValueError("Real campaign is incomplete, missing seeded games or contains extras")
     return provenance,data
 
+def timing_eligible(meta_a, meta_b):
+    """JFR and same-state Oracle shadow instrumentation invalidate timing A/B.
+
+    A real naturally completed game may still be compared for behavior,
+    but instrumentation overhead is deliberately excluded from speed claims.
+    """
+    if meta_a.get("jfr_enabled") or meta_b.get("jfr_enabled"):
+        return False
+    if meta_a.get("diagnostic_shadow_verification") or meta_b.get("diagnostic_shadow_verification"):
+        return False
+    if meta_a.get("policy") == "v30_shadow_verify" or meta_b.get("policy") == "v30_shadow_verify":
+        return False
+    return True
+
+
 def compare(root_a,root_b):
     meta_a,games_a=load_campaign(root_a)
     meta_b,games_b=load_campaign(root_b)
@@ -103,7 +118,7 @@ def compare(root_a,root_b):
             "wall_speed_ratio_only_same_natural_game":
                 round(a["wall_seconds"]/b["wall_seconds"],4)
                 if matching and b["wall_seconds"]>0
-                   and not meta_a.get("jfr_enabled",False) else None,
+                   and timing_eligible(meta_a, meta_b) else None,
         })
     natural_pairs=[x for x in pairs if x["both_natural"]]
     identical=[x for x in pairs if x["same_observable_events_if_natural"]]
@@ -111,6 +126,7 @@ def compare(root_a,root_b):
     return {
         "type":"Actual Forge 2.0.15 four-AI Commander controlled real-game campaign A/B",
         "reference_provenance":meta_a,"experiment_provenance":meta_b,
+        "timing_comparison_eligible":timing_eligible(meta_a,meta_b),
         "real_process_pairs":len(pairs),"real_forge_jvm_processes":len(pairs)*2,
         "both_natural_pairs":len(natural_pairs),
         "pairs_with_any_censor_or_fault":len(censored),
@@ -122,7 +138,7 @@ def compare(root_a,root_b):
         "limitations":[
           "Matched seeds may diverge due to AI search scheduling and changing behavior.",
           "A speed ratio is presented ONLY for two natural games with identical tracked events.",
-          "JFR profiling changes JVM behavior; no unprofiled speed ratio is shown when recording is enabled.",
+          "JFR profiling or rules-shadow verification changes runtime cost; no speed ratio is shown for diagnostic campaigns.",
           "Two paired games are not independent draws for a reliable winrate estimate.",
           "Censored, process-timeout and engine-fault games are not counted as wins/losses.",
           "Source equivalence and Oracle rules are not independently certified here.",
