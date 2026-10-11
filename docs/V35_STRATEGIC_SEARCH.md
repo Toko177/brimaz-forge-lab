@@ -292,3 +292,44 @@ aux créatures sacrifiables. Les choix d'activation, de transformation
 et les déclenchements restent exclusivement ceux du vrai Forge.
 Les tests adversariaux vérifient ces règles de priorisation abstraite
 sans les confondre avec une simulation des capacités résolues.
+
+## Incident réel du protocole du 11 octobre — racines documentées
+
+[Exécution #38136545704](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38136545704) :
+**2/4 jobs réussis ; 2/4 en échec**. Ni la censure, ni l'erreur du moteur
+ne constituent une défaite attribuable à la politique IA.
+
+- `artifact / forge_stock vs v35_strategy` : 4 paires, 3 naturellement
+  terminées dans les deux bras, 1 paire censurée, **110 décisions V35
+  acceptées par AiController**, 0 victoire Brimaz pour chacun sur les
+  trois paires exploitables. Aucun résultat de supériorité statistique.
+- `aristo / v17_strict vs v35_brimaz_duel` : 4/4 paires naturelles,
+  **0 victoire Brimaz V17 contre 1 victoire Brimaz V35**, 26 décisions
+  V35 de Brimaz, aucune intervention V35 chez un adversaire.
+  Sur quatre paires, **p bilatéral exact = 1,0** : non significatif.
+- `artifact / v17_strict` : une JVM (rotation 1) échoue dès le démarrage
+  avec `cannot create profile directory: ~/.forge/decks/planar/`.
+  **Correctif d'orchestration** : création séquentielle de ce répertoire
+  avant les processus Forge concurrents ; les decks et règles ne changent pas.
+- `aristo / forge_stock` : rotations 2 et 3 classées `engine_fault`
+  après des NPE `SpellAbility.getActivatingPlayer() == null`, type
+  d'échec corrigé par notre patch commun `CharmEffect`.
+
+### Nouvelle référence principale : stock AI + compatibilité, étiquetée
+
+Le protocole expérimental garde distincts :
+- **`forge_stock`** : JAR Forge original byte-identique, aucun patch,
+  aucune propriété JVM personnalisée — historique factuel brut,
+  mais contient le défaut `CharmEffect`.
+- **`forge_stock_compat`** : les **classes IA sont celles de Forge
+  original** ; seul `patch_forge_charm_context.py` répare le contexte
+  d'une capacité et les NPE observées. Cette référence **n'est PAS
+  un JAR officiel inchangé**. Le correctif est commun à V35 et à la
+  référence ; aucun patch spécifique à Brimaz, au combat ou au scoring
+  n'est ajouté au bras de contrôle.
+
+L'auditeur impose l'identité des decks et rejette une référence
+`forge_stock_compat` si elle contient d'autres patchs que celui-ci.
+Cette nouvelle campagne distingue ainsi une amélioration comportementale
+de l'IA des erreurs de stabilité du moteur. Les résultats du précédent
+benchmark sont conservés, jamais réécrits.

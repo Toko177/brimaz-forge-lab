@@ -49,6 +49,13 @@ Brimaz, laissant les trois autres IA sur une référence V17 identique.
 C'est un test compétitif plus proche d'un véritable duel, distinct
 de la comparaison au JAR Forge original non modifié.
 
+**Contrôle expérimental avec stabilité vérifiée :**
+`forge_stock_compat` utilise l'IA Forge originale avec uniquement un
+correctif commun de contexte `CharmEffect`, distinct de `forge_stock`
+qui conserve le JAR strictement original. Le benchmark précédent a
+échoué sur une initialisation concurrente du profil et des NPE du
+moteur stock, pas sur une différence de victoires probante.
+
 **Évaluation scientifique corrigée :** la campagne de référence `v17_strict`
 n'utilisait pas Forge d'origine. Le protocole vérifiable
 `forge_stock` conserve désormais le JAR originel byte-à-byte

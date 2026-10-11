@@ -28,6 +28,17 @@ La CI matrice sépare aussi les comparaisons stock Forge original
 contre V35 généralisée. Ce duel ne prouve pas une supériorité
 sur Forge original, mais il isole mieux l'effet de Brimaz V35.
 
+## Incidents réels du benchmark stock / V35
+
+Voir `docs/V35_STRATEGIC_SEARCH.md` : 2 jobs réussis, 2 échoués
+sur #38136545704 ; V17 échoue sur la création concurrente de
+`~/.forge/decks/planar`, le Forge strictement original sur des NPE
+de `SpellAbility.getActivatingPlayer()`.
+La nouvelle référence `forge_stock_compat` conserve le scoring AI
+officiel et applique le seul hotfix commun `CharmEffect`; elle n'est
+**pas un JAR stock byte-identique**.
+Le nouveau benchmark et sa preuve devront être vérifiés séparément.
+
 ## Statut empirique réel de la V35
 
 Le pilote original ([16 parties Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38133124128))

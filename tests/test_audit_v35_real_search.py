@@ -58,6 +58,23 @@ with tempfile.TemporaryDirectory() as td:
         "patched_forge_sha256":"original",
     })
     assert audit(stock)["reference_is_byte_identical_to_stock_forge"] is True
+    compatibility=report()
+    compatibility["reference_provenance"].update({
+      "policy":"forge_stock_compat",
+      "stock_ai_with_shared_charm_engine_hotfix":True,
+      "upstream_forge_unmodified":False,
+      "upstream_byte_identical":False,
+      "patches":["patch_forge_charm_context.py"],
+      "original_forge_sha256":"official_source",
+    })
+    assert audit(compatibility)["reference_is_stock_ai_with_shared_compatibility_fix"]
+    compatibility["reference_provenance"]["patches"].append("patch_forge_brimaz_v13.py")
+    try:
+        audit(compatibility)
+        raise AssertionError("Baseline with extra AI patches falsely claimed compatible stock")
+    except ValueError:
+        pass
+
     duel=report()
     duel["experiment_provenance"]["policy"]="v35_brimaz_duel"
     duel["reference_provenance"]["patches"]=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py"]

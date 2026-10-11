@@ -32,7 +32,7 @@ CANONICAL_DECK_SHA256={
     "Kaal_11485202":"d713d2ad927524c5d98540a2e80aee9a1985be6c9a1711e93ffd26f722f1187f",
     "Kaal_22193355":"b47a726cdc1a4353d6008c2b3a6ac77b6d4c7870c4b197c9405bdd926cbe938e",
 }
-POLICIES=("forge_stock","v17_strict","v19_removal","v20_shadow","critical_counter",
+POLICIES=("forge_stock","forge_stock_compat","v17_strict","v19_removal","v20_shadow","critical_counter",
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
           "v33_strategy","v35_strategy","v35_brimaz_duel")
 
@@ -73,8 +73,8 @@ def java_version():
     return raw.splitlines()[0]
 
 def policy_flags(policy):
-    if policy == "forge_stock":
-        return ""  # Do not inject ANY brimaz.* property into unmodified stock Forge.
+    if policy in ("forge_stock","forge_stock_compat"):
+        return ""  # Neither baseline injects an AI-specific Java property.
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",
@@ -124,8 +124,13 @@ def patch_jar(original,output,policy):
         # the exact upstream original; not even the historical Charm hotfix.
         assert sha(output) == sha(original), "Upstream Forge comparator mutated"
         return sha(output), []
-    scripts=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py",
-             "patch_forge_four_ai_targets.py"]
+    if policy == "forge_stock_compat":
+        # Original Forge AI, only the generic SpellAbility/Charm activator
+        # crash fix. NOT a pristine JAR; disclose this in all reports.
+        scripts=["patch_forge_charm_context.py"]
+    else:
+        scripts=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py",
+                 "patch_forge_four_ai_targets.py"]
     if policy in ("v19_removal","v20_shadow","v35_strategy"):
         scripts+=["patch_forge_multiplayer_removal.py"]
     if policy in ("critical_counter","v35_strategy"):
@@ -139,6 +144,20 @@ def patch_jar(original,output,policy):
         subprocess.run([sys.executable,str(ROOT/"scripts"/file),
                         "--jar",str(output)],check=True,cwd=ROOT)
     return sha(output),scripts
+
+def prepare_forge_shared_profile_paths(home):
+    """Avoid Forge 2.0.15's non-atomic mkdir race on parallel JVM startup.
+
+    Forge itself creates ~/.forge/decks/planar. In an isolated CI runner
+    simultaneous FModel.initialize calls can race and spuriously fail.
+    Creating only the directory ahead of time does NOT alter Java code,
+    deck content, game rules, seeds or Java AI policies.
+    """
+    folder=Path(home)/".forge"/"decks"/"planar"
+    folder.mkdir(parents=True,exist_ok=True)
+    if not folder.is_dir():
+        raise RuntimeError("Cannot prepare Forge profile directory: "+str(folder))
+    return folder
 
 def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag,jfr):
     source_tag=f"{tag}-rot{rotation}"
@@ -239,6 +258,7 @@ def main():
         "original_forge_runtime_directory":str(runtime_dir),
         "patched_forge_sha256":jar_sha,"patches":patches,
         "upstream_forge_unmodified": args.policy == "forge_stock",
+        "stock_ai_with_shared_charm_engine_hotfix":args.policy == "forge_stock_compat",
         "upstream_byte_identical": jar_sha == sha(args.jar.resolve()),
         "canonical_seven_deck_sha256":deck_hashes,
         "scryfall_legality_report_file":str(args.scryfall_legality_report.resolve()) if args.scryfall_legality_report else None,
@@ -252,6 +272,8 @@ def main():
     }
     (dest/"provenance.json").write_text(json.dumps(meta,indent=2,ensure_ascii=False)+"\n")
     tag="local-"+campaign_id
+    ready=prepare_forge_shared_profile_paths(Path.home())
+    print("FOUR_AI_PROFILE_INIT_SERIALIZED",str(ready),flush=True)
     tasks=[(pod,rot) for pod in pods for rot in range(4)]
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
         futures={pool.submit(run_job,dest,output_jar,runtime_dir,pod,rot,args.seed_base,

@@ -81,7 +81,7 @@ def audit(report):
         raise ValueError("Not the genuine Forge A/B format")
     ref=report.get("reference_provenance",{})
     exp=report.get("experiment_provenance",{})
-    if ref.get("policy") not in ("v17_strict","forge_stock") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel"):
+    if ref.get("policy") not in ("v17_strict","forge_stock","forge_stock_compat") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel"):
         raise ValueError("Invalid Forge stock/V17 control or V35 experiment")
     if exp["policy"]=="v35_brimaz_duel" and ref["policy"]!="v17_strict":
         raise ValueError("Mixed-seat v35_brimaz_duel requires stable identical v17 opponents")
@@ -96,6 +96,13 @@ def audit(report):
             or "fourSeatRemovalUrgency=true" in exp["java_tool_options"]
             or "fourSeatCounterCritical=true" in exp["java_tool_options"]):
             raise ValueError("V35 Brimaz-only test was contaminated by global strategy flags")
+    if ref.get("policy")=="forge_stock_compat":
+        if (ref.get("stock_ai_with_shared_charm_engine_hotfix") is not True
+            or ref.get("upstream_forge_unmodified") is True
+            or ref.get("upstream_byte_identical") is True
+            or ref.get("patches")!=["patch_forge_charm_context.py"]
+            or not ref.get("original_forge_sha256")):
+            raise ValueError("Forge AI + shared Charm compatibility baseline has wrong provenance")
     if ref.get("policy")=="forge_stock":
         if (ref.get("upstream_forge_unmodified") is not True
             or ref.get("upstream_byte_identical") is not True
@@ -200,6 +207,7 @@ def audit(report):
       "reference_policy":ref["policy"],
       "experimental_policy":exp["policy"],
       "reference_is_byte_identical_to_stock_forge":ref["policy"]=="forge_stock",
+      "reference_is_stock_ai_with_shared_compatibility_fix":ref["policy"]=="forge_stock_compat",
       "mixed_seat_brimaz_vs_v17_opponents":exp["policy"]=="v35_brimaz_duel",
       "arm_natural_finishes":{"reference":natural_reference,"experiment":natural_experiment},
       "wins_by_deck_all_natural_reference":dict(wins_reference),
@@ -217,6 +225,7 @@ def audit(report):
         "V35_WINDOW is only a bounded abstract search proposal",
         "V35_TACTICAL_WINDOW is a potential emergency, not proof the card was usable or cast",
         "V35_STOCK_APPROVED means original Forge AI agreed to play; it does not independently prove actual spell resolution",
+        "forge_stock_compat is stock AI with a shared CharmEffect crash fix, not a byte-identical original JAR",
         "For v35_strategy all four seats use the same upgraded policy: NOT a mixed-seat head-to-head",
         "For v35_brimaz_duel Brimaz uses V35 while opponents retain v17_modified baseline, NOT pristine upstream Forge",
         "Natural wins do not prove better strategy or statistically significant win rate",

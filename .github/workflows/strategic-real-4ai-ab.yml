@@ -1,4 +1,4 @@
-name: V35 original stock Forge benchmark plus mixed-seat Brimaz-v17 A/B
+name: V35 stock AI (shared Charm fix) plus mixed-seat Brimaz-v17 A/B
 on:
   pull_request:
     branches: [main]
@@ -29,8 +29,8 @@ jobs:
       max-parallel: 4
       matrix:
         include:
-          - {pod: artifact, reference: forge_stock, experiment: v35_strategy}
-          - {pod: aristo, reference: forge_stock, experiment: v35_strategy}
+          - {pod: artifact, reference: forge_stock_compat, experiment: v35_strategy}
+          - {pod: aristo, reference: forge_stock_compat, experiment: v35_strategy}
           - {pod: artifact, reference: v17_strict, experiment: v35_brimaz_duel}
           - {pod: aristo, reference: v17_strict, experiment: v35_brimaz_duel}
     steps:

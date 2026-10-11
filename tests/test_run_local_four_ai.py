@@ -54,6 +54,14 @@ with tempfile.TemporaryDirectory() as temp:
         pass
 assert "forge_stock" in POLICIES
 assert policy_flags("forge_stock") == ""
+assert "forge_stock_compat" in POLICIES
+assert policy_flags("forge_stock_compat") == ""
+from run_local_four_ai import prepare_forge_shared_profile_paths
+with tempfile.TemporaryDirectory() as tmp:
+    path=prepare_forge_shared_profile_paths(tmp)
+    assert path.is_dir() and path.as_posix().endswith("/.forge/decks/planar")
+    assert prepare_forge_shared_profile_paths(tmp)==path
+
 with tempfile.TemporaryDirectory() as td:
     original=Path(td)/"upstream_original.jar"
     out=Path(td)/"stock_copy.jar"
@@ -63,7 +71,7 @@ with tempfile.TemporaryDirectory() as td:
     assert newhash==oldhash==sha(out), "Stock comparator JAR was patched or modified"
     assert patches==[], "Stock Forge comparator must have ZERO patches"
 for policy in POLICIES:
-    if policy == "forge_stock":
+    if policy in ("forge_stock","forge_stock_compat"):
         continue
     flags=policy_flags(policy)
     assert "fourSeatCombatTarget=true" in flags

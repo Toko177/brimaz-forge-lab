@@ -62,7 +62,23 @@ def execute(cmd, log_root, label):
          "stdout": str(log_root / "stdout.log"),
          "stderr": str(log_root / "stderr.log")}), flush=True)
     if rc:
-        raise RuntimeError(label + " genuine Forge campaign failed with exit "
+        # The CI job must surface the root error without downloading a huge
+        # artifact or pretending this faulty arm lost the Commander game.
+        for filename in ("stderr.log","stdout.log"):
+            path=log_root/filename
+            if path.is_file():
+                lines=path.read_text(encoding="utf-8",errors="replace").splitlines()
+                relevant=[x for x in lines if any(t in x for t in (
+                    "Traceback","Exception","Error:","RuntimeError",
+                    "ValueError","failed","engine_fault","engine_failed",
+                    "profile directory","NullPointerException",
+                    "Raw Forge 4-seat game actions not present"))]
+                print("FOUR_AI_FAILED_ARM_DIAGNOSTIC",
+                      json.dumps({"arm":label,"source":filename,
+                                  "tail":lines[-6:],
+                                  "critical":relevant[-12:]},
+                                 ensure_ascii=False),flush=True)
+        raise RuntimeError(label + " genuine Forge campaign failed with exit 
                            + str(rc) + ". Logs preserved in " + str(log_root))
 
 
