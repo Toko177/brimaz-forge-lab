@@ -119,3 +119,21 @@ où l'un des deux Brimaz gagne. **Un petit échantillon,
 un avantage de 1 victoire ou un test synthétique ne prouve pas
 la supériorité générale d'une IA.** Les résultats des vraies
 parties ne peuvent être annoncés qu'après exécution réussie.
+
+### Benchmark miroir renforcé : quatre Brimaz identiques (2 V37 vs 2 Forge)
+
+Le mode `--mode all-brimaz` lance quatre copies identiques du même
+deck Brimaz — **deux challengers V37 et deux références Forge**, dans
+une même partie réelle à quatre joueurs, avec rotation équilibrée des
+sièges. Contrairement aux parties à deux Brimaz + deux Kaal, chaque
+victoire naturelle revient nécessairement à l'une de ces deux
+politiques. L'auditeur vérifie explicitement cet invariant et sépare
+les parties censurées.
+
+Ce test mesure **l'avantage relatif des deux politiques sur le deck
+Brimaz en miroir**, et non une supériorité générale contre tous les
+archétypes Commander. Le format à deux Kaal est donc maintenu comme
+validation externe. Les deux expériences sont exécutées dans le
+workflow existant (aucune nouvelle automation ni deck canonique
+modifié). Le verdict d'efficacité reste conditionné aux nombres
+réels de victoires, pas aux nombres de propositions IA.

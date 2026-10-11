@@ -12,6 +12,29 @@ from run_local_four_ai import validate_decks,patch_jar,policy_flags,prepare_forg
 PODS={"aristo":("Kaal_9594008","Kaal_10347090"),
       "artifact":("Kaal_23328062","Kaal_11485202")}
 MIRRORS=("Brimaz_Challenger","Brimaz_Reference")
+FOUR_MIRRORS=("Brimaz_Challenger_A","Brimaz_Challenger_B",
+              "Brimaz_Reference_A","Brimaz_Reference_B")
+
+def category(name):
+    if name is None:return "invalid"
+    if name.startswith("Brimaz_Challenger"):return "challenger"
+    if name.startswith("Brimaz_Reference"):return "reference"
+    return "opponent"
+
+def make_four_mirror_decks(canonical,target):
+    """All FOUR participants have byte-identical Magic cards, different metadata."""
+    target.mkdir(parents=True,exist_ok=False)
+    original=(canonical/"Brimaz_V3.dck").read_bytes()
+    header=b"Name=Brimaz V3\n"
+    if original.count(header)!=1:raise ValueError("Canonical original metadata changed")
+    for name in FOUR_MIRRORS:
+        disp=name.replace("_"," ")
+        renamed=original.replace(header,("Name="+disp+"\n").encode(),1)
+        if renamed.replace(("Name="+disp+"\n").encode(),header,1)!=original:
+            raise AssertionError("All-Brimaz source cardlist differs")
+        (target/(name+".dck")).write_bytes(renamed)
+    return FOUR_MIRRORS
+
 WIN=re.compile(r"Game Result: Game\s+\d+\s+ended in\s+(\d+)\s*ms\.\s*Ai\((\d+)\)-(.+?) has won!")
 ERRORS=("java.lang.NullPointerException","Exception in thread","java.lang.IllegalStateException",
         "StackOverflowError","OutOfMemoryError","Simulation: Couldn't play land")
@@ -57,17 +80,29 @@ def binomial_two_sided(a,b):
 
 def summarize(records):
     finished=[x for x in records if x["status"]=="complete"]
-    wins=Counter(x["winner"] for x in finished)
-    a,b=wins[MIRRORS[0]],wins[MIRRORS[1]]
+    wins=Counter(category(x["winner"]) for x in finished)
+    a,b=wins["challenger"],wins["reference"]
     return {
         "kind":"ACTUAL Forge same-JVM direct same-cardlist Brimaz mirror",
         "real_jvm_games":len(records),"natural_finishes":len(finished),
         "censored_or_faulted":len(records)-len(finished),
         "challenger_brimaz_wins":a,"reference_brimaz_wins":b,
         "opponent_wins":len(finished)-a-b,
+        "all_brimaz_same_deck_games":sum(
+            x.get("mode")=="all-brimaz" for x in records),
+        "all_brimaz_natural_games":sum(
+            x["status"]=="complete" and x.get("mode")=="all-brimaz"
+            for x in records),
+        "same_deck_2vs2_required_winner_integrity":all(
+            x["status"]!="complete" or x.get("mode")!="all-brimaz"
+            or category(x["winner"]) in ("challenger","reference")
+            for x in records),
         "direct_duel_decisive_wins":a+b,
         "two_sided_conditional_binomial_p":round(binomial_two_sided(a,b),6),
         "statistically_proven_general_AI_superiority":False,
+        "predeclared_strong_evidence_on_mirror":bool(
+            a+b>=16 and binomial_two_sided(a,b)<0.01 and a>b),
+        "note":"A mirror-only difference needs confirmation across dissimilar pods and independent seeds.",
         "limits":["The same Brimaz 99+commander cards are used by both players.",
           "Both receive identical technical engine patches, NOT byte-identical original Forge.",
           "Other Kaal wins are neither a win nor a loss for this same-deck comparison.",
@@ -75,9 +110,9 @@ def summarize(records):
         "games":records,
     }
 
-def game(task,jar,run_dir,deck_dirs,out,seed_base,clock):
+def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
     pod,rotation,repeat=task
-    seats=(*MIRRORS,*PODS[pod])
+    seats=FOUR_MIRRORS if mode=="all-brimaz" else (*MIRRORS,*PODS[pod])
     seats=seats[rotation:]+seats[:rotation]
     seed=seed_base+10000*rotation+repeat+(0 if pod=="aristo" else 100000)
     target=out/pod/f"rotation{rotation}_rep{repeat}"
@@ -102,6 +137,7 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock):
     (target/"game.log").write_text(stdout+"\n[STDERR]\n"+stderr,encoding="utf-8")
     status,winner=classify(stdout,stderr,rc,timed_out,clock,seats)
     record={"pod":pod,"rotation":rotation,"repeat":repeat,"seed":seed,
+            "mode":mode,
             "seats":seats,"status":status,"winner":winner,"exit":rc,
             "V37_strategic_approvals":stdout.count("FOUR_AI_V35_STOCK_APPROVED"),
             "V37_positive_sacrifice_approvals":stdout.count("FOUR_AI_V37_POSITIVE_SAC_FORGE_APPROVED"),
@@ -118,6 +154,8 @@ def main():
     ap.add_argument("--parallel",type=int,default=2)
     ap.add_argument("--clock",type=int,default=420)
     ap.add_argument("--seed-base",type=int,default=20270503)
+    ap.add_argument("--mode",choices=("kaal-mirror","all-brimaz"),
+                    default="kaal-mirror")
     a=ap.parse_args()
     if not 1<=a.repeats<=5 or not 1<=a.parallel<=2:ap.error("repeat 1..5 parallel 1..2")
     pinned=validate_decks(ROOT/"forge_decks",ROOT/"canonical/results/forge_normalization/report.json")
@@ -130,18 +168,23 @@ def main():
         prepared=scratch/"v37-patched.jar"
         digest,patches=patch_jar(a.jar.resolve(),prepared,"v37_brimaz_challenger")
         dirs={pod:scratch/("mirror_"+pod) for pod in PODS}
-        for pod in PODS:make_mirror_decks(ROOT/"forge_decks",dirs[pod],pod)
+        for pod in PODS:
+            if a.mode=="all-brimaz":
+                make_four_mirror_decks(ROOT/"forge_decks",dirs[pod])
+            else:
+                make_mirror_decks(ROOT/"forge_decks",dirs[pod],pod)
         provenance={"original_forge_sha256":sha(a.jar.resolve()),"patched_sha256":digest,
             "identical_patches_for_every_player":patches,
             "canonical_seven_source_hashes":pinned,
             "two_brimaz_card_lists_identical_except_metadata":True,
-            "seed_base":a.seed_base,"clock_seconds":a.clock}
+            "seed_base":a.seed_base,"clock_seconds":a.clock,
+            "mode":a.mode,"all_four_same_deck":a.mode=="all-brimaz"}
         (dest/"provenance.json").write_text(json.dumps(provenance,indent=2)+"\n")
         tasks=[(pod,r,k) for pod in PODS for r in range(4) for k in range(a.repeats)]
         records=[]
         with ThreadPoolExecutor(max_workers=a.parallel) as pool:
             futures=[pool.submit(game,t,prepared,a.jar.resolve().parent,dirs,
-                                 dest,a.seed_base,a.clock) for t in tasks]
+                                 dest,a.seed_base,a.clock,a.mode) for t in tasks]
             for future in as_completed(futures):
                 records.append(future.result())
                 (dest/"progress.json").write_text(
