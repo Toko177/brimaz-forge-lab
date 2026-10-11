@@ -1,3 +1,5 @@
+**V39 (expérimental) :** gestion contextuelle des Incubateurs. Un petit jeton n'est transformé pour préparer un sacrifice que si Brimaz et un vrai moteur de sacrifice sont présents et que la prolifération des compteurs visibles compense sa perte. Le planificateur évite également de consommer le mana d'un accélérateur immédiatement payable, sauf urgence défensive. Toujours contrôlé par les règles et les coûts de Forge. [Protocole et mesures](docs/V36_EVIDENCE_POLICY.md).
+
 **V38 — changement concret de gameplay :** les Incubateurs ne sont pas des créatures tant qu'ils ne sont pas transformés. Le challenger peut maintenant activer sélectivement une transformation légale en phase principale 2, par les vrais coûts Forge, pour créer de véritables bloqueurs/attaquants et alimenter les synergies Phyrexian. Le contrôle original ne reçoit pas cette politique. [Code et protocole](docs/V36_EVIDENCE_POLICY.md).
 
 **Nouvelle validation directe V37 :** deux decks Brimaz strictement identiques

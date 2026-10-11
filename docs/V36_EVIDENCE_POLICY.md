@@ -195,3 +195,54 @@ les transformations effectivement approuvées des victoires
 naturelles. Cette hypothèse reste à confirmer par les parties ;
 une classe Java compilable et des tests synthétiques ne démontrent
 jamais à eux seuls une meilleure qualité stratégique.
+
+## V39 — transformer un Incubateur **pour une raison mesurable**
+
+[V38 — preuves réelles CI](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38152203947) :
+
+| Expérience | Naturelles | Challenger | Référence | Kaal |
+|---|---:|---:|---:|---:|
+| 4 Brimaz identiques, première famille de graines | 8/8 | 6 | 2 | — |
+| 4 Brimaz identiques, deuxième famille de graines | 8/8 | 2 | 6 | — |
+| 2 Brimaz + 2 Kaal, Artifact | 7/8 | 3 | 0 | 4 |
+| 2 Brimaz + 2 Kaal, Aristo | 8/8 | 1 | 0 | 7 |
+
+**Attention :** les deux expériences « 4 Brimaz » ont exactement
+**les mêmes quatre listes de cartes** : leur seule différence liée au
+`pod` est un décalage de la graine aléatoire. Les résultats 6–2
+puis 2–6 constituent une fluctuation sur petit échantillon,
+**pas une différence entre les archétypes opposés**.
+Le bilan **8–8** en miroir ne démontre aucun gain.
+
+En revanche, le test contre Kaal montre quatre victoires pour V38
+contre zéro pour la référence en 15 parties naturelles. La valeur
+bilatérale conditionnelle de 4 succès sur 4 duels décisifs
+est `p = 0,125`. Ce signal est encourageant mais faible :
+les onze victoires de Kaal ne sont pas attribuées à l'une des deux IA.
+
+**Nouvelle modification de gameplay V39 :** en plus de la V38,
+`MultiplayerIncubatorEngineV39.minimumVisibleNetEngineValue`
+évalue la rentabilité minimale d'une séquence future impliquant
+un Incubateur transformé puis sacrifié : seul un petit Incubateur
+de taille 2 à 4, un **vrai exutoire de sacrifice déjà sur table**,
+Brimaz réellement présent et au moins assez d'autres permanents
+déjà porteurs de compteurs pour un bénéfice net positif
+justifient de privilégier cette transformation. Ce calcul
+**n'assume pas** l'existence d'une future activation valide :
+le véritable Forge valide séparément la transformation et, le cas
+échéant, le sacrifice.
+
+V39 refuse également d'interrompre un sort de ramp connu
+et **actuellement payable** (Sol Ring, Arcane Signet, etc.)
+pour transformer un artefact non urgent ; le garde ne s'applique
+pas sous danger défensif sérieux. Les décisions enregistrent
+`source=KNOWN_COUNTER_ENGINE` ou `DEFENSIVE_TEMPO`,
+la marge de valeur observée, la présence de l'exutoire et
+l'existence d'un ramp payable.
+
+Le protocole V39 utilise des graines **indépendantes `20271119`**,
+3 répétitions par rotation/pod (12 parties par shard,
+48 parties miroirs) et 16 processus JVM appariés séparés.
+Les quatre shards du miroir tournent dans le même workflow existant,
+sans créer de branche, workflow ou deck canonique supplémentaire.
+Les tests Java V39 ne simulent ni victoire ni capacité résolue.

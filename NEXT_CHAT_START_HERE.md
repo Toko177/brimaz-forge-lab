@@ -139,3 +139,20 @@ sélectionne uniquement une vraie capacité Forge de transformation
 payable en phase principale 2, sous condition d'effectif / taille /
 menace. Les miracles et moteurs adversaires ne sont pas imaginés.
 Un nouveau protocole direct est lancé avec graines 20270903.
+
+## V39 — synthèse des derniers tests et hypothèse de décision
+
+V38 (#38152203947), 32 vraies parties miroir : 31 naturelles ;
+les 16 miroirs « quatre Brimaz identiques » donnent 8 victoires
+challenger et 8 référence. Le pod artifact/aristo ne modifie
+**aucun des quatre decks de ces miroirs** : seule la famille des
+graines change. Kaal (15 parties naturelles) : V38 4 victoires,
+référence 0, Kaal 11. Les sacrifices V38 approuvés restent à zéro,
+les transformations Forge réelles sont observées.
+
+V39 : `MultiplayerIncubatorEngineV39` ajoute les bénéfices
+observables d'un sacrifice de petite créature phyrexiane et
+une règle de préservation du mana pour le ramp payable de la main.
+Un nouveau benchmark hors échantillon (seed 20271119)
+réplique les miroirs avec 3 répétitions par rotation/pod et
+les parties d'évaluation 4AI. Seuls les résultats réels comptent.
