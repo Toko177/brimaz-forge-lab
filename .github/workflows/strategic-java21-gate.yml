@@ -99,7 +99,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import pathlib, subprocess
+          import pathlib, subprocess, json
           cases=[
             "v35-v17_strict-vs-v35_brimaz_duel-artifact",
             "v35-forge_stock-vs-v35_strategy-aristo",
@@ -133,4 +133,33 @@ jobs:
                       print("  ",item[:260],flush=True)
                   for item in lines[-5:]:
                       print("  TAIL",item[:240],flush=True)
+              for man in folder.rglob("games.json"):
+                  try: rows=json.loads(man.read_text(encoding="utf-8"))
+                  except Exception as ex:
+                      print("BAD_GAMES_MANIFEST",str(man),type(ex).__name__,flush=True)
+                      continue
+                  print("FAILED_V35_GAMES_MANIFEST",str(man.relative_to(folder)),flush=True)
+                  for game in rows:
+                      print("  GAME",json.dumps({k:game.get(k) for k in (
+                          "game","status","winner_deck","seed","engine_fault_detected",
+                          "returncode","log")},ensure_ascii=False),flush=True)
+                      if game.get("status")=="complete":continue
+                      name=pathlib.Path(game.get("log","missing.log")).name
+                      logfile=man.parent/name
+                      if not logfile.exists():
+                          print("  MISSING_RAW_FORGE_GAME_LOG",name,flush=True)
+                          continue
+                      raw=logfile.read_text(encoding="utf-8",errors="replace")
+                      lines=raw.splitlines()
+                      tokens=("Exception","Error","FATAL","Traceback","NullPointer",
+                          "StackOverflow","java.lang.","Game Result","has won",
+                          "Turn: ","OOM","out of memory","stopping","slow match",
+                          "Stopping","Priority","No Actions","Game Outcome")
+                      relevant=[l for l in lines if any(k in l for k in tokens)]
+                      print("  FAILED_RAW_FORGE_GAME",name,"lines",len(lines),
+                            "relevant",len(relevant),flush=True)
+                      for entry in relevant[-20:]:
+                          print("    ",entry[:240],flush=True)
+                      for entry in lines[-10:]:
+                          print("    FINAL",entry[:210],flush=True)
           PY
