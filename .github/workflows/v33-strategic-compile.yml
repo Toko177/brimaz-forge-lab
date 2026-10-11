@@ -1,0 +1,67 @@
+name: V33 verify 4-AI strategic planner compiles against real Forge
+on:
+  pull_request:
+    branches: [feature/v32-persistent-canonical-commander-decks-20261011]
+    paths:
+      - scripts/patch_forge_brimaz_v13.py
+      - scripts/run_local_four_ai.py
+      - patches/java/forge/ai/MultiplayerStrategicModel.java
+      - patches/java/forge/ai/MultiplayerStrategicSequencer.java
+      - tests/java/forge/ai/MultiplayerStrategicModelChecks.java
+      - .github/workflows/v33-strategic-compile.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  actual-java21-forge-compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test pure abstract two-turn scenarios (not real matches)
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v33-model
+          javac --release 21 -d /tmp/v33-model \
+            patches/java/forge/ai/MultiplayerStrategicModel.java \
+            tests/java/forge/ai/MultiplayerStrategicModelChecks.java
+          java -cp /tmp/v33-model forge.ai.MultiplayerStrategicModelChecks
+      - name: Check pinned canonical files and Python operator controls
+        run: |
+          python3 tests/test_run_local_four_ai.py
+          python3 tests/test_v31_paired_four_ai.py
+          python3 -m py_compile scripts/patch_forge_brimaz_v13.py scripts/run_local_four_ai.py
+      - uses: actions/cache/restore@v4
+        with:
+          key: forge-2.0.15-linux-shared-20261009
+          path: forge-dist/
+      - name: Recover pinned official Java21 Forge executable
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Compile complete AiController V13 + NEW 4-AI strategic planner
+        run: |
+          set -euo pipefail
+          ORIG="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
+          test -s "$ORIG"
+          cp "$ORIG" /tmp/v33-test.jar
+          python3 scripts/patch_forge_charm_context.py --jar /tmp/v33-test.jar
+          python3 scripts/patch_forge_brimaz_v13.py --jar /tmp/v33-test.jar
+          javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerStrategicSequencer |
+            grep 'choose(forge.game.player.Player, java.util.List)'
+          mkdir -p /tmp/v33-tests
+          javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
+            tests/java/forge/ai/MultiplayerStrategicModelChecks.java
+          java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerStrategicModelChecks
