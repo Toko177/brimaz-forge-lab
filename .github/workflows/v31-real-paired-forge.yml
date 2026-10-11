@@ -28,25 +28,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: actions/download-artifact@v4
-        with:
-          name: forge-seven-decks-canonical-verified
-          run-id: 37966009166
-          github-token: ${{ github.token }}
-          path: canonical/
-      - name: Verify exact canonical original seven opponents / Brimaz lists
+      - name: Verify all seven permanently vendored original decks, against immutable SHA
         run: |
           set -euo pipefail
-          mkdir -p forge_decks
-          cp canonical/forge_normalized/*.dck forge_decks/
-          python - <<'PY'
-          from pathlib import Path
-          import json, hashlib
-          report=json.loads(Path('canonical/results/forge_normalization/report.json').read_text())
-          assert len(report['decks'])==7 and not report['errors']
-          assert all(hashlib.sha256((Path('forge_decks')/(row['deck']+'.dck')).read_bytes()).hexdigest()==row['normalized_sha256'] for row in report['decks'])
-          print('V31_SEVEN_ORIGINAL_COMMANDER_DECKS_SHA256_VERIFIED')
-          PY
+          python3 tests/test_run_local_four_ai.py
+          echo V32_NO_EXPIRING_CANONICAL_ARTIFACT_DEPENDENCY
       - uses: actions/cache/restore@v4
         with:
           key: forge-2.0.15-linux-shared-20261009
