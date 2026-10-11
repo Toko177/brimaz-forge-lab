@@ -33,7 +33,8 @@ CANONICAL_DECK_SHA256={
     "Kaal_22193355":"b47a726cdc1a4353d6008c2b3a6ac77b6d4c7870c4b197c9405bdd926cbe938e",
 }
 POLICIES=("v17_strict","v19_removal","v20_shadow","critical_counter",
-          "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify")
+          "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
+          "v33_strategy")
 
 def sha(path):
     d=hashlib.sha256()
@@ -84,6 +85,7 @@ def policy_flags(policy):
       "-Dbrimaz.fastCardPropertyExactLiterals=false",
       "-Dbrimaz.cardPropertyShadowVerify=false",
       "-Dbrimaz.cardPropertyFastTrace=false",
+      "-Dbrimaz.v33MultiplayerStrategicPlanner=false",
     ]
     opts={
       "v17_strict":[],
@@ -99,6 +101,7 @@ def policy_flags(policy):
       "v30_shadow_verify":["-Dbrimaz.fastCardPropertyExactLiterals=true",
                             "-Dbrimaz.cardPropertyFastTrace=true",
                             "-Dbrimaz.cardPropertyShadowVerify=true"],
+      "v33_strategy":["-Dbrimaz.v33MultiplayerStrategicPlanner=true"],
     }
     if policy not in opts:raise ValueError("Unsupported AI policy "+policy)
     # Last Java property wins; reset flag overrides in one location.
