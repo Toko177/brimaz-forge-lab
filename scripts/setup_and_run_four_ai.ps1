@@ -119,7 +119,6 @@ $params=@($entrypoint,"--jar",$jarFile.FullName,
           "--games-per-rotation","$GamesPerRotation","--parallel","$Parallel",
           "--clock","$Clock","--seed-base","$SeedBase")
 if ($Paired) {
-  $params = @($params | Where-Object {$_ -ne "--policy"})
   # Rebuild using the paired runner's distinct policy argument names.
   $params=@($entrypoint,"--jar",$jarFile.FullName,
             "--pod",$Pod,"--reference-policy",$ReferencePolicy,
