@@ -1,0 +1,134 @@
+{
+  "decks": [
+    {
+      "deck": "Brimaz_V3",
+      "source_sha256": "ffddc4bcc1068c22a96b115f610886f26edf38c6328469b3881110150c9d0c0d",
+      "normalized_sha256": "ffddc4bcc1068c22a96b115f610886f26edf38c6328469b3881110150c9d0c0d",
+      "cards": 100,
+      "name_transformations": []
+    },
+    {
+      "deck": "Kaal_9594008",
+      "source_sha256": "b22db16abdbc7bad053e58b7138770f4dc5451abf870498cc87f3616808d038a",
+      "normalized_sha256": "43b47ef16e45bb879cdb67923bfafe3642ac504b6ec3d1bc8bbe72e21d94f4b5",
+      "cards": 100,
+      "name_transformations": [
+        {
+          "from": "Disciple of Freyalise // Garden of Freyalise",
+          "to": "Disciple of Freyalise",
+          "quantity": 1
+        },
+        {
+          "from": "Invasion of Zendikar // Awakened Skyclave",
+          "to": "Invasion of Zendikar",
+          "quantity": 1
+        },
+        {
+          "from": "Pinnacle Monk // Mystic Peak",
+          "to": "Pinnacle Monk",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "deck": "Kaal_10347090",
+      "source_sha256": "2afd14fd6fe805f122ef9d2baabcd9cf31222dff2aee747f42bff73a52e2be95",
+      "normalized_sha256": "33e519533e422635b7b6070495f98f81e14d7247c7b0c00781c1f5de9eead9aa",
+      "cards": 100,
+      "name_transformations": [
+        {
+          "from": "Selfless Glyphweaver // Deadly Vanity",
+          "to": "Selfless Glyphweaver",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "deck": "Kaal_21930525",
+      "source_sha256": "0cc54eac40dbae9985fb8a403c464106805ce0eb6ba7bfaef6e92f9d18a93cd7",
+      "normalized_sha256": "1c4ae26bdd46f430e143c10cd66febbac1c3c014d212e3ad1654323d8663d90d",
+      "cards": 100,
+      "name_transformations": [
+        {
+          "from": "Funeral Room // Awakening Hall",
+          "to": "Funeral Room",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "deck": "Kaal_23328062",
+      "source_sha256": "4c91a7a1cacf547284432f8a6bc40e196c23c06b7404cbb879a03f8d42bf1851",
+      "normalized_sha256": "2f21e764bfea56aca2fe71c31ccf67d3534d6eb58f3d17f1a8fac22c5016ecb8",
+      "cards": 100,
+      "name_transformations": [
+        {
+          "from": "Agadeem's Awakening // Agadeem, the Undercrypt",
+          "to": "Agadeem's Awakening",
+          "quantity": 1
+        },
+        {
+          "from": "Bala Ged Recovery // Bala Ged Sanctuary",
+          "to": "Bala Ged Recovery",
+          "quantity": 1
+        },
+        {
+          "from": "Disciple of Freyalise // Garden of Freyalise",
+          "to": "Disciple of Freyalise",
+          "quantity": 1
+        },
+        {
+          "from": "Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun",
+          "to": "Growing Rites of Itlimoc",
+          "quantity": 1
+        },
+        {
+          "from": "Malakir Rebirth // Malakir Mire",
+          "to": "Malakir Rebirth",
+          "quantity": 1
+        },
+        {
+          "from": "Revitalizing Repast // Old-Growth Grove",
+          "to": "Revitalizing Repast",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "deck": "Kaal_11485202",
+      "source_sha256": "d713d2ad927524c5d98540a2e80aee9a1985be6c9a1711e93ffd26f722f1187f",
+      "normalized_sha256": "d713d2ad927524c5d98540a2e80aee9a1985be6c9a1711e93ffd26f722f1187f",
+      "cards": 100,
+      "name_transformations": []
+    },
+    {
+      "deck": "Kaal_22193355",
+      "source_sha256": "7ff30608479a426f0740cdce10f195f97220fd83175972091bc46b0abcd9b3de",
+      "normalized_sha256": "b47a726cdc1a4353d6008c2b3a6ac77b6d4c7870c4b197c9405bdd926cbe938e",
+      "cards": 100,
+      "name_transformations": [
+        {
+          "from": "Elesh Norn // The Argent Etchings",
+          "to": "Elesh Norn",
+          "quantity": 1
+        },
+        {
+          "from": "Lunarch Veteran // Luminous Phantom",
+          "to": "Lunarch Veteran",
+          "quantity": 1
+        },
+        {
+          "from": "Sorin of House Markov // Sorin, Ravenous Neonate",
+          "to": "Sorin of House Markov",
+          "quantity": 1
+        },
+        {
+          "from": "Witch Enchanter // Witch-Blessed Meadow",
+          "to": "Witch Enchanter",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
