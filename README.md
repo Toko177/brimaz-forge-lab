@@ -1,5 +1,26 @@
 # Brimaz Forge Lab
 
+## V32 — les sept decks du banc d'essai sont désormais permanents
+
+**[Passation V32](docs/PASSATION_ACTIVE_V32_2026-10-11.md)** ·
+[passation V31](docs/PASSATION_ACTIVE_V31_2026-10-11.md).
+
+La campagne récupérant les sept listes Commander officielles de ce
+banc d'essai a **réussi** et les a enregistrées dans `forge_decks/`,
+avec le rapport original `canonical/results/forge_normalization/report.json`.
+Leur empreinte SHA256 est désormais fixée **dans le code et dans le
+rapport** ; les tests refusent même une falsification simultanée
+de la liste et du rapport. Cette opération remplace une dépendance
+à un artefact GitHub Actions expirant le 7 janvier 2027.
+[Workflow de récupération V32 réussi](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38127191276).
+
+Le lancement Windows `scripts/setup_and_run_four_ai.ps1` n'exige plus
+`gh auth login` pour les decks dans les clones V32 : il faut toujours
+Python, Java 21 et l'archive Forge 2.0.15 officielle vérifiée. Le
+`main` historique n'est pas encore mis à jour ; cette branche de
+travail ne prouve pas un niveau d'IA humain.
+
+
 ## V31 — véritable simulateur Forge à quatre IA : exploitation et limites
 
 **État actif du 11 octobre 2026 :**
