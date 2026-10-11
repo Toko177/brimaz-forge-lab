@@ -10,6 +10,8 @@ on:
       - scripts/setup_and_run_four_ai.ps1
       - tests/test_run_local_four_ai.py
       - tests/test_v31_paired_four_ai.py
+      - tests/test_verify_real_paired_gate.py
+      - scripts/verify_real_paired_gate.py
       - .github/workflows/v32-offline-decks-test.yml
   workflow_dispatch:
 permissions:
@@ -33,6 +35,7 @@ jobs:
           python tests/test_run_local_four_ai.py
           python tests/test_v31_paired_four_ai.py
           python tests/test_compare_local_four_ai_campaigns.py
+          python tests/test_verify_real_paired_gate.py
   windows-powershell-parse:
     runs-on: windows-latest
     timeout-minutes: 8
