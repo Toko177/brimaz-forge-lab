@@ -23,6 +23,7 @@ expected = {
     "patches/java/forge/ai/MultiplayerStrategicSequencer.java",
     "patches/java/forge/ai/MultiplayerStrategicSearchV35.java",
     "patches/java/forge/ai/MultiplayerStrategicSequencerV35.java",
+    "patches/java/forge/ai/MultiplayerTacticalPlannerV35.java",
     "canonical/results/forge_normalization/report.json",
     ".github/workflows/strategic-java21-gate.yml",
     ".github/workflows/strategic-real-4ai-ab.yml",
@@ -48,7 +49,7 @@ required_code = {
     "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSequencer", "MultiplayerStrategicModel"),
     "scripts/audit_v33_real_strategy.py": ("FOUR_AI_V33_STRATEGIC_ACTION", "require-intervention"),
     "scripts/audit_v35_real_search.py": ("FOUR_AI_V35_STOCK_APPROVED", "min-approved"),
-    "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSearchV35", "MultiplayerStrategicSequencerV35"),
+    "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSearchV35", "MultiplayerStrategicSequencerV35", "MultiplayerTacticalPlannerV35"),
 }
 for path, markers in required_code.items():
     s = (ROOT / path).read_text(encoding="utf-8")
