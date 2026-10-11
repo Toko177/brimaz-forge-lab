@@ -67,6 +67,12 @@ jobs:
           cp "$ORIG" /tmp/v33-test.jar
           python3 scripts/patch_forge_charm_context.py --jar /tmp/v33-test.jar
           python3 scripts/patch_forge_brimaz_v13.py --jar /tmp/v33-test.jar
+          python3 scripts/patch_forge_multiplayer_removal.py --jar /tmp/v33-test.jar
+          python3 scripts/patch_forge_counter_critical.py --jar /tmp/v33-test.jar
+          javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerRemovalUrgencyPolicy |
+            grep -F 'publicThreatBonus('
+          javap -classpath /tmp/v33-test.jar forge.ai.ability.MultiplayerCriticalCounterPolicy |
+            grep -F 'isCommanderRemovalThreat('
           javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerStrategicSequencerV35 |
             grep -F 'rank(forge.game.player.Player,'
           mkdir -p /tmp/v33-tests
