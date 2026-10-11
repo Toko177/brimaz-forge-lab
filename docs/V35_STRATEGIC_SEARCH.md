@@ -333,3 +333,49 @@ L'auditeur impose l'identité des decks et rejette une référence
 Cette nouvelle campagne distingue ainsi une amélioration comportementale
 de l'IA des erreurs de stabilité du moteur. Les résultats du précédent
 benchmark sont conservés, jamais réécrits.
+
+## Second protocole : campagne de 32 processus JVM #38139342755
+
+[Voir l'exécution](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38139342755).
+Les quatre jobs étaient lancés ; **trois réussis, un échoué**. Les
+**11 paires naturelles** des trois jobs validés ne montrent pas la
+supériorité de V35 :
+
+- `artifact / forge_stock_compat vs v35_strategy` :
+  3/4 paires naturelles, 1 censurée, Brimaz **0 contre 0**,
+  **110 choix stratégiques acceptés** par AiController.
+- `aristo / forge_stock_compat vs v35_strategy` :
+  4/4 paires naturelles, Brimaz **0 contre 0**,
+  **133 choix acceptés**, dont **1 intervention tactique Sunfall**.
+- `artifact / v17_strict vs v35_brimaz_duel` :
+  4/4 paires naturelles, Brimaz **1 pour V17 contre 0 pour V35**,
+  **15 choix V35 acceptés** chez Brimaz.
+- `aristo / v17_strict vs v35_brimaz_duel` :
+  **aucune comparaison certifiable sur ce job** : la JVM de référence
+  en rotation 0 a produit un log sans actions de partie. Ne PAS compter
+  cette erreur comme une victoire ou une défaite.
+
+**Onze paires exploitables sur les seize prévues** (32 JVM planifiées).
+La référence `forge_stock_compat` est Forge original *avec* un unique
+correctif technique commun à V35 ; elle n'est pas le JAR stock intact.
+
+La série originale précédente #38136545704 avait au contraire montré
+`aristo / duel` 0 victoire V17 contre 1 V35 sur quatre paires ;
+ces résultats sont incompatibles avec toute affirmation de supériorité
+sur un tel nombre de parties et des simulations pouvant diverger malgré
+des graines appariées. Toute réexécution doit utiliser des
+graines inédites (validation hors échantillon) plutôt que de traiter une
+répétition avec les mêmes graines comme une réplication statistique.
+
+### Correctif d'orchestration suite à cet échec
+
+Le correctif précédent ne créait avant la concurrence que
+`~/.forge/decks/planar`. Dans le vrai source Forge 2.0.15
+`FModel.initialize`, l'application teste tous les répertoires
+`ForgeConstants.PROFILE_DIRS` avec un schéma `isDirectory()/mkdirs()`
+non atomique entre JVM. Le prévol crée désormais **tous ces chemins
+usuels** (profil, 9 sous-répertoires de decks, préférences, quêtes,
+cache d'images et base), indépendamment du moteur IA, puis
+l'agrégateur affiche la vraie exception des jeux échoués.
+Cela ne garantit pas l'absence de bugs Forge, et ne rend pas valide un
+match censuré.

@@ -146,18 +146,42 @@ def patch_jar(original,output,policy):
     return sha(output),scripts
 
 def prepare_forge_shared_profile_paths(home):
-    """Avoid Forge 2.0.15's non-atomic mkdir race on parallel JVM startup.
+    """Precreate Forge 2.0.15 PROFILE_DIRS *before* parallel JVM start.
 
-    Forge itself creates ~/.forge/decks/planar. In an isolated CI runner
-    simultaneous FModel.initialize calls can race and spuriously fail.
-    Creating only the directory ahead of time does NOT alter Java code,
-    deck content, game rules, seeds or Java AI policies.
+    FModel.initialize checks isDirectory(), then calls mkdirs(). With two
+    concurrent Java processes both can observe absent and the loser throws
+    RuntimeException even if mkdirs succeeded in the other process.
+    Mirrors the Linux/Windows/macOS default ForgeConstants.PROFILE_DIRS.
+    No edits to users' decks, preferences, Magic logic or original JAR.
     """
-    folder=Path(home)/".forge"/"decks"/"planar"
-    folder.mkdir(parents=True,exist_ok=True)
-    if not folder.is_dir():
-        raise RuntimeError("Cannot prepare Forge profile directory: "+str(folder))
-    return folder
+    home=Path(home)
+    if os.name == "nt" and os.environ.get("APPDATA"):
+        user=Path(os.environ["APPDATA"])/"Forge"
+        cache=Path(os.environ.get("LOCALAPPDATA",os.environ["APPDATA"]))/"Forge"/"Cache"
+    elif sys.platform == "darwin":
+        user=home/"Library"/"Application Support"/"Forge"
+        cache=home/"Library"/"Caches"/"Forge"
+    else:
+        user=home/".forge"
+        cache=home/".cache"/"forge"
+    user_parts=(
+        "", "preferences", "gauntlet", "decks/constructed",
+        "decks/draft", "decks/sealed", "decks/scheme", "decks/planar",
+        "decks/commander", "decks/oathbreaker", "decks/net",
+        "decks/network-events", "quest/saves",
+    )
+    cache_parts=(
+        "", "pics/cards", "db", "pics/tokens", "pics/icons",
+        "pics/boosters", "pics/fatpacks", "pics/boosterboxes",
+        "pics/precons", "pics/tournamentpacks", "pics/planechase",
+    )
+    paths=[user/part for part in user_parts]+[cache/part for part in cache_parts]
+    for path in paths:
+        path.mkdir(parents=True,exist_ok=True)
+        if not path.is_dir():
+            raise RuntimeError("Cannot prepare Forge profile directory: "+str(path))
+    return user/"decks"/"planar"
+
 
 def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag,jfr):
     source_tag=f"{tag}-rot{rotation}"
@@ -307,6 +331,32 @@ def main():
     if jobs_bad:
         print("Some real Forge jobs failed; logs preserved in "+str(dest),
               file=sys.stderr)
+    # Failures remain failures; expose the original JVM's reason in Actions.
+    # Otherwise the outer paired driver shows only "actions not present".
+    for manifest in sorted((dest/"games").rglob("games.json")):
+        try:
+            entries=json.loads(manifest.read_text(encoding="utf-8"))
+        except (ValueError,OSError) as exc:
+            print("FOUR_AI_MANIFEST_ERROR",str(manifest),repr(exc),flush=True)
+            continue
+        for rec in entries:
+            if rec.get("status")=="complete":
+                continue
+            local=manifest.parent/Path(rec.get("log","unknown.log")).name
+            raw=local.read_text(encoding="utf-8",errors="replace") if local.is_file() else ""
+            errwords=("Exception","RuntimeException","NullPointerException",
+                      "cannot create profile directory","out of memory",
+                      "Error","FATAL","Game Outcome")
+            critical=[line[:260] for line in raw.splitlines()
+                      if any(token in line for token in errwords)]
+            print("FOUR_AI_GAME_FAULT_EVIDENCE",json.dumps({
+                "pod":rec.get("pod"),"rotation":rec.get("rotation"),
+                "status":rec.get("status"),"seed":rec.get("seed"),
+                "log":str(local.relative_to(dest)),
+                "log_exists":local.is_file(),
+                "critical":critical[-10:],
+                "tail":raw.splitlines()[-5:],
+            },ensure_ascii=False),flush=True)
     subprocess.run([sys.executable,str(ROOT/"scripts/aggregate_four_ai_tournament.py"),
              "--input",str(dest/"games"),"--out",str(dest/"summary"),
              "--expected-jobs",str(len(tasks)),

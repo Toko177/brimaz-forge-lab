@@ -61,6 +61,16 @@ with tempfile.TemporaryDirectory() as tmp:
     path=prepare_forge_shared_profile_paths(tmp)
     assert path.is_dir() and path.as_posix().endswith("/.forge/decks/planar")
     assert prepare_forge_shared_profile_paths(tmp)==path
+    for part in ("decks/constructed","decks/draft","decks/sealed",
+                 "decks/scheme","decks/planar","decks/commander",
+                 "decks/oathbreaker","decks/net","decks/network-events",
+                 "quest/saves","preferences","gauntlet"):
+        assert (Path(tmp)/".forge"/part).is_dir(),part
+    for part in ("pics/cards","pics/tokens","pics/icons","pics/boosters",
+                 "pics/fatpacks","pics/boosterboxes","pics/precons",
+                 "pics/tournamentpacks","pics/planechase","db"):
+        assert (Path(tmp)/".cache"/"forge"/part).is_dir(),part
+
 
 with tempfile.TemporaryDirectory() as td:
     original=Path(td)/"upstream_original.jar"

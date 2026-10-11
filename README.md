@@ -65,6 +65,14 @@ l'échantillon et incertitude. **Aucune supériorité IA face à Forge stock
 n'est revendiquée avant mesure suffisante.**
 [Limites méthodologiques](docs/V35_STRATEGIC_SEARCH.md).
 
+**Dernier benchmark (32 JVM planifiées, #38139342755)** :
+trois groupes réussis, **11 paires naturelles analysables**, et
+un groupe bloqué par un journal Forge manquant. La comparaison à IA
+Forge stock + correctif technique ne montre **aucune victoire Brimaz
+dans les deux bras sur 7 paires exploitables** ; le duel Artifact
+donne **V17 1 — V35 0** sur quatre paires. Aucun gain prouvé.
+[Rapport détaillé](docs/V35_STRATEGIC_SEARCH.md).
+
 ## Ce qui fonctionne réellement
 
 - Compilation du patch V33 contre le véritable JAR Forge Java 21,

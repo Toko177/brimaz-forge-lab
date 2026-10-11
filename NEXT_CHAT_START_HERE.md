@@ -104,3 +104,14 @@ joueur compétent, pas de nouvelles versions de scoring mineures sans mesure.
 Les preuves brutes GitHub Actions demeurent consultables selon leur rétention.
 La suppression des références Git n'efface pas le contenu des commits
 conservés dans l'ascendance de `main`.
+
+## Campagne répliquée 32 JVM : conclusion négative / non démontrée
+
+[CI #38139342755](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38139342755) :
+trois groupes exploitables (11 paires naturellement terminées), un
+groupe en échec. Stock Forge + Charm fix : Brimaz 0 victoire dans
+les deux bras sur 7 paires valides. Duel Brimaz V35 sur pod Artifact :
+1 victoire V17 et 0 V35 sur quatre paires.
+`aristo/v17_strict` a une JVM rotation 0 sans log d'actions.
+**Aucune démonstration que V35 est supérieure à Forge.**
+Lire `docs/V35_STRATEGIC_SEARCH.md` pour les censures et la méthode.
