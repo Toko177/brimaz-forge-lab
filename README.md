@@ -1,3 +1,18 @@
+## V42 — vers une IA Commander générique (expérimental)
+
+Le nouveau mode `v42_commander_general` utilise un évaluateur fondé sur
+le plateau public, les ressources et les capacités Forge réelles : **pas de
+liste de cartes ou d'identité Brimaz dans ses règles de décision**.
+Il peut s'activer pour les quatre joueurs, quel que soit leur commandant.
+Le comparateur `v37_stock_control` partage le même Forge patché mais
+n'active pas V42. Tests et benchmark A/B avec sièges Kaal + Brimaz :
+[architecture, commandes et limites](docs/V42_GENERAL_COMMANDER_AI.md).
+
+**Important :** c'est une première base générique pour les permanents
+non ciblés, pas encore une IA complète de combat, interaction sur la pile,
+combos ou évaluation probabiliste de decklists. Les statistiques de victoire
+ne valent rien avant les vrais journaux et les audits d'actions approuvées.
+
 **Audit du moteur de sacrifice V41 :** chaque partie réelle produit
 désormais un diagnostic automatique des raisons pour lesquelles
 Brimaz ne transforme pas ou ne sacrifie pas ses jetons.

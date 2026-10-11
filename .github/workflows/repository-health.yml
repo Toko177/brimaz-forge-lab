@@ -35,3 +35,4 @@ jobs:
           python tests/test_audit_v33_real_strategy.py
           python tests/test_audit_v35_real_search.py
           python tests/test_analyze_v41_sacrifice_bottlenecks.py
+          python tests/test_audit_v42_generic_commander.py

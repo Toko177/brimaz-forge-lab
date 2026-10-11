@@ -1,4 +1,4 @@
-name: V41 verified mixed-seat Brimaz and artifact-sacrifice Commander benchmark
+name: V41 and V42 actual Forge four-AI strategic benchmark
 on:
   pull_request:
     branches: [main]
@@ -18,6 +18,10 @@ on:
       - patches/java/forge/ai/MultiplayerIncubatorTempoV38.java
       - patches/java/forge/ai/MultiplayerIncubatorEngineV39.java
       - patches/java/forge/ai/MultiplayerSacrificeAccessV41.java
+      - patches/java/forge/ai/CommanderGenericModelV42.java
+      - patches/java/forge/ai/CommanderGenericSequencerV42.java
+      - scripts/audit_v42_generic_commander.py
+      - tests/test_audit_v42_generic_commander.py
       - tests/java/forge/ai/MultiplayerSacrificeAccessV41Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorEngineV39Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorTempoV38Checks.java
@@ -163,5 +167,66 @@ jobs:
         with:
           name: v41-forensic-forge-mirror-${{ matrix.mode }}-${{ matrix.pod }}
           path: results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20281019/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  generic-commander-four-ai:
+    # Real four-player Forge processes, not synthetic deck or win-rate data.
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        pod: [aristo, artifact]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache/restore@v4
+        with:
+          key: forge-2.0.15-linux-shared-20261009
+          path: forge-dist/
+      - name: Get pinned real Forge 2.0.15 and run Python contract fixtures
+        run: |
+          set -euo pipefail
+          python3 tests/test_audit_v42_generic_commander.py
+          python3 tests/test_run_local_four_ai.py
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Real A/B with one generic policy across all four seats
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
+          test -s "$JAR"
+          python3 scripts/run_paired_four_ai.py \
+            --jar "$JAR" --pod "${{ matrix.pod }}" \
+            --reference-policy v37_stock_control \
+            --experiment-policy v42_commander_general \
+            --profile Default --games-per-rotation 1 --parallel 2 \
+            --clock 420 --seed-base 20261129 \
+            --out "results/v42_generic_pairs_${{ matrix.pod }}"
+      - name: Audit genuine V42 actions on multiple unrelated decks
+        run: |
+          set -euo pipefail
+          ROOT="results/v42_generic_pairs_${{ matrix.pod }}"
+          REPORT="$(find "$ROOT" -name comparison.json -print -quit)"
+          test -s "$REPORT"
+          python3 scripts/audit_v42_generic_commander.py \
+            --input "$REPORT" --output "$ROOT/v42_generic_audit.json" \
+            --min-distinct-decks 3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v42-real-generic-commander-${{ matrix.pod }}
+          path: results/v42_generic_pairs_${{ matrix.pod }}/
           retention-days: 30
           if-no-files-found: ignore
