@@ -47,7 +47,37 @@ public final class MultiplayerIncubatorTempoV38 {
         return false;
     }
 
+    // V38/39 historical behavior is retained for reproducibility.
+    // V40 fixes its shared, proposal-time latestTurn: there are TWO
+    // independent Challenger players in the genuine 2-vs-2 mirrors.
+    // A proposal that Forge rejects must not exhaust a player's allowance.
     private static int latestTurn = Integer.MIN_VALUE;
+    private static final java.util.Map<Object,Integer> approvedSeatTurns =
+        java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    static boolean approvedForSeatTurn(Object seat,int turn) {
+        if(seat==null)return false;
+        synchronized(approvedSeatTurns) {
+            return java.util.Objects.equals(approvedSeatTurns.get(seat),turn);
+        }
+    }
+
+    static void recordSeatApproved(Object seat,int turn) {
+        if(seat==null)return;
+        synchronized(approvedSeatTurns) { approvedSeatTurns.put(seat,turn); }
+    }
+
+    /** Called ONLY after unchanged Forge AiController returns WillPlay.
+     * An approved proposal is not evidence that the ability resolved. */
+    public static void confirmForgeApproval(Player ai) {
+        if(!Boolean.getBoolean("brimaz.v40SeatScopedActions")
+              || ai==null || ai.getGame()==null)return;
+        int turn=ai.getGame().getPhaseHandler().getTurn();
+        recordSeatApproved(ai,turn);
+        System.out.println("FOUR_AI_V40_TRANSFORM_APPROVED_BY_SEAT player="
+             +ai.getName()+" turn="+turn+" approvedNotResolved=true");
+    }
+
     private static final java.util.Set<String> PRIORITY_RAMP=java.util.Set.of(
         "Sol Ring","Arcane Signet","Orzhov Signet","Fellwar Stone",
         "Talisman of Hierarchy","Mind Stone","Thought Vessel",
@@ -65,7 +95,9 @@ public final class MultiplayerIncubatorTempoV38 {
         var phase=ai.getGame().getPhaseHandler();
         if(!phase.isPlayerTurn(ai) || !phase.is(PhaseType.MAIN2)
              || !ai.getGame().getStack().isEmpty()
-             || latestTurn==phase.getTurn())return null;
+             || (Boolean.getBoolean("brimaz.v40SeatScopedActions")
+                    ? approvedForSeatTurn(ai,phase.getTurn())
+                    : latestTurn==phase.getTurn()))return null;
 
         final boolean v39=Boolean.getBoolean("brimaz.v39EngineEconomics");
         boolean commanderPresent=false,hasOutlet=false,payableRamp=false;
@@ -138,7 +170,8 @@ public final class MultiplayerIncubatorTempoV38 {
             }
         }
         if(best!=null) {
-            latestTurn=phase.getTurn();
+            if(!Boolean.getBoolean("brimaz.v40SeatScopedActions"))
+                latestTurn=phase.getTurn();
             System.out.println("FOUR_AI_V38_TRANSFORM_PROPOSAL player="
                  +ai.getName()+" turn="+phase.getTurn()+" incubatorSize="+bestSize
                  +" blockers="+readyBlockers+" enemyBoardPower="+enemyPower
@@ -147,6 +180,8 @@ public final class MultiplayerIncubatorTempoV38 {
                  +" engineBenefit="+bestEngineBenefit
                  +" realOutletPresent="+hasOutlet
                  +" payableRampSeen="+payableRamp
+                 +" approvalScope="+(Boolean.getBoolean("brimaz.v40SeatScopedActions")
+                      ?"INDIVIDUAL_PLAYER_AFTER_FORGE_APPROVAL":"LEGACY_SHARED_PROPOSAL")
                  +" stockForgeApprovalPending=true");
         }
         return best;

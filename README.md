@@ -1,3 +1,11 @@
+**V40 : défaut critique d'isolation entre joueurs corrigé.**
+V38/V39 partageaient un verrou de transformation entre les deux
+joueurs challengers d'une même partie, et consommaient ce verrou
+dès la proposition plutôt qu'après approbation par Forge.
+V40 suit l'approbation par identité de joueur/numéro de tour,
+et expose les diagnostics de sacrifice pour chacun.
+[Analyse empirique et protocole](docs/V36_EVIDENCE_POLICY.md).
+
 **V39 (expérimental) :** gestion contextuelle des Incubateurs. Un petit jeton n'est transformé pour préparer un sacrifice que si Brimaz et un vrai moteur de sacrifice sont présents et que la prolifération des compteurs visibles compense sa perte. Le planificateur évite également de consommer le mana d'un accélérateur immédiatement payable, sauf urgence défensive. Toujours contrôlé par les règles et les coûts de Forge. [Protocole et mesures](docs/V36_EVIDENCE_POLICY.md).
 
 **V38 — changement concret de gameplay :** les Incubateurs ne sont pas des créatures tant qu'ils ne sont pas transformés. Le challenger peut maintenant activer sélectivement une transformation légale en phase principale 2, par les vrais coûts Forge, pour créer de véritables bloqueurs/attaquants et alimenter les synergies Phyrexian. Le contrôle original ne reçoit pas cette politique. [Code et protocole](docs/V36_EVIDENCE_POLICY.md).

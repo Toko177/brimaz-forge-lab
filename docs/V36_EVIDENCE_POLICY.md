@@ -246,3 +246,57 @@ Le protocole V39 utilise des graines **indépendantes `20271119`**,
 Les quatre shards du miroir tournent dans le même workflow existant,
 sans créer de branche, workflow ou deck canonique supplémentaire.
 Les tests Java V39 ne simulent ni victoire ni capacité résolue.
+
+## V39 : campagne terminée, résultat défavorable — correction V40
+
+[Campagne V39, 64 processus réels](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38154331237), 6 jobs réussis :
+
+- 4 decks Brimaz strictement identiques, famille de graines `artifact` :
+  **9/12** parties naturelles ; V39 4 victoires, référence 5.
+- Même miroir, famille de graines `aristo` : **11/12**
+  naturelles ; V39 4 victoires, référence 7.
+- Donc **8 victoires V39 contre 12 référence** dans
+  les vingt miroirs réellement terminés.
+- 2 Brimaz + 2 Kaal : **21/24 naturelles**, V39 2 victoires,
+  référence 1, Kaal 18.
+- 16 autres JVM appariées : 6/8 paires naturellement terminées,
+  V39 0 victoire, référence 2.
+- Les transformations sont effectivement approuvées dans Forge,
+  mais les sacrifices positifs restent rares (une seule approbation
+  sur les 48 parties miroir).
+
+### Défaut de V38/V39 identifié dans le vrai code
+
+`MultiplayerIncubatorTempoV38` conservait un **unique entier
+`latestTurn` statique**, partagé par **tous les joueurs du même
+processus JVM**. En miroir avec deux challengers, la proposition de
+transformation du premier pouvait bloquer celle du second jusqu'au
+tour suivant. Le verrou était en outre consommé dès la proposition,
+même si Forge refusait l'activation. Le compteur de diagnostics de
+sacrifice souffrait d'un problème analogue (observation du seul
+premier joueur par numéro de tour).
+
+### Correction V40, isolée et falsifiable
+
+- Remplace ce verrou, lorsque `v40SeatScopedActions=true`, par un
+  registre faiblement référencé **par identité du joueur et par tour**,
+  résistant au cas « deux Brimaz challengers dans une partie ».
+- Une tentative refusée **ne consomme plus** l'activation prévue :
+  l'état est enregistré uniquement après `AiController.canPlayAndPayFor
+  == WillPlay`, avant la remise de la capacité au moteur. Cela ne
+  présume **pas** que la capacité s'est résolue.
+- Les fenêtres de diagnostic de sacrifice sont également enregistrées
+  par joueur et par tour de ce joueur ; elles ne se bloquent plus entre
+  IA. La planification de sacrifice V40 ignore les phases principales
+  adverses, car le but est le déclenchement de Brimaz à notre fin de tour.
+- Les 10 nouveaux scénarios de test couvrent deux joueurs simultanés,
+  une approbation par joueur, une nouvelle disponibilité au tour
+  suivant et l'absence de verrou lors d'un rejet.
+- La V39 reste activable sans ce changement, pour conserver la
+  reproductibilité historique ; **la V40 seule** active le garde.
+
+Un nouveau benchmark exploite les graines inédites `20280117`,
+les mêmes 7 decks originaux vérifiés SHA256, les 4 sièges,
+les deux formats miroir, et les campagnes appariées. Ce correctif
+résout un biais dans le logiciel ; son **gain de victoires n'est
+pas encore démontré**.

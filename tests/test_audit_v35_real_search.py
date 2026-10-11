@@ -93,6 +93,22 @@ with tempfile.TemporaryDirectory() as td:
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
+    v40=report()
+    v40["reference_provenance"].update({
+        "policy":"v37_stock_control","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true"})
+    v40["experiment_provenance"].update({
+        "policy":"v40_brimaz_challenger","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true -Dbrimaz.v37Challenger=true -Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true -Dbrimaz.v36EvidenceGate=true -Dbrimaz.v38IncubatorTempo=true -Dbrimaz.v39EngineEconomics=true -Dbrimaz.v40SeatScopedActions=true"})
+    v40["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    v40["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    assert audit(v40)["v40_seat_scoped_approval"] is True
+    v40["experiment_provenance"]["java_tool_options"]=v40["experiment_provenance"]["java_tool_options"].replace(" -Dbrimaz.v40SeatScopedActions=true","")
+    try:
+        audit(v40)
+        raise AssertionError("V40 policy passed without seat-scoped approval flag")
+    except ValueError:
+        pass
     v39=report()
     v39["reference_provenance"].update({
         "policy":"v37_stock_control","patches":["shared_ai_patch"],

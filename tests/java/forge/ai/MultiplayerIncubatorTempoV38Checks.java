@@ -31,6 +31,33 @@ public final class MultiplayerIncubatorTempoV38Checks {
               "invalid public blocker count fails closed");
         check(!MultiplayerIncubatorTempoV38.shouldTransform(5,40,0,-1,true),
               "invalid enemy board count fails closed");
+        Object pilotA=new Object(),pilotB=new Object();
+        int turn=19;
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotA,turn),
+              "first player begins with a clean allowance");
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotB,turn),
+              "second player begins with a separate clean allowance");
+        // Calling a chooser cannot exhaust the quota: only native Forge's
+        // actual WillPlay confirmation calls recordSeatApproved.
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotA,turn),
+              "proposal or rejection never marks seat approved");
+        MultiplayerIncubatorTempoV38.recordSeatApproved(pilotA,turn);
+        check(MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotA,turn),
+              "approve once per player per turn");
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotB,turn),
+              "pilot A approval must not suppress pilot B's same game turn");
+        MultiplayerIncubatorTempoV38.recordSeatApproved(pilotB,turn);
+        check(MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotB,turn),
+              "pilot B independently receives own approval");
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotA,turn+1),
+              "player A is free on following turn");
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(pilotB,turn+1),
+              "player B is free on following turn");
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(null,turn),
+              "null player fails closed");
+        MultiplayerIncubatorTempoV38.recordSeatApproved(null,turn);
+        check(!MultiplayerIncubatorTempoV38.approvedForSeatTurn(null,turn),
+              "null approval cannot poison another player");
         System.out.println("FOUR_AI_V38_INCUBATOR_SYNTHETIC_PASS checks="+n
              +" realGameWinsClaimed=0");
     }

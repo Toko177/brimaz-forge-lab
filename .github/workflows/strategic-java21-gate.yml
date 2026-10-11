@@ -1,4 +1,4 @@
-name: V35 4-AI strategic search Java21 compile and adversarial tests
+name: V40 Forge 4-AI strategy, seat-safe activation and adversarial Java21 tests
 on:
   pull_request:
     branches: [main]

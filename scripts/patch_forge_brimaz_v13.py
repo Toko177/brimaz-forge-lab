@@ -306,7 +306,10 @@ insert1=(
 "                && player.getName().contains(\"Brimaz\")\n"
 "                && (!Boolean.getBoolean(\"brimaz.v37MirrorDuel\")\n"
 "                    || player.getName().contains(\"Challenger\"))) {\n"
-"            SpellAbility v37Sac = BrimazTurnPlanner.plan(player, saList);\n"
+"            if (Boolean.getBoolean("brimaz.v40SeatScopedActions")) {
+                BrimazTurnPlanner.diagnoseDecisionWindow(player,saList);
+            }
+            SpellAbility v37Sac = BrimazTurnPlanner.plan(player, saList);\n"
 "            if (v37Sac != null && canPlayAndPayFor(v37Sac) == AiPlayDecision.WillPlay) {\n"
 "                System.out.println(\"FOUR_AI_V37_POSITIVE_SAC_FORGE_APPROVED player=\"\n"
 "                    +player.getName()+\" card=\"+v37Sac.getHostCard().getName());\n"
@@ -315,6 +318,7 @@ insert1=(
 "            SpellAbility v38Transform = MultiplayerIncubatorTempoV38.choose(player, saList);\n"
 "            if (v38Transform != null\n"
 "                    && canPlayAndPayFor(v38Transform) == AiPlayDecision.WillPlay) {\n"
+"                MultiplayerIncubatorTempoV38.confirmForgeApproval(player);\n"
 "                System.out.println(\"FOUR_AI_V38_TRANSFORM_STOCK_APPROVED player=\"\n"
 "                    +player.getName()+\" card=\"+v38Transform.getHostCard().getName());\n"
 "                return v38Transform;\n"
@@ -573,6 +577,8 @@ public final class BrimazTurnPlanner {
         // MAIN2 is the last consistent pre-end-step priority window.
         // The ability also triggers on the controller's own end step.
         if (!phase.is(PhaseType.MAIN2) || !game.getStack().isEmpty()) return false;
+        if (Boolean.getBoolean("brimaz.v40SeatScopedActions") &&
+                !phase.isPlayerTurn(ai)) return false;
         for (Card c : ai.getCardsIn(ZoneType.Battlefield)) {
             if (!c.getName().equals("Brimaz, Blight of Oreskos")) continue;
             int deaths = AbilityUtils.calculateAmount(c, c.getSVar("X"), null);
@@ -647,16 +653,22 @@ public final class BrimazTurnPlanner {
     // V7 telemetry-only: first observed empty-stack MAIN2 decision in each
     // full-game turn. No game action is modified and no private opponent zone
     // is read. A token here is a candidate, NOT proof it may be sacrificed.
-    private static int diagnosticTurn = Integer.MIN_VALUE;
+    // The 2-vs-2 mirror has TWO real Brimaz challenger controllers.
+    // Logging one global turn silently suppressed the second controller.
+    private static final java.util.Map<Player,Integer> diagnosticTurns =
+        java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     public static void diagnoseDecisionWindow(Player ai, List<SpellAbility> available) {
         if (ai == null || ai.getGame() == null || !isBrimazPilot(ai)) return;
         var game = ai.getGame();
         var phase = game.getPhaseHandler();
-        if (!phase.is(PhaseType.MAIN2) || !game.getStack().isEmpty()) return;
+        if (!phase.is(PhaseType.MAIN2) || !game.getStack().isEmpty()
+                || !phase.isPlayerTurn(ai)) return;
         int turn = phase.getTurn();
-        if (diagnosticTurn == turn) return;
-        diagnosticTurn = turn;
+        synchronized (diagnosticTurns) {
+            if (java.util.Objects.equals(diagnosticTurns.get(ai),turn)) return;
+            diagnosticTurns.put(ai,turn);
+        }
         boolean hasBrimaz = false;
         int deaths = -1;
         int candidateTokens = 0;

@@ -156,3 +156,18 @@ une règle de préservation du mana pour le ramp payable de la main.
 Un nouveau benchmark hors échantillon (seed 20271119)
 réplique les miroirs avec 3 répétitions par rotation/pod et
 les parties d'évaluation 4AI. Seuls les résultats réels comptent.
+
+## V40 — corrections d'isolation et résultats V39
+
+[V39 CI #38154331237](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38154331237)
+termine ses 6 jobs, 8–12 dans vingt miroirs Brimaz identiques,
+2–1 en duel Brimaz avec Kaal (21 parties naturelles), et
+0–2 dans les autres campagnes appariées (6 paires exploitables).
+Ceci **ne prouve pas une IA supérieure**.
+
+V40 `v40_brimaz_challenger` corrige le verrou `latestTurn`
+global partagé entre plusieurs IA et le fait de consommer
+l'activation à la proposition, même rejetée. Log d'approbation
+`FOUR_AI_V40_TRANSFORM_APPROVED_BY_SEAT`. Le compteur diagnostic
+de sacrifice devient aussi par joueur. Conserver la PR en draft,
+sans modifier les decks.

@@ -81,11 +81,11 @@ def audit(report):
         raise ValueError("Not the genuine Forge A/B format")
     ref=report.get("reference_provenance",{})
     exp=report.get("experiment_provenance",{})
-    if ref.get("policy") not in ("v17_strict","forge_stock","forge_stock_compat","v37_stock_control") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger"):
+    if ref.get("policy") not in ("v17_strict","forge_stock","forge_stock_compat","v37_stock_control") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger","v40_brimaz_challenger"):
         raise ValueError("Invalid Forge stock/V17 control or V35 experiment")
     if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger") and ref["policy"]!="v17_strict":
         raise ValueError("Mixed-seat v35_brimaz_duel requires stable identical v17 opponents")
-    if exp["policy"] in ("v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger"):
+    if exp["policy"] in ("v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger","v40_brimaz_challenger"):
         if ref["policy"]!="v37_stock_control" or ref.get("patches")!=exp.get("patches"):
             raise ValueError("V37 reference and challenger must use identical patched jar")
         refopts=ref.get("java_tool_options","")
@@ -93,10 +93,12 @@ def audit(report):
         if ("v37ControlledDuel=true" not in refopts or
             "v37ControlledDuel=true" not in expopts or
             "v37Challenger=true" not in expopts or
-            (exp["policy"] in ("v38_brimaz_challenger","v39_brimaz_challenger")
+            (exp["policy"] in ("v38_brimaz_challenger","v39_brimaz_challenger","v40_brimaz_challenger")
              and "v38IncubatorTempo=true" not in expopts) or
-            (exp["policy"]=="v39_brimaz_challenger"
+            (exp["policy"] in ("v39_brimaz_challenger","v40_brimaz_challenger")
              and "v39EngineEconomics=true" not in expopts) or
+            (exp["policy"]=="v40_brimaz_challenger"
+             and "v40SeatScopedActions=true" not in expopts) or
             "v35StrategicSearch=true" not in expopts or
             "v36EvidenceGate=true" not in expopts or
             "v35BrimazOnly=true" not in expopts or
@@ -155,7 +157,7 @@ def audit(report):
             raise ValueError("V35 code touched control arm")
         candidates=list(WINDOW.finditer(y))
         approvals=list(APPROVED.finditer(y))
-        if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger"):
+        if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger","v40_brimaz_challenger"):
             for marker in candidates+list(TACTICAL_WINDOW.finditer(y)):
                 if b["seats"][int(marker["seat"])-1]!="Brimaz_V3":
                     raise ValueError("V35 diagnostic window leaked into unchanged opponent")
@@ -169,7 +171,7 @@ def audit(report):
         tactical_windows+=len(task_windows)
         tactical_rejected+=sum(int(m["count"]) for m in task_rejects)
         for approved in task_approvals:
-            if (exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger")
+            if (exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger","v40_brimaz_challenger")
                 and b["seats"][int(approved["seat"])-1]!="Brimaz_V3"):
                 raise ValueError("V35 tactical policy leaked into unchanged opponent")
             if int(approved["turn"])<1 or int(approved["rejected"])>5:
@@ -180,7 +182,7 @@ def audit(report):
             tactical_by_card[approved["card"]]+=1
         for m in approvals:
             index=int(m["seat"])
-            if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger") and b["seats"][index-1]!="Brimaz_V3":
+            if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger","v40_brimaz_challenger") and b["seats"][index-1]!="Brimaz_V3":
                 raise ValueError("V35 strategy leaked into an unchanged v17 opponent")
             if int(m["turn"])<1 or int(m["rejected"])>3:
                 raise ValueError("Invalid V35 original Forge approval marker")
@@ -231,6 +233,7 @@ def audit(report):
       "v37_stock_ai_mixed_seat_challenger":exp["policy"]=="v37_brimaz_challenger",
       "v38_incubator_challenger":exp["policy"]=="v38_brimaz_challenger",
       "v39_engine_challenger":exp["policy"]=="v39_brimaz_challenger",
+      "v40_seat_scoped_approval":exp["policy"]=="v40_brimaz_challenger",
       "reference_policy":ref["policy"],
       "experimental_policy":exp["policy"],
       "reference_is_byte_identical_to_stock_forge":ref["policy"]=="forge_stock",
