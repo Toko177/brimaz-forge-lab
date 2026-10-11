@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory() as tmp:
             "pairs":[{"reference":{
                 "log":str(path/"baseline.log"),"status":"complete"},
                 "experiment":{"log":str(path/"experiment.log"),"status":"complete",
-                "pod":"artifact","rotation":0},
+                "pod":"artifact","rotation":0,"event_sha256":"exp456"},
                 "event_sha256":"ref123",
                 }]
         }
