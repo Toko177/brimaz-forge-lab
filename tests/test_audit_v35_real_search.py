@@ -70,6 +70,7 @@ with tempfile.TemporaryDirectory() as td:
         pass
     duel["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
     stock["reference_provenance"]["patches"]=["patch_forge_brimaz_v13.py"]
     try:
