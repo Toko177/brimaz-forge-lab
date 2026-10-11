@@ -1,7 +1,7 @@
 name: V33 actual four-AI Commander strategy A/B
 on:
   pull_request:
-    branches: [feature/v32-persistent-canonical-commander-decks-20261011]
+    branches: [main]
     paths:
       - scripts/patch_forge_brimaz_v13.py
       - scripts/audit_v33_real_strategy.py

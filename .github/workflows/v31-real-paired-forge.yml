@@ -2,7 +2,7 @@ name: V31 LIVE paired authentic four-AI Forge pilot
 on:
   pull_request:
     branches:
-      - feature/v31-reproducible-4ai-operator-20261011
+      - main
     paths:
       - scripts/run_local_four_ai.py
       - scripts/run_paired_four_ai.py

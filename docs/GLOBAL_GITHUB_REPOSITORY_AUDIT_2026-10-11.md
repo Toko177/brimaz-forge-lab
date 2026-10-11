@@ -1,4 +1,30 @@
-# Audit global des références GitHub — 11 octobre 2026
+# Bilan final — nettoyage global GitHub du 11 octobre 2026
+
+**Nettoyage exécuté**, et pas seulement audité :
+- [PR d'intégration #28](https://github.com/Toko177/brimaz-forge-lab/pull/28)
+  fusionnée dans `main` sans force-push et avec double ascendance
+  préservant le `main` d'origine et tous les expérimentations divergentes ;
+- **30 anciennes branches distantes supprimées** et vérifiées par
+  [l'action GitHub réussie #38131746597](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38131746597) ;
+- **2 branches conservées :** `main` et
+  `archive/experimental-branches-20261011` ;
+- **0 PR ouverte** ; les anciennes PR sont closes ou fusionnées, leurs
+  commentaires et commits demeurent accessibles ;
+- **16 workflows de maintenance et d'expérimentation** après retrait
+  du workflow de suppression unique ; conservés aussi les 7 decks SHA256,
+  les tests Java21, le lanceur manuel, la filière deckbuilding ;
+- la référence d'une vraie victoire Brimaz précédemment propre à
+  `main` a été conservée.
+
+L'historique des commits est volontairement conservé ; la suppression
+de références ne vise pas à purger des données Git de manière irréversible.
+Les artefacts des parties réelles restent utiles à la validation et
+peuvent expirer suivant la rétention GitHub ; aucun effacement de preuves
+n'a été effectué. Aucun gain stratégique V33 n'est encore démontré.
+
+---
+
+## Inventaire *avant* nettoyage (historique)
 
 **Périmètre audité :** [Toko177/brimaz-forge-lab](https://github.com/Toko177/brimaz-forge-lab)
 sur les **29 branches** exposées par l'API GitHub, la totalité des **27 pull

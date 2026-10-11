@@ -5,13 +5,17 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
-**Branche de développement à poursuivre :**
-`feature/v34-repository-cleanup-20261011`, issue de la V33.
-`main` contient encore l'ancien socle ; les PR empilées ne sont
-pas fusionnées. [Lire la passation active](NEXT_CHAT_START_HERE.md).
+**Branche active : `main`.** Anciennes expériences conservées dans
+`archive/experimental-branches-20261011`, aucune PR ouverte.
+Nettoyage global effectué le 11 octobre 2026 :
+[30 anciennes branches supprimées](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38131746597),
+[PR de consolidation #28](https://github.com/Toko177/brimaz-forge-lab/pull/28).
+L'historique de `main` et de toutes les branches expérimentales a été préservé.
 
-**Attention : V34 ne nettoie pas encore les références distantes ni `main`.**
-[Inventaire global des 29 branches et 27 PR](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
+Le workflow **Commander four-AI manual real Forge games** dans GitHub Actions
+permet les campagnes de vraies parties, seules ou appariées A/B, en utilisant
+les decks canoniques versionnés. [Guide de reprise](NEXT_CHAT_START_HERE.md)
+et [historique du nettoyage](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
 
 ## Ce qui fonctionne réellement
 

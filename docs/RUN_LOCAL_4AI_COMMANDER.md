@@ -1,14 +1,16 @@
 # Utiliser localement le simulateur Forge Commander à quatre IA
 
-Branche : `feature/v34-repository-cleanup-20261011`.
+Branche de développement : `main`.
 Le moteur utilise **Forge 2.0.15 Java 21**, les sept decks canoniques
 versionnés et vérifiés SHA256, et de vrais processus indépendants.
 
 ## Préparer et vérifier sous Windows
 
-Prérequis : Python 3.10+, JDK21 (`java`, `javac`, `jar`),
-`gh` connecté au dépôt et `tar`. Télécharger le moteur via le script
-ou indiquer une archive existante avec `-ForgeArchive`.
+Prérequis : Python 3.10+, JDK21 (`java`, `javac`, `jar`) et `tar`.
+Les sept decks originaux sont déjà dans `forge_decks/` sur `main` ; `gh`
+n'est nécessaire que si l'on utilise une ancienne version sans decks.
+Télécharger le moteur via le script ou indiquer une archive existante
+avec `-ForgeArchive`.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Paired -ReferencePolicy v17_strict -Policy v33_strategy -Pod both -GamesPerRotation 1 -Parallel 2 -Clock 420 -PreflightOnly

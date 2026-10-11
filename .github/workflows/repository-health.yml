@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-      - integration/consolidated-main-20261011
-      - feature/v34-repository-cleanup-20261011
   pull_request:
     branches:
       - main

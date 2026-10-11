@@ -2,7 +2,7 @@ name: V31 reproducible four-AI operator checks
 on:
   pull_request:
     branches:
-      - feature/v30-exact-card-property-fastpath-20261011
+      - main
     paths:
       - scripts/run_local_four_ai.py
       - scripts/run_paired_four_ai.py

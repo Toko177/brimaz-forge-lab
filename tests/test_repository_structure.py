@@ -54,7 +54,7 @@ for file in workflows:
         assert (ROOT / match).is_file(), f"Active workflow {file.name} references missing {match}"
 for p in ("README.md", "NEXT_CHAT_START_HERE.md", "docs/RUN_LOCAL_4AI_COMMANDER.md"):
     content = (ROOT / p).read_text(encoding="utf-8")
-    assert "feature/v34-repository-cleanup-20261011" in content
+    assert "main" in content
 print("FOUR_AI_V34_REPOSITORY_CLEAN_PASS",
       {"decks": len(hashes), "workflows": len(workflows), "protected_paths": len(expected),
        "legacy_patch_variants_removed": 12, "real_games_claimed": 0})

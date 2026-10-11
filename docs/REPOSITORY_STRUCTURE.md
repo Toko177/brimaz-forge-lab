@@ -1,13 +1,14 @@
 # Dépôt épuré : périmètre de maintenance
 
-**V34 — 11 octobre 2026.** Nettoyage non destructif dans la branche
-`feature/v34-repository-cleanup-20261011`, parent V33.
+**État final — 11 octobre 2026.** Le nettoyage V34 est maintenant fusionné dans
+`main` (PR #28), avec les historiques expérimentaux archivés dans Git.
+Seules les branches `main` et `archive/experimental-branches-20261011` restent.
 
 ## Modifications
 
 - Suppression de **83 workflows historiques et one-shot** (pilotes V2–V28,
   premiers benchmarks, migrations, imports et investigations terminées).
-  Les 14 workflows maintenus avant nettoyage restent présents.
+  Les 14 workflows maintenus sur V34 ont été conservés ; le lanceur manuel et la CI de structure complètent les **16 workflows actuels**.
 - Suppression de **12 anciens scripts de patch Brimaz**
   (`patch_forge_brimaz.py` et `_v2.py` à `_v12.py`).
   **`patch_forge_brimaz_v13.py` reste la version réellement compilée**,
@@ -64,3 +65,10 @@ Le benchmark V33 a eu **16 fins naturelles**, mais son premier audit
 « zéro action approuvée » utilisait deux expressions régulières incorrectes.
 Le parseur est corrigé en V34, et la réanalyse des artefacts reste à faire.
 La qualité stratégique n'est pas démontrée par les seules fins naturelles.
+
+## Consolidation GitHub terminée
+
+Les anciennes PR sont fermées, 30 branches devenues redondantes ont été
+supprimées après contrôle de leur inclusion dans `main`. La branche
+`archive/experimental-branches-20261011` conserve un point de contrôle
+explicite. [Preuves et audit](GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).

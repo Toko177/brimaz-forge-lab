@@ -2,7 +2,7 @@ name: V32 permanent original Commander decks and offline preflight
 on:
   pull_request:
     branches:
-      - feature/v31-reproducible-4ai-operator-20261011
+      - main
     paths:
       - forge_decks/**
       - canonical/results/forge_normalization/report.json

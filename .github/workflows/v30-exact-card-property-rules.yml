@@ -1,7 +1,7 @@
 name: V30 real 4-AI Forge five exact rules versus original full method
 on:
   pull_request:
-    branches: [feature/v28-real-card-property-hotpath-profile-20261011]
+    branches: [main]
     paths:
       - .github/workflows/v30-exact-card-property-rules.yml
       - scripts/patch_forge_card_property_fastpath.py
