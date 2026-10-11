@@ -235,3 +235,30 @@ comparable ou supérieur. Il s'agit encore d'une approximation
 conservatrice ; `AiController` et les résolutions Oracle restent
 seules sources de vérité pour les cas d'exil, remplacement ou
 réanimation modifiée.
+
+## Benchmark **mixte** : Brimaz seul modifié, adversaires constants
+
+En plus des deux campagnes où les quatre sièges jouent avec la même
+politique (`forge_stock` original / `v35_strategy`), une seconde
+comparaison utilise `v35_brimaz_duel`.
+
+- Référence : Brimaz et ses trois adversaires utilisent `v17_strict`.
+- Expérience : **seul le siège Brimaz** reçoit la recherche
+  proactive et la gestion tactique V35 ; les trois adversaires restent
+  sous `v17_strict`.
+- Le duel est répété dans les quatre positions, les deux pods et les
+  graines appariées. Le rapport interdit toute intervention V35
+  détectée dans un siège adversaire.
+- Les modules V19 de retrait ciblé et V22 de contre de menaces ne sont
+  **pas activés globalement** en mode `v35_brimaz_duel`.
+- Cette comparaison mesure un effet bien plus causal du comportement
+  de **Brimaz V35 contre la politique V17 inchangée** que le protocole
+  à quatre IA toutes différentes. Elle n'est toutefois **pas** un
+  affrontement contre trois véritables Forge originaux : `v17_strict`
+  contient des modifications historiques.
+
+Un moteur plus fort contre Forge original demande, au-delà de cette
+mesure, des sièges mixtes dont les autres contrôleurs soient réellement
+originaux, des jeux sur plusieurs centaines de parties, plusieurs
+pods tenus à l'écart du développement, et une évaluation des
+erreurs/qualité du combat et des interactions au-delà des victoires.

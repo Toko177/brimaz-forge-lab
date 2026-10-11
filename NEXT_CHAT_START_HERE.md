@@ -20,6 +20,14 @@ mixtes, des nombres de parties suffisants et des résultats naturels
 non censurés. Le benchmark stock-vs-V35 actuel n'a aucune conclusion
 de qualité tant qu'il n'est pas complet.
 
+## Nouveau protocole sièges mixtes
+
+`v35_brimaz_duel` : seules les décisions de Brimaz reçoivent V35,
+les trois autres sièges restant sous V17 dans la même partie.
+La CI matrice sépare aussi les comparaisons stock Forge original
+contre V35 généralisée. Ce duel ne prouve pas une supériorité
+sur Forge original, mais il isole mieux l'effet de Brimaz V35.
+
 ## Statut empirique réel de la V35
 
 Le pilote original ([16 parties Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38133124128))

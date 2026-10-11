@@ -142,7 +142,7 @@ public final class MultiplayerTacticalPlannerV35 {
      * in stock Forge canPlayAndPayFor. Proposals are capped and do not cast.
      */
     public static List<SpellAbility> rank(Player ai,List<SpellAbility> available) {
-        if(!MultiplayerStrategicSequencerV35.ENABLED || ai==null ||
+        if(!MultiplayerStrategicSequencerV35.enabledFor(ai) ||
            available==null || available.isEmpty() || available.size()>MAX_ABILITIES
            || ai.getGame()==null)return List.of();
         var phase=ai.getGame().getPhaseHandler();

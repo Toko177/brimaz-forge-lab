@@ -1,4 +1,4 @@
-name: V35 genuine upstream Forge 2.0.15 stock-vs-improved 4AI A/B
+name: V35 original stock Forge benchmark plus mixed-seat Brimaz-v17 A/B
 on:
   pull_request:
     branches: [main]
@@ -26,9 +26,13 @@ jobs:
     timeout-minutes: 49
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 4
       matrix:
-        pod: [artifact, aristo]
+        include:
+          - {pod: artifact, reference: forge_stock, experiment: v35_strategy}
+          - {pod: aristo, reference: forge_stock, experiment: v35_strategy}
+          - {pod: artifact, reference: v17_strict, experiment: v35_brimaz_duel}
+          - {pod: aristo, reference: v17_strict, experiment: v35_brimaz_duel}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -69,24 +73,24 @@ jobs:
           test -s "$JAR"
           python3 scripts/run_paired_four_ai.py \
             --jar "$JAR" --pod "${{ matrix.pod }}" \
-            --reference-policy forge_stock --experiment-policy v35_strategy \
+            --reference-policy "${{ matrix.reference }}" --experiment-policy "${{ matrix.experiment }}" \
             --profile Default --games-per-rotation 1 --parallel 2 \
             --clock 420 --seed-base 20261221 \
-            --out results/v35_strategic_pairs
+            --out "results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}"
       - name: Audit real changed four-seat decisions and censoring
         run: |
           set -euo pipefail
-          REPORT="$(find results/v35_strategic_pairs -name comparison.json -print -quit)"
+          REPORT="$(find "results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}" -name comparison.json -print -quit)"
           test -s "$REPORT"
           python3 scripts/audit_v35_real_search.py \
-            --input "$REPORT" --output results/v35_strategic_audit.json \
+            --input "$REPORT" --output "results/v35_strategic_audit_${{ matrix.reference }}_${{ matrix.experiment }}.json" \
             --min-approved 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v35-stock-forge-reference-${{ matrix.pod }}
+          name: v35-${{ matrix.reference }}-vs-${{ matrix.experiment }}-${{ matrix.pod }}
           path: |
-            results/v35_strategic_pairs/
-            results/v35_strategic_audit.json
+            results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}/
+            results/v35_strategic_audit_${{ matrix.reference }}_${{ matrix.experiment }}.json
           retention-days: 30
           if-no-files-found: ignore

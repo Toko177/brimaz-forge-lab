@@ -58,6 +58,19 @@ with tempfile.TemporaryDirectory() as td:
         "patched_forge_sha256":"original",
     })
     assert audit(stock)["reference_is_byte_identical_to_stock_forge"] is True
+    duel=report()
+    duel["experiment_provenance"]["policy"]="v35_brimaz_duel"
+    duel["pairs"][0]["experiment"]["seats"]=["Brimaz_V3","Kaal_1","Kaal_2","Kaal_3"]
+    duel["pairs"][0]["reference"]["seats"]=["Brimaz_V3","Kaal_1","Kaal_2","Kaal_3"]
+    # Approval belongs to seat 2, an opponent: the new audit MUST reject it.
+    try:
+        audit(duel)
+        raise AssertionError("V35 brIMAZ-only policy leaked to a stock seat")
+    except ValueError:
+        pass
+    duel["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
     stock["reference_provenance"]["patches"]=["patch_forge_brimaz_v13.py"]
     try:
         audit(stock)

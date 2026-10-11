@@ -24,6 +24,18 @@ public final class MultiplayerStrategicSequencerV35 {
 
     public static final boolean ENABLED =
         Boolean.getBoolean("brimaz.v35StrategicSearch");
+    /**
+     * Controlled A/B: in v35_brimaz_duel only one seeded deck seat receives
+     * new strategy, while the other three share the identical v17 baseline.
+     * This still is NOT a duel against byte-identical upstream Forge.
+     */
+    public static boolean enabledFor(Player ai) {
+        if(!ENABLED || ai==null)return false;
+        if(!Boolean.getBoolean("brimaz.v35BrimazOnly"))return true;
+        // Stable pinned Forge-deck display name ("Brimaz V3") is the
+        // controller identity even when the commander leaves command zone.
+        return ai.getName().contains("Brimaz");
+    }
     private static final AtomicInteger WINDOWS=new AtomicInteger();
     private static final Set<String> MANA=Set.of(
         "Sol Ring","Arcane Signet","Orzhov Signet","Fellwar Stone","Mind Stone",
@@ -128,7 +140,7 @@ public final class MultiplayerStrategicSequencerV35 {
      * cost choice, replacement effects and stack timing afterwards.
      */
     public static List<SpellAbility> rank(Player ai,List<SpellAbility> available) {
-        if(!ENABLED || ai==null || available==null || available.isEmpty()
+        if(!enabledFor(ai) || available==null || available.isEmpty()
                 || ai.getGame()==null)return List.of();
         var game=ai.getGame();
         var phase=game.getPhaseHandler();

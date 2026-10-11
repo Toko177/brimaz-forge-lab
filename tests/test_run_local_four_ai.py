@@ -80,6 +80,11 @@ assert "v35_strategy" in POLICIES
 assert "v35StrategicSearch=true" in policy_flags("v35_strategy")
 assert "fourSeatRemovalUrgency=true" in policy_flags("v35_strategy")
 assert "fourSeatCounterCritical=true" in policy_flags("v35_strategy")
+assert "v35_brimaz_duel" in POLICIES
+assert "v35StrategicSearch=true" in policy_flags("v35_brimaz_duel")
+assert "v35BrimazOnly=true" in policy_flags("v35_brimaz_duel")
+assert "fourSeatRemovalUrgency=true" not in policy_flags("v35_brimaz_duel")
+assert "fourSeatCounterCritical=true" not in policy_flags("v35_brimaz_duel")
 assert "fourSeatRemovalUrgency=false" in policy_flags("v17_strict")
 assert "fourSeatCounterCritical=false" in policy_flags("v17_strict")
 assert "v35StrategicSearch=false" in policy_flags("v17_strict")

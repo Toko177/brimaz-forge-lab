@@ -81,8 +81,10 @@ def audit(report):
         raise ValueError("Not the genuine Forge A/B format")
     ref=report.get("reference_provenance",{})
     exp=report.get("experiment_provenance",{})
-    if ref.get("policy") not in ("v17_strict","forge_stock") or exp.get("policy")!="v35_strategy":
-        raise ValueError("V35 audit requires v17_strict/forge_stock vs v35_strategy")
+    if ref.get("policy") not in ("v17_strict","forge_stock") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel"):
+        raise ValueError("Invalid Forge stock/V17 control or V35 experiment")
+    if exp["policy"]=="v35_brimaz_duel" and ref["policy"]!="v17_strict":
+        raise ValueError("Mixed-seat v35_brimaz_duel requires stable identical v17 opponents")
     if ref.get("policy")=="forge_stock":
         if (ref.get("upstream_forge_unmodified") is not True
             or ref.get("upstream_byte_identical") is not True
@@ -122,6 +124,9 @@ def audit(report):
         tactical_windows+=len(task_windows)
         tactical_rejected+=sum(int(m["count"]) for m in task_rejects)
         for approved in task_approvals:
+            if (exp["policy"]=="v35_brimaz_duel"
+                and b["seats"][int(approved["seat"])-1]!="Brimaz_V3"):
+                raise ValueError("V35 tactical policy leaked into unchanged opponent")
             if int(approved["turn"])<1 or int(approved["rejected"])>5:
                 raise ValueError("Invalid original Forge tactical approval")
             if not task_windows:
@@ -130,6 +135,8 @@ def audit(report):
             tactical_by_card[approved["card"]]+=1
         for m in approvals:
             index=int(m["seat"])
+            if exp["policy"]=="v35_brimaz_duel" and b["seats"][index-1]!="Brimaz_V3":
+                raise ValueError("V35 strategy leaked into an unchanged v17 opponent")
             if int(m["turn"])<1 or int(m["rejected"])>3:
                 raise ValueError("Invalid V35 original Forge approval marker")
             if not candidates:
@@ -178,6 +185,7 @@ def audit(report):
       "reference_policy":ref["policy"],
       "experimental_policy":exp["policy"],
       "reference_is_byte_identical_to_stock_forge":ref["policy"]=="forge_stock",
+      "mixed_seat_brimaz_vs_v17_opponents":exp["policy"]=="v35_brimaz_duel",
       "arm_natural_finishes":{"reference":natural_reference,"experiment":natural_experiment},
       "wins_by_deck_all_natural_reference":dict(wins_reference),
       "wins_by_deck_all_natural_experiment":dict(wins_experiment),
@@ -194,7 +202,8 @@ def audit(report):
         "V35_WINDOW is only a bounded abstract search proposal",
         "V35_TACTICAL_WINDOW is a potential emergency, not proof the card was usable or cast",
         "V35_STOCK_APPROVED means original Forge AI agreed to play; it does not independently prove actual spell resolution",
-        "All four seats use the same policy per game: NOT a mixed seat head-to-head match",
+        "For v35_strategy all four seats use the same upgraded policy: NOT a mixed-seat head-to-head",
+        "For v35_brimaz_duel Brimaz uses V35 while opponents retain v17_modified baseline, NOT pristine upstream Forge",
         "Natural wins do not prove better strategy or statistically significant win rate",
         "Same-seed games are not guaranteed deterministic; censures are not losses",
       ],

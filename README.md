@@ -43,6 +43,12 @@ initial sur 16 JVM a enregistré **230 choix approuvés** (15 fins
 naturelles, 1 censure), sans preuve de gain de victoire ; les modifications
 tactiques ultérieures nécessitent une nouvelle mesure.
 
+**Nouveau banc d'essai avec sièges mixtes :** l'option
+`v35_brimaz_duel` active le nouveau planificateur uniquement pour
+Brimaz, laissant les trois autres IA sur une référence V17 identique.
+C'est un test compétitif plus proche d'un véritable duel, distinct
+de la comparaison au JAR Forge original non modifié.
+
 **Évaluation scientifique corrigée :** la campagne de référence `v17_strict`
 n'utilisait pas Forge d'origine. Le protocole vérifiable
 `forge_stock` conserve désormais le JAR originel byte-à-byte
