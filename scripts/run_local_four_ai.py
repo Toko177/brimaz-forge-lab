@@ -143,7 +143,13 @@ def patch_jar(original,output,policy):
 def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag,jfr):
     source_tag=f"{tag}-rot{rotation}"
     env=os.environ.copy()
-    env["JAVA_TOOL_OPTIONS"]=" ".join((env.get("JAVA_TOOL_OPTIONS",""),flags)).strip()
+    # Control and experiment must never inherit hidden user-supplied JVM
+    # options that could change Forge behavior independently of policy.
+    for injected in ("_JAVA_OPTIONS", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS"):
+        env.pop(injected,None)
+    if policy != "forge_stock":
+        env["JAVA_TOOL_OPTIONS"]=flags
+    # forge_stock intentionally launches with no JAVA_TOOL_OPTIONS variable.
     cmd=[sys.executable,str(ROOT/"scripts/batch.py"),"--jar",str(jar),
          "--runtime-dir",str(runtime_dir),
          "--pod",pod,"--rotation",str(rotation),

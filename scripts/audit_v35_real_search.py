@@ -85,6 +85,17 @@ def audit(report):
         raise ValueError("Invalid Forge stock/V17 control or V35 experiment")
     if exp["policy"]=="v35_brimaz_duel" and ref["policy"]!="v17_strict":
         raise ValueError("Mixed-seat v35_brimaz_duel requires stable identical v17 opponents")
+    if exp["policy"]=="v35_brimaz_duel":
+        if ref.get("patches")!=exp.get("patches"):
+            raise ValueError("Mixed-seat comparator has different Java patches on opponent seats")
+        if ref.get("java_tool_options") is None or exp.get("java_tool_options") is None:
+            raise ValueError("Mixed-seat comparison missing JVM property evidence")
+        if ("v35BrimazOnly=true" not in exp["java_tool_options"]
+            or "v35StrategicSearch=true" not in exp["java_tool_options"]
+            or "v35StrategicSearch=false" not in ref["java_tool_options"]
+            or "fourSeatRemovalUrgency=true" in exp["java_tool_options"]
+            or "fourSeatCounterCritical=true" in exp["java_tool_options"]):
+            raise ValueError("V35 Brimaz-only test was contaminated by global strategy flags")
     if ref.get("policy")=="forge_stock":
         if (ref.get("upstream_forge_unmodified") is not True
             or ref.get("upstream_byte_identical") is not True
@@ -114,6 +125,10 @@ def audit(report):
             raise ValueError("V35 code touched control arm")
         candidates=list(WINDOW.finditer(y))
         approvals=list(APPROVED.finditer(y))
+        if exp["policy"]=="v35_brimaz_duel":
+            for marker in candidates+list(TACTICAL_WINDOW.finditer(y)):
+                if b["seats"][int(marker["seat"])-1]!="Brimaz_V3":
+                    raise ValueError("V35 diagnostic window leaked into unchanged opponent")
         rejects=list(REJECTED.finditer(y))
         windows+=len(candidates)
         proposed+=sum(int(m["ranked"]) for m in candidates)

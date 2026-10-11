@@ -262,3 +262,14 @@ mesure, des sièges mixtes dont les autres contrôleurs soient réellement
 originaux, des jeux sur plusieurs centaines de parties, plusieurs
 pods tenus à l'écart du développement, et une évaluation des
 erreurs/qualité du combat et des interactions au-delà des victoires.
+
+### Provenance stricte du test mixte
+
+La suite rejette désormais les faux « duels » si les deux bras n'ont pas
+**exactement les mêmes scripts de patch JVM**, si la propriété
+`v35BrimazOnly=true` manque, si la référence n'a pas désactivé V35,
+si les modifications globales V19/V22 sont activées par erreur, ou si
+un `V35_WINDOW`/une approbation survient dans un siège non-Brimaz.
+Les processus purgent `_JAVA_OPTIONS`, `JDK_JAVA_OPTIONS` et
+`JAVA_TOOL_OPTIONS` hérités ; le véritable bras `forge_stock`
+n'injecte **aucun** de ces paramètres.

@@ -60,6 +60,10 @@ with tempfile.TemporaryDirectory() as td:
     assert audit(stock)["reference_is_byte_identical_to_stock_forge"] is True
     duel=report()
     duel["experiment_provenance"]["policy"]="v35_brimaz_duel"
+    duel["reference_provenance"]["patches"]=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py"]
+    duel["experiment_provenance"]["patches"]=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py"]
+    duel["reference_provenance"]["java_tool_options"]="-Dbrimaz.v35StrategicSearch=false"
+    duel["experiment_provenance"]["java_tool_options"]="-Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true"
     duel["pairs"][0]["experiment"]["seats"]=["Brimaz_V3","Kaal_1","Kaal_2","Kaal_3"]
     duel["pairs"][0]["reference"]["seats"]=["Brimaz_V3","Kaal_1","Kaal_2","Kaal_3"]
     # Approval belongs to seat 2, an opponent: the new audit MUST reject it.
@@ -72,6 +76,12 @@ with tempfile.TemporaryDirectory() as td:
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
+    duel["experiment_provenance"]["java_tool_options"] += " -Dbrimaz.fourSeatRemovalUrgency=true"
+    try:
+        audit(duel)
+        raise AssertionError("Global enemy removal policy invalidates one-seat experiment")
+    except ValueError:
+        pass
     stock["reference_provenance"]["patches"]=["patch_forge_brimaz_v13.py"]
     try:
         audit(stock)
