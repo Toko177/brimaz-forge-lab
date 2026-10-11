@@ -1,3 +1,12 @@
+**Audit du moteur de sacrifice V41 :** chaque partie réelle produit
+désormais un diagnostic automatique des raisons pour lesquelles
+Brimaz ne transforme pas ou ne sacrifie pas ses jetons.
+Ce diagnostic distingue la présence du commandant, des jetons
+Phyrexian *déjà créatures*, les exutoires activables et les décisions
+réellement approuvées par Forge. Il évite de transformer une simple
+proposition en victoire supposée.
+[Documentation et limites](docs/V36_EVIDENCE_POLICY.md).
+
 **V41 — correction du vrai pilote Brimaz et accès contrôlé aux sacrifices.**
 Le module précédent ne transformait les Incubateurs que dans les miroirs :
 `Brimaz_V3`, le siège canonique contre Kaal, était exclu.

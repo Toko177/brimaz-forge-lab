@@ -6,6 +6,8 @@ on:
       - scripts/patch_forge_brimaz_v13.py
       - scripts/run_local_four_ai.py
       - scripts/run_v37_mirror.py
+      - scripts/analyze_v41_sacrifice_bottlenecks.py
+      - tests/test_analyze_v41_sacrifice_bottlenecks.py
       - tests/test_run_v37_mirror.py
       - patches/java/forge/ai/MultiplayerStrategicModel.java
       - patches/java/forge/ai/MultiplayerStrategicSequencer.java
@@ -56,6 +58,7 @@ jobs:
         run: |
           python3 tests/test_run_local_four_ai.py
           python3 tests/test_run_v37_mirror.py
+          python3 tests/test_analyze_v41_sacrifice_bottlenecks.py
           python3 tests/test_v31_paired_four_ai.py
           python3 tests/test_audit_v35_real_search.py
           python3 -m py_compile scripts/patch_forge_brimaz_v13.py scripts/run_local_four_ai.py scripts/audit_v35_real_search.py

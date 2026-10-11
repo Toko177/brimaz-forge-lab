@@ -380,3 +380,32 @@ et scripts Python sous 3.10 et 3.12.
 sur les graines inédites `20280409`, rotation des sièges et
 deux familles de graines. Résultat à analyser seulement après
 la fin des vraies parties. Aucune supériorité revendiquée.
+
+### V41 — audit automatique des raisons d'absence de sacrifice
+
+Le script `scripts/analyze_v41_sacrifice_bottlenecks.py` ouvre
+uniquement les vrais `result.json` / `game.log` archivés pour
+chaque JVM Forge, jamais des parties simulées. Il vérifie les
+diagnostics `FOUR_AI_V41_SAC_WINDOW`, déduplique les fenêtres
+par couple (joueur, tour), et classe exactement une cause prioritaire :
+
+- commandant absent ;
+- une mort phyrexiane déjà comptabilisée ;
+- aucun jeton *créature* phyrexian réellement transformé ;
+- aucun exutoire de sacrifice sur le champ de bataille ;
+- exutoire présent mais sa capacité ne figure pas dans la liste
+  des capacités Forge du joueur ;
+- capacité présente : paiement réel, sélection de victime et
+  approbation par le contrôleur encore à établir.
+
+Le rapport sépare parties naturelles, parties censurées,
+`canPlayAndPayFor` approuvés et activations **réellement résolues
+non vérifiées**. Aucune approbation ni proposition n'est
+comptabilisée comme une victoire.
+
+Le contrôle Python comporte un test de synthèse sur parser,
+doublons, attribution correcte aux pilotes et fausses
+approbations. L'ancien benchmark `20280409` reste intact
+et une campagne indépendante utilise de nouvelles graines
+`20280721`, avec `sacrifice_forensics.json` inclus dans
+les artefacts. **Aucune modification du deck canonique.**

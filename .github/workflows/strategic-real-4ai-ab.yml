@@ -6,6 +6,8 @@ on:
       - scripts/patch_forge_brimaz_v13.py
       - scripts/audit_v35_real_search.py
       - scripts/run_local_four_ai.py
+      - scripts/analyze_v41_sacrifice_bottlenecks.py
+      - tests/test_analyze_v41_sacrifice_bottlenecks.py
       - patches/java/forge/ai/MultiplayerStrategicModel.java
       - patches/java/forge/ai/MultiplayerStrategicSequencer.java
       - patches/java/forge/ai/MultiplayerStrategicSearchV35.java
@@ -26,7 +28,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: strategic-real-four-ai-v43-sac-access
+  group: strategic-real-four-ai-v44-sac-forensics
   cancel-in-progress: true
 jobs:
   real-commanders:
@@ -81,7 +83,7 @@ jobs:
             --jar "$JAR" --pod "${{ matrix.pod }}" \
             --reference-policy "${{ matrix.reference }}" --experiment-policy "${{ matrix.experiment }}" \
             --profile Default --games-per-rotation 1 --parallel 2 \
-            --clock 420 --seed-base 20280409 \
+            --clock 420 --seed-base 20280721 \
             --out "results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}"
       - name: Audit real changed four-seat decisions and censoring
         run: |
@@ -141,13 +143,25 @@ jobs:
           JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
           test -s "$JAR"
           python3 scripts/run_v37_mirror.py --jar "$JAR" \
-            --out "results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280409" --repeats 3 \
-            --parallel 2 --clock 420 --seed-base 20280409 \
+            --out "results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280721" --repeats 3 \
+            --parallel 2 --clock 420 --seed-base 20280721 \
             --mode "${{ matrix.mode }}" --pod "${{ matrix.pod }}"
+      - name: Diagnose true own-main-phase Brimaz sacrifice bottlenecks
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280721"
+          if test -d "$ROOT"; then
+            python3 scripts/analyze_v41_sacrifice_bottlenecks.py \
+              --input "$ROOT" --output "$ROOT/sacrifice_forensics.json"
+          else
+            echo 'No completed Forge game directory: report remains unavailable'
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v41-real-forge-mirror-${{ matrix.mode }}-${{ matrix.pod }}
-          path: results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280409/
+          name: v41-forensic-forge-mirror-${{ matrix.mode }}-${{ matrix.pod }}
+          path: results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280721/
           retention-days: 30
           if-no-files-found: ignore
