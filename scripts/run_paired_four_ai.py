@@ -78,7 +78,7 @@ def execute(cmd, log_root, label):
                                   "tail":lines[-6:],
                                   "critical":relevant[-12:]},
                                  ensure_ascii=False),flush=True)
-        raise RuntimeError(label + " genuine Forge campaign failed with exit 
+        raise RuntimeError(label + " genuine Forge campaign failed with exit "
                            + str(rc) + ". Logs preserved in " + str(log_root))
 
 
