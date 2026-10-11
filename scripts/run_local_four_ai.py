@@ -20,6 +20,18 @@ import uuid
 
 ROOT=Path(__file__).resolve().parents[1]
 PODS=("aristo","artifact")
+# Immutable reference SHA256 values verified from the original 7-deck
+# normalization artifact (2026-10-09), now vendored into this repository.
+# The report alone is not a trust root: report + decks could both be replaced.
+CANONICAL_DECK_SHA256={
+    "Brimaz_V3":"ffddc4bcc1068c22a96b115f610886f26edf38c6328469b3881110150c9d0c0d",
+    "Kaal_9594008":"43b47ef16e45bb879cdb67923bfafe3642ac504b6ec3d1bc8bbe72e21d94f4b5",
+    "Kaal_10347090":"33e519533e422635b7b6070495f98f81e14d7247c7b0c00781c1f5de9eead9aa",
+    "Kaal_21930525":"1c4ae26bdd46f430e143c10cd66febbac1c3c014d212e3ad1654323d8663d90d",
+    "Kaal_23328062":"2f21e764bfea56aca2fe71c31ccf67d3534d6eb58f3d17f1a8fac22c5016ecb8",
+    "Kaal_11485202":"d713d2ad927524c5d98540a2e80aee9a1985be6c9a1711e93ffd26f722f1187f",
+    "Kaal_22193355":"b47a726cdc1a4353d6008c2b3a6ac77b6d4c7870c4b197c9405bdd926cbe938e",
+}
 POLICIES=("v17_strict","v19_removal","v20_shadow","critical_counter",
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify")
 
@@ -45,10 +57,11 @@ def validate_decks(deckdir,normalization):
         if actual!=rec["normalized_sha256"]:
             raise ValueError("Deck SHA256 mismatch (refuse altered players): "+name)
         hashes[name]=actual
-    if set(hashes)!={"Brimaz_V3","Kaal_9594008","Kaal_10347090",
-                     "Kaal_21930525","Kaal_23328062","Kaal_11485202",
-                     "Kaal_22193355"}:
+    if set(hashes)!=set(CANONICAL_DECK_SHA256):
         raise ValueError("Not the seven expected canonical Commander decks")
+    for deck,digest in hashes.items():
+        if digest!=CANONICAL_DECK_SHA256[deck]:
+            raise ValueError("Pinned original canonical deck SHA256 mismatch: "+deck)
     return hashes
 
 def java_version():
