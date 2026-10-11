@@ -60,5 +60,7 @@ planifier **l'intégration complète** plutôt que fusionner uniquement
 un commit de suppressions sur `main` au risque de retirer l'outillage
 préexistant sans introduire sa remplaçante V33.
 
-L'échec observé sur le benchmark V33 (aucune action approuvée) reste un
-**blocage fonctionnel** distinct du nettoyage réussi.
+Le benchmark V33 a eu **16 fins naturelles**, mais son premier audit
+« zéro action approuvée » utilisait deux expressions régulières incorrectes.
+Le parseur est corrigé en V34, et la réanalyse des artefacts reste à faire.
+La qualité stratégique n'est pas démontrée par les seules fins naturelles.

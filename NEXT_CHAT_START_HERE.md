@@ -14,11 +14,12 @@ fusionnées : ne pas repartir de `main` pour le prochain correctif.
   https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781138
 - Dernier A/B V33 :
   https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781081
-  **16/16 parties naturelles** ; 0 décisions stratégiques V33 approuvées
-  selon l'instrumentation, 3 paires de vainqueurs différents.
-  Le run échoue volontairement sur la preuve d'intervention :
-  aucune amélioration IA n'est démontrée. Ne pas assimiler des
-  séquences divergentes à des décisions meilleures.
+  **16/16 parties naturelles** ; trois paires ont changé de vainqueur.
+  Le résultat « 0 choix V33 » n'est PAS interprétable : l'audit recherchait
+  `STRATEGIC_CHOICE` au lieu de `STRATEGIC_PROPOSAL` et contenait des
+  échappements regex erronés pour `STRATEGIC_ACTION`.
+  La V34 corrige le parseur et son test synthétique ; il faut rejouer
+  l'analyse des artefacts originaux avant toute conclusion sur l'usage de l'IA.
 - `scripts/patch_forge_brimaz_v13.py` reste le patch actuel,
   malgré son nom historique : il compile les deux classes V33.
 - Le flag `v33_strategy` est opt-in et symétrique sur les quatre sièges.
@@ -26,9 +27,10 @@ fusionnées : ne pas repartir de `main` pour le prochain correctif.
 
 ## Priorité immédiate
 
-Diagnostiquer l'absence d'actions `FOUR_AI_V33_STRATEGIC_ACTION`
-dans les véritables traces, distinguer propositions, validation Forge,
-sorts réellement lancés et choix par défaut. Ne pas inférer l'efficacité
+**Réauditer les artefacts V33 avec les expressions régulières corrigées**, puis
+quantifier propositions, approbations Forge, sorts réellement lancés et
+choix par défaut. Ne pas confondre le résultat initial erroné de l'audit
+avec une absence réelle de décisions. Ne pas inférer l'efficacité
 du planificateur des seuls tests synthétiques ; éviter de relancer
 une grande campagne tant que l'intervention n'est pas démontrée
 sur une partie ciblée.

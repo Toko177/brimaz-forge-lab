@@ -16,10 +16,11 @@ pas fusionnées. [Lire la passation active](NEXT_CHAT_START_HERE.md).
   [test validé](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781138).
 - Lancement de quatre sièges et comparaison A/B sur les deux groupes d'adversaires.
 - [V33, 16 parties réelles / 16 fins naturelles](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781081).
-  Leurs déroulements divergent, mais **zéro action du nouveau
-  planificateur n'a été explicitement approuvée**. Aucune amélioration
-  stratégique n'est démontrée. Le benchmark doit conserver son verdict
-  d'échec sur la porte d'intervention.
+  Les parties ont divergé, mais **l'ancien audit V33 était défectueux** :
+  son parseur cherchait un nom de journal incorrect et des expressions
+  régulières mal échappées. La V34 corrige ces défauts ; le nombre réel
+  d'actions approuvées doit être recalculé depuis les artefacts du run.
+  Aucune amélioration stratégique n'est encore démontrée.
 - Les parties censurées ou en erreur ne sont **jamais** comptées
   comme des victoires naturelles.
 
@@ -27,8 +28,8 @@ pas fusionnées. [Lire la passation active](NEXT_CHAT_START_HERE.md).
 
 Voir [la V33 et ses limites](docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md)
 et [l'organisation épurée](docs/REPOSITORY_STRUCTURE.md).
-La priorité est de diagnostiquer pourquoi l'IA Forge rejette
-les propositions stratégiques V33 et d'améliorer la décision
+La priorité est de **réauditer les journaux réels V33 avec le parseur corrigé**,
+puis d'évaluer les refus éventuels de Forge et d'améliorer la décision
 sans déformer les règles.
 
 ### Installation et exécution (Windows)

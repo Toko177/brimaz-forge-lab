@@ -57,7 +57,9 @@ La même graine Forge n'assure pas une trace déterministe.
 - Les rapports de vitesse excluent JFR et vérification shadow des règles.
 
 **État empirique :** le [pilote V33 sur 16 JVM](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781081)
-a produit 16 fins naturelles mais zéro choix V33 explicitement approuvé.
+a produit 16 fins naturelles. Son premier résultat « zéro choix V33 »
+était fondé sur des expressions régulières erronées : le parseur corrigé
+sur V34 doit être réappliqué aux traces archivées avant interprétation.
 Ne pas parler de gain stratégique démontré.
 
 Documentation de l'IA :
