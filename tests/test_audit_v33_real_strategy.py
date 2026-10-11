@@ -29,7 +29,7 @@ with tempfile.TemporaryDirectory() as tmp:
             "both_natural_pairs":1,"pairs_with_any_censor_or_fault":0,
             "natural_pairs_with_different_winner":0,
             "pairs":[{"reference":{
-                "log":str(path/"baseline.log"),"status":"complete"},
+                "log":str(path/"baseline.log"),"status":"complete","event_sha256":"ref123"},
                 "experiment":{"log":str(path/"experiment.log"),"status":"complete",
                 "pod":"artifact","rotation":0,"event_sha256":"exp456"},
                 "event_sha256":"ref123",
