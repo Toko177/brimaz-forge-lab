@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
 from run_v37_mirror import (
     make_mirror_decks,make_four_mirror_decks,classify,binomial_two_sided,
-    summarize,category,expected_display_name,PODS,FOUR_MIRRORS)
+    summarize,category,expected_display_name,verify_v41_pilot_identity,PODS,FOUR_MIRRORS)
 from run_local_four_ai import sha,ROOT
 with tempfile.TemporaryDirectory() as td:
     for pod in PODS:
@@ -53,4 +53,20 @@ assert m["challenger_brimaz_wins"]==9
 assert m["reference_brimaz_wins"]==7
 four[0]["winner"]="Kaal_Wrong"
 assert summarize(four)["same_deck_2vs2_required_winner_integrity"] is False
+
+# Actual Forge simulator uses ID=Brimaz_Challenger_A, unlike Name= display.
+seats=("Brimaz_Challenger_A","Brimaz_Challenger_B",
+       "Brimaz_Reference_A","Brimaz_Reference_B")
+def window(player,approved):
+    return (f"FOUR_AI_V41_SAC_WINDOW player={player} turn=4 "
+            f"pilotAuthorized={str(approved).lower()} commanderPresent=true")
+v=verify_v41_pilot_identity(
+    window("Brimaz_Challenger_A",True)+"\n"+
+    window("Brimaz Challenger B",True)+"\n"+
+    window("Brimaz_Reference_A",False)+"\n",seats)
+assert v["challenger_windows"]==2 and not v["bad_windows"]
+assert verify_v41_pilot_identity(window("Brimaz_Challenger_A",False),seats)["bad_windows"]
+assert verify_v41_pilot_identity(window("Brimaz_Reference_B",True),seats)["bad_windows"]
+assert verify_v41_pilot_identity(window("Kaal_9594008",False),seats)["bad_windows"]
+assert verify_v41_pilot_identity("ordinary Forge result",seats)["windows"]==0
 print("V37_MIRROR_SYNTHETIC_PASS not_real_games=true")

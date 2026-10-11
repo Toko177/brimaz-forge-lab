@@ -696,7 +696,10 @@ public final class BrimazTurnPlanner {
             String n = c.getName();
             if (n.equals("Arcbound Ravager") || n.equals("Spawning Pit")
                     || n.equals("Throne of Geth") || n.equals("Krark-Clan Ironworks")
-                    || n.equals("Bartolomé del Presidio")) liveOutletCards++;
+                    || n.equals("Bartolomé del Presidio")
+                    || (Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                        && (n.equals("Ashnod's Altar")
+                            || n.equals("Phyrexian Altar")))) liveOutletCards++;
         }
         int listedOutlets = 0;
         if (available != null) {

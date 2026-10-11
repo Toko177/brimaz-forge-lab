@@ -15,11 +15,18 @@ public final class MultiplayerSacrificeAccessV41 {
      */
     public static boolean authorized(String playerName, boolean mirror) {
         if(playerName == null)return false;
-        if(mirror)
-            return playerName.equals("Brimaz Challenger")
+        // Forge AI telemetry uses deck IDs (underscores), while in-game
+        // winner banners may contain display names (spaces). Exact allowlist.
+        if (mirror) {
+            return playerName.equals("Brimaz_Challenger")
+                || playerName.equals("Brimaz_Challenger_A")
+                || playerName.equals("Brimaz_Challenger_B")
+                || playerName.equals("Brimaz Challenger")
                 || playerName.equals("Brimaz Challenger A")
                 || playerName.equals("Brimaz Challenger B");
-        return playerName.equals("Brimaz_V3");
+        }
+        return playerName.equals("Brimaz_V3")
+            || playerName.equals("Brimaz V3");
     }
 
     /**

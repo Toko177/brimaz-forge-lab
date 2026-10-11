@@ -83,7 +83,7 @@ jobs:
             --jar "$JAR" --pod "${{ matrix.pod }}" \
             --reference-policy "${{ matrix.reference }}" --experiment-policy "${{ matrix.experiment }}" \
             --profile Default --games-per-rotation 1 --parallel 2 \
-            --clock 420 --seed-base 20280721 \
+            --clock 420 --seed-base 20281019 \
             --out "results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}"
       - name: Audit real changed four-seat decisions and censoring
         run: |
@@ -143,15 +143,15 @@ jobs:
           JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
           test -s "$JAR"
           python3 scripts/run_v37_mirror.py --jar "$JAR" \
-            --out "results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280721" --repeats 3 \
-            --parallel 2 --clock 420 --seed-base 20280721 \
+            --out "results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20281019" --repeats 3 \
+            --parallel 2 --clock 420 --seed-base 20281019 \
             --mode "${{ matrix.mode }}" --pod "${{ matrix.pod }}"
       - name: Diagnose true own-main-phase Brimaz sacrifice bottlenecks
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          ROOT="results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280721"
+          ROOT="results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20281019"
           if test -d "$ROOT"; then
             python3 scripts/analyze_v41_sacrifice_bottlenecks.py \
               --input "$ROOT" --output "$ROOT/sacrifice_forensics.json"
@@ -162,6 +162,6 @@ jobs:
         if: always()
         with:
           name: v41-forensic-forge-mirror-${{ matrix.mode }}-${{ matrix.pod }}
-          path: results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20280721/
+          path: results/v41_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20281019/
           retention-days: 30
           if-no-files-found: ignore

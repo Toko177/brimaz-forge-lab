@@ -187,3 +187,13 @@ jetons phyrexians créatures des Incubateurs non transformés.
 Les nouveaux tests sont dans
 `tests/java/forge/ai/MultiplayerSacrificeAccessV41Checks.java`.
 Prochain benchmark sur graines `20280409`, non fusionné.
+
+## Correction du pilote V41 : contrôle des identifiants des sièges
+
+Le run [#38170566763](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38170566763)
+a révélé 258 fenêtres non autorisées (sur 258) contre Kaal.
+Cause : nom d'affichage `Brimaz Challenger A` différent du
+deck ID `Brimaz_Challenger_A`. La liste d'identités est corrigée,
+la télémétrie rejette désormais les résultats avec mauvais pilote,
+et les deux autels sont comptés sous V41. Graines de retest
+`20281019`. Lire `docs/V36_EVIDENCE_POLICY.md`.

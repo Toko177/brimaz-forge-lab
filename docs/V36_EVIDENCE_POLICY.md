@@ -409,3 +409,28 @@ approbations. L'ancien benchmark `20280409` reste intact
 et une campagne indépendante utilise de nouvelles graines
 `20280721`, avec `sacrifice_forensics.json` inclus dans
 les artefacts. **Aucune modification du deck canonique.**
+
+## V41 postmortem — autorisation des vrais sièges et mesure vérifiable
+
+**Preuve réelle :** le run indépendant [#38170566763](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38170566763)
+a produit **258/258 fenêtres** `unauthorized_pilot` dans les 24 parties
+miroirs contre Kaal (137 aristo + 121 artifact), zéro transformation
+et zéro sacrifice approuvés. Ces victoires ne mesurent **pas** la
+politique V41 prétendument testée.
+
+Le Java attendait `Brimaz Challenger A`, tandis que les vrais sièges
+du lanceur Forge sont `Brimaz_Challenger_A`. Le test antérieur
+ne couvrait que le nom d'affichage. Correctif : liste exacte des
+noms de sièges et labels des deux formats, sans autoriser les
+références. Le contrôle de l'exutoire et le diagnostic comptent les
+autels Ashnod/Phyrexian uniquement si V41 est activée.
+
+**Release gate :** le lanceur vérifie chaque fenêtre `SAC_WINDOW`
+contre les quatre vrais sièges. Toute identité inattendue ou
+autorisation erronée devient `policy_fault` : jamais une victoire
+naturelle. Une campagne sans aucune fenêtre challenger observable
+échoue. L'auditeur enregistre le rapport puis échoue en cas de
+`unauthorized_pilot`. Tests de régression Java/Python ajoutés.
+Nouvelles graines indépendantes `20281019` pour le workflow existant.
+Aucune amélioration de compétence n'est revendiquée avant validation
+des vrais comportements et des résultats sur un échantillon suffisant.

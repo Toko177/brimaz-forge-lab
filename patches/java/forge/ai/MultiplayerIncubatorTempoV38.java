@@ -110,7 +110,11 @@ public final class MultiplayerIncubatorTempoV38 {
             if(c.isCreature() && !c.isTapped() && c.getNetToughness()>0)
                 readyBlockers++;
             if(c.hasCounters())counteredPermanents++;
-            if(SACRIFICE_OUTLETS.contains(c.getName()))hasOutlet=true;
+            if (SACRIFICE_OUTLETS.contains(c.getName())
+                    || (Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                        && (c.getName().equals("Ashnod's Altar")
+                            || c.getName().equals("Phyrexian Altar"))))
+                hasOutlet=true;
         }
         for(Player opp:ai.getOpponents()) {
             int power=0;

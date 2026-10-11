@@ -6,7 +6,17 @@ public final class MultiplayerSacrificeAccessV41Checks {
     private static void ok(boolean b,String s){n++;if(!b)throw new AssertionError(s);}
     public static void main(String[] args) {
         var m=MultiplayerSacrificeAccessV41.class;
-        ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_V3",false),"canonical mixed-seat pilot");
+        ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_V3",false),"canonical mixed-seat deck ID");
+        ok(MultiplayerSacrificeAccessV41.authorized("Brimaz V3",false),"canonical display name");
+        ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_Challenger",true),"two-Brimaz mirror ID");
+        ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_Challenger_A",true),"four-Brimaz first ID");
+        ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_Challenger_B",true),"four-Brimaz second ID");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Brimaz_Reference",true),"reference ID isolated");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Brimaz_Reference_A",true),"reference A isolated");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Brimaz_Reference_B",true),"reference B isolated");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Brimaz_Challenger_A",false),"mirror forbidden in mixed mode");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Brimaz__Challenger_A",true),"reject malformed ID");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Other_Brimaz_Challenger_A",true),"no substring identity");
         ok(!MultiplayerSacrificeAccessV41.authorized("Brimaz_V3",true),"not a mirrored challenger");
         ok(MultiplayerSacrificeAccessV41.authorized("Brimaz Challenger",true),"single mirror pilot");
         ok(MultiplayerSacrificeAccessV41.authorized("Brimaz Challenger A",true),"first mirrored pilot");

@@ -38,6 +38,31 @@ def make_four_mirror_decks(canonical,target):
 WIN=re.compile(r"Game Result: Game\s+\d+\s+ended in\s+(\d+)\s*ms\.\s*Ai\((\d+)\)-(.+?) has won!")
 ERRORS=("java.lang.NullPointerException","Exception in thread","java.lang.IllegalStateException",
         "StackOverflowError","OutOfMemoryError","Simulation: Couldn't play land")
+V41_WINDOW=re.compile(
+    r"^FOUR_AI_V41_SAC_WINDOW player=(.*?) turn=\d+ pilotAuthorized=(true|false)\b",
+    re.M)
+
+def verify_v41_pilot_identity(raw,seats):
+    """Verify V41 controller actually reaches the named seats in REAL logs.
+
+    Forge telemetry uses underscore deck IDs; winner banners may use the
+    deck's Name= label instead. Match exact seats only, never substrings.
+    """
+    expected=set(seats)
+    bad=[]
+    challenger_windows=0
+    windows=V41_WINDOW.findall(raw)
+    for name,flag in windows:
+        key=name if name in expected else name.replace(" ","_")
+        if key not in expected:
+            bad.append({"player":name,"reason":"unknown_seat"})
+            continue
+        challenger=category(key)=="challenger"
+        if challenger:challenger_windows+=1
+        if challenger!=(flag=="true"):
+            bad.append({"player":name,"reason":"incorrect_pilot_authorization"})
+    return {"windows":len(windows),"challenger_windows":challenger_windows,
+            "bad_windows":bad}
 
 def make_mirror_decks(canonical,target,pod):
     target.mkdir(parents=True,exist_ok=False)
@@ -147,6 +172,10 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
         rc=None
     (target/"game.log").write_text(stdout+"\n[STDERR]\n"+stderr,encoding="utf-8")
     status,winner=classify(stdout,stderr,rc,timed_out,clock,seats)
+    identity=verify_v41_pilot_identity(stdout,seats)
+    if identity["bad_windows"]:
+        # A winner does not validate a match where its policy was disabled.
+        status,winner="policy_fault",None
     record={"pod":pod,"rotation":rotation,"repeat":repeat,"seed":seed,
             "mode":mode,
             "seats":seats,"status":status,"winner":winner,"exit":rc,
@@ -161,6 +190,7 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
                 "FOUR_AI_V40_TRANSFORM_APPROVED_BY_SEAT"),
             "V40_sac_diagnostic_windows":stdout.count("BRIMAZ_WINDOW: V7"),
             "V41_sac_diagnostic_windows":stdout.count("FOUR_AI_V41_SAC_WINDOW"),
+            "V41_pilot_identity":identity,
             "log":str((target/"game.log").relative_to(out))}
     (target/"result.json").write_text(json.dumps(record,indent=2)+"\n")
     print("V37_ACTUAL_MIRROR_MATCH",json.dumps(record,ensure_ascii=False),flush=True)
@@ -219,6 +249,10 @@ def main():
         if a.mode=="all-brimaz" and not result["same_deck_2vs2_required_winner_integrity"]:
             raise AssertionError("A natural all-Brimaz game had a non-Brimaz winner")
         (dest/"summary.json").write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n")
+        if any(x["status"]=="policy_fault" for x in records):
+            raise AssertionError("V41 mirror identity mismatch: comparison invalid; inspect raw logs")
+        if not any(x["V41_pilot_identity"]["challenger_windows"] for x in records):
+            raise AssertionError("V41 ran without an observable challenger turn: result unverified")
         print("V37_TRUE_MIRROR_SUMMARY",json.dumps({k:v for k,v in result.items()
            if k in ("real_jvm_games","natural_finishes","censored_or_faulted",
                     "challenger_brimaz_wins","reference_brimaz_wins",

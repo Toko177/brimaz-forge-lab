@@ -117,6 +117,9 @@ def main():
     print("V41_REAL_SACRIFICE_BOTTLENECKS",json.dumps({
         "totals":result["totals"],
         "reasons":result["primary_bottleneck_by_own_turn"]},ensure_ascii=False),flush=True)
+    if result["primary_bottleneck_by_own_turn"].get("unauthorized_pilot",0):
+        raise SystemExit("V41 forensic gate FAILED: a real AI pilot was unauthorized; "
+                         "this is not a valid policy comparison")
 
 if __name__=="__main__":
     main()
