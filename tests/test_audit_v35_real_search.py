@@ -37,8 +37,8 @@ with tempfile.TemporaryDirectory() as td:
           "real_process_pairs":1,"real_forge_jvm_processes":2,
           "both_natural_pairs":1,"pairs_with_any_censor_or_fault":0,
           "natural_pairs_with_different_winner":1,
-          "pairs":[{"reference":{"log":str(a),"status":"complete","event_sha256":"1"},
-                    "experiment":{"log":str(b),"status":"complete","event_sha256":"2",
+          "pairs":[{"reference":{"log":str(a),"status":"complete","winner":"Brimaz_V3","event_sha256":"1"},
+                    "experiment":{"log":str(b),"status":"complete","winner":"Kaal_9594008","event_sha256":"2",
                                   "pod":"artifact","rotation":2}}]}
     x=audit(report())
     assert x["real_forge_jvms"]==2
