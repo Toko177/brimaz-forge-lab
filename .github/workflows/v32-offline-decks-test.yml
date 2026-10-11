@@ -1,0 +1,49 @@
+name: V32 permanent original Commander decks and offline preflight
+on:
+  pull_request:
+    branches:
+      - feature/v31-reproducible-4ai-operator-20261011
+    paths:
+      - forge_decks/**
+      - canonical/results/forge_normalization/report.json
+      - scripts/run_local_four_ai.py
+      - scripts/setup_and_run_four_ai.ps1
+      - tests/test_run_local_four_ai.py
+      - tests/test_v31_paired_four_ai.py
+      - .github/workflows/v32-offline-decks-test.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provenance-regression:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10','3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify vendored originals without network, artifact download, or Forge JVM
+        run: |
+          test "$(find forge_decks -name '*.dck' -type f | wc -l)" -eq 7
+          python -m py_compile scripts/run_local_four_ai.py scripts/run_paired_four_ai.py
+          python tests/test_run_local_four_ai.py
+          python tests/test_v31_paired_four_ai.py
+          python tests/test_compare_local_four_ai_campaigns.py
+  windows-powershell-parse:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse actual user-facing PowerShell operator on Windows
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          $file = Join-Path $PWD "scripts/setup_and_run_four_ai.ps1"
+          $null = [System.Management.Automation.Language.Parser]::ParseFile($file,[ref]$tokens,[ref]$errors)
+          if ($errors.Count -ne 0) { $errors | Out-String | Write-Error; exit 1 }
+          Write-Host "V32_WINDOWS_POWERSHELL_SYNTAX_OK"
