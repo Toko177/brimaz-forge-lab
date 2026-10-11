@@ -803,7 +803,6 @@ with tempfile.TemporaryDirectory() as d:
                     "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Snapshot.class",
                     "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Choice.class",
                     "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Role.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$1.class",
                     "-C",str(classes),"forge/ai/MultiplayerStrategicSequencer.class"],
                    check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)
