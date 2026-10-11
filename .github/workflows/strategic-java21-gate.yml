@@ -24,6 +24,7 @@ on:
       - patches/java/forge/ai/CommanderGenericModelV42.java
       - patches/java/forge/ai/CommanderGenericSequencerV42.java
       - tests/java/forge/ai/CommanderGenericModelV42Checks.java
+      - tests/java/forge/ai/CommanderGenericSequencerV42Checks.java
       - tests/java/forge/ai/MultiplayerSacrificeAccessV41Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorEngineV39Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorTempoV38Checks.java
@@ -135,5 +136,8 @@ jobs:
           java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerSacrificeAccessV41Checks
           javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
             tests/java/forge/ai/MultiplayerTacticalPlannerV35Checks.java
+          javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
+            tests/java/forge/ai/CommanderGenericSequencerV42Checks.java
+          java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.CommanderGenericSequencerV42Checks
           java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerTacticalPlannerV35Checks
 

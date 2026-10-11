@@ -1,3 +1,11 @@
+**V43 — comparaison directe contre Forge.**
+Le mode `v43_commander_single_seat` active l'IA générique pour
+un unique joueur par partie et maintient trois adversaires contrôlés
+par la politique Forge de référence. Les rotations couvrent plusieurs
+decks et un audit vérifie chaque identité `Ai(n)-Name=`.
+L'ancien mode V42 sur les quatre joueurs mesure seulement l'intégration
+multideck. [Protocole et limites](docs/V42_GENERAL_COMMANDER_AI.md).
+
 **V43 — fiabilisation des traces de vraies parties (sans nouveau workflow).**
 Les premiers benchmarks génériques ont révélé le format des identifiants
 réels `Ai(n)-Name=` dans Forge, différent des fichiers de decks.

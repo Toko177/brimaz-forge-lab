@@ -1,4 +1,4 @@
-name: V41 and V42 actual Forge four-AI strategic benchmark
+name: V41 mirrors and V43 generic one-seat Commander benchmark
 on:
   pull_request:
     branches: [main]
@@ -24,6 +24,7 @@ on:
       - scripts/forge_seat_identity.py
       - tests/test_forge_seat_identity.py
       - tests/test_audit_v42_generic_commander.py
+      - tests/java/forge/ai/CommanderGenericSequencerV42Checks.java
       - tests/java/forge/ai/MultiplayerSacrificeAccessV41Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorEngineV39Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorTempoV38Checks.java
@@ -213,14 +214,14 @@ jobs:
           python3 scripts/run_paired_four_ai.py \
             --jar "$JAR" --pod "${{ matrix.pod }}" \
             --reference-policy v37_stock_control \
-            --experiment-policy v42_commander_general \
+            --experiment-policy v43_commander_single_seat \
             --profile Default --games-per-rotation 1 --parallel 2 \
-            --clock 420 --seed-base 20261217 \
-            --out "results/v42_generic_pairs_${{ matrix.pod }}"
+            --clock 420 --seed-base 20261221 \
+            --out "results/v43_head_to_head_pairs_${{ matrix.pod }}"
       - name: Audit genuine V42 actions on multiple unrelated decks
         run: |
           set -euo pipefail
-          ROOT="results/v42_generic_pairs_${{ matrix.pod }}"
+          ROOT="results/v43_head_to_head_pairs_${{ matrix.pod }}"
           REPORT="$(find "$ROOT" -name comparison.json -print -quit)"
           test -s "$REPORT"
           python3 scripts/audit_v42_generic_commander.py \
@@ -229,7 +230,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v42-real-generic-commander-${{ matrix.pod }}
-          path: results/v42_generic_pairs_${{ matrix.pod }}/
+          name: v43-real-single-seat-commander-${{ matrix.pod }}
+          path: results/v43_head_to_head_pairs_${{ matrix.pod }}/
           retention-days: 30
           if-no-files-found: ignore

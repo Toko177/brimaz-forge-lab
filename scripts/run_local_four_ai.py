@@ -36,7 +36,8 @@ POLICIES=("forge_stock","forge_stock_compat","v17_strict","v19_removal","v20_sha
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
           "v33_strategy","v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_stock_control","v37_brimaz_challenger",
           "v38_brimaz_challenger","v39_brimaz_challenger",
-          "v40_brimaz_challenger","v41_brimaz_challenger","v42_commander_general")
+          "v40_brimaz_challenger","v41_brimaz_challenger","v42_commander_general",
+           "v43_commander_single_seat")
 
 def sha(path):
     d=hashlib.sha256()
@@ -101,6 +102,10 @@ def policy_flags(policy):
         # Same Forge patches as V37 control, with older Brimaz policy off.
         return ("-Dbrimaz.v37ControlledDuel=true "
                 "-Dcommander.v42GeneralPolicy=true")
+    if policy == "v43_commander_single_seat":
+        # Single experimental controller, three original-decision Forge AIs.
+        # A fixed seat number + four rotations exposes four distinct decks.
+        return policy_flags("v42_commander_general") + " -Dcommander.v43TargetSeat=1"
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",

@@ -27,7 +27,19 @@ public final class CommanderGenericSequencerV42 {
 
     /** Only the controlled opt-in arm may use the new policy. */
     public static boolean eligible(Player ai) {
-        return enabled() && ai != null && ai.getGame() != null;
+        if (!enabled() || ai==null || ai.getGame()==null)return false;
+        return seatEligible(ai.getName(),
+            System.getProperty("commander.v43TargetSeat"));
+    }
+
+    /** V43 single-seat policy by genuine Forge identity, never deck name. */
+    public static boolean seatEligible(String fullName,String target) {
+        if (fullName==null || fullName.isEmpty())return false;
+        if (target==null)return true; // Historical V42 all-seat policy.
+        if (target.length()!=1 || target.charAt(0)<'1'
+                || target.charAt(0)>'4')return false;
+        String prefix="Ai("+target+")-";
+        return fullName.startsWith(prefix) && fullName.length()>prefix.length();
     }
 
     private static boolean producesMana(Card c) {

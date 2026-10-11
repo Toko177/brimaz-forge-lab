@@ -57,4 +57,28 @@ with tempfile.TemporaryDirectory() as d:
     try:audit(obj);raise AssertionError("zero real approvals passed")
     except ValueError:pass
     assert audit(obj,require_approvals=False)["natural_pairs"]==1
+    # V43 A/B: only seat 1 is experimental; other three remain Forge.
+    obj["experiment_provenance"]={
+        **expp, "policy":"v43_commander_single_seat",
+        "java_tool_options":expp["java_tool_options"]
+                             +" -Dcommander.v43TargetSeat=1"}
+    exp.write_text(window.format(displays[0])+approval.format(displays[0]),
+                   encoding="utf-8")
+    isolated=audit(obj,min_distinct_decks=1)
+    assert isolated["head_to_head_one_challenger_vs_three_controls"]
+    assert isolated["distinct_rotated_target_decks"]==[seats[0]]
+    assert isolated["natural_both_candidate_win_pairs"]==1
+    assert isolated["natural_candidate_only_wins"]==0
+    exp.write_text(window.format(displays[1])+approval.format(displays[1]),
+                   encoding="utf-8")
+    try:audit(obj,min_distinct_decks=1);raise AssertionError("wrong seat got V43")
+    except ValueError:pass
+    obj["experiment_provenance"]["java_tool_options"] = expp["java_tool_options"]
+    try:audit(obj,min_distinct_decks=1);raise AssertionError("V43 missing target flag")
+    except ValueError:pass
+    obj["experiment_provenance"]["java_tool_options"] += " -Dcommander.v43TargetSeat=1"
+    exp.write_text(window.format(displays[0])+approval.format(displays[0]),
+                   encoding="utf-8")
+    try:audit(obj,min_distinct_decks=3);raise AssertionError("one target deck called multideck")
+    except ValueError:pass
 print("V42_GENERIC_AUDIT_FIXTURE_PASS synthetic_only=true")

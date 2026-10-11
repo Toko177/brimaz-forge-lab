@@ -112,3 +112,34 @@ Les campagnes précédentes restent conservées et invalides lorsque
 l'audit n'a pas pu établir la bonne identité de pilote.
 Aucune affirmation de gain de victoire avant de nouveaux résultats
 non censurés, comparés sur plusieurs decks, sans contamination.
+
+## V43 — Commander générique : une IA candidate contre trois contrôles
+
+Le premier protocole V42 activait le même pilote sur les quatre sièges.
+Il vérifiait l'exécution multi-decks, mais ne mesurait pas la force de
+ce pilote *contre* Forge : un gagnant existe dans les deux politiques.
+
+La variante `v43_commander_single_seat` n'active le modèle que pour
+le **siège Forge Ai(1)**. Les autres sièges conservent la sélection
+originale de Forge sous les mêmes patches de compatibilité. Les
+quatre rotations de `batch.py` placent successivement plusieurs decks
+différents sur ce siège et évitent de privilégier Brimaz.
+
+L'auditeur V42/V43 vérifie les journaux `Ai(n)-Name=`, l'unique siège
+autorisé, les mêmes decks entre les deux bras, les vraies approbations,
+les fins naturelles et les victoires du siège expérimental.
+Le modèle ne traite pas encore les décisions tactiques et les combos.
+Un petit nombre de différences de victoires n'est pas une preuve
+de compétence comparable aux joueurs humains.
+
+Commande :
+
+```sh
+python3 scripts/run_paired_four_ai.py \
+  --jar /path/to/forge-gui-desktop-2.0.15-jar-with-dependencies.jar \
+  --reference-policy v37_stock_control \
+  --experiment-policy v43_commander_single_seat \
+  --pod both --games-per-rotation 1 --parallel 2 \
+  --clock 420 --seed-base 20261221 \
+  --out results/v43_head_to_head_pairs
+```

@@ -210,3 +210,13 @@ Forge-payable sur la seule base de son CMC imprimé.
 Les nouveaux tests sont dans `tests/test_forge_seat_identity.py`
 et dans les tests Java V41/V42. Graines 20261213/20261217.
 Pas de victoire supérieure revendiquée. Conserver une seule PR draft.
+
+## V43 — évaluation contre trois contrôleurs Forge
+
+Le mode `v43_commander_single_seat` modifie seulement Ai(1) dans
+chaque partie ; les autres sièges utilisent la référence Forge et
+le banc d'essai tourne quatre positions sur plusieurs decks.
+`audit_v42_generic_commander.py` contrôle les identités et les
+victoires spécifiques du challenger sur les parties naturelles.
+Graine indépendante `20261221`. Documentation détaillée :
+`docs/V42_GENERAL_COMMANDER_AI.md`. PR unique, toujours draft.
