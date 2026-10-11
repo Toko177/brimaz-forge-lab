@@ -29,8 +29,7 @@ public final class MultiplayerStrategicSequencerV35 {
         "Sol Ring","Arcane Signet","Orzhov Signet","Fellwar Stone","Mind Stone",
         "Thought Vessel","Talisman of Hierarchy","Talisman of Dominance",
         "Talisman of Progress","Talisman of Conviction","Ornithopter of Paradise",
-        "Gold Myr","Marble Diamond","Charcoal Diamond","Commander's Sphere",
-        "Inspiring Statuary","Urza's Incubator");
+        "Gold Myr","Marble Diamond","Charcoal Diamond","Commander's Sphere");
     private static final Set<String> OUTLETS=Set.of(
         "Spawning Pit","Ashnod's Altar","Phyrexian Altar",
         "Krark-Clan Ironworks","Altar of Dementia","Viscera Seer",
