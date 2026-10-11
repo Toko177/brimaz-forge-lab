@@ -2,10 +2,12 @@ name: Repository health and canonical decks
 on:
   push:
     branches:
+      - main
+      - integration/consolidated-main-20261011
       - feature/v34-repository-cleanup-20261011
   pull_request:
     branches:
-      - feature/v33-multiplayer-strategic-planner-20261011
+      - main
   workflow_dispatch:
 permissions:
   contents: read
