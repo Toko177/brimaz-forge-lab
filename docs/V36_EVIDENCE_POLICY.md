@@ -88,3 +88,34 @@ aucune politique nouvelle. L'auditeur vérifie SHA des decks,
 Les nouvelles graines de la campagne sont `20270319`, différentes
 des anciennes. Sans statistiques favorables sur un échantillon large,
 la supériorité n'est toujours pas une conclusion autorisée.
+
+## V37 — duel direct dans la même partie, à decks identiques
+
+Le problème expérimental des campagnes précédentes était qu'un deck
+Brimaz différent en qualité de ses adversaires pouvait ne quasiment
+jamais gagner. Il fallait un bras de référence beaucoup plus proche.
+
+`scripts/run_v37_mirror.py` crée, **dans un dossier temporaire**,
+deux copies byte-identiques des 99 cartes et du commandant du deck
+Brimaz canonique, avec seulement un champ `Name=` distinct.
+Les deux sièges jouent dans **le même processus JVM Forge**, contre
+les mêmes deux adversaires Kaal. Leurs positions sont tournées sur
+les quatre sièges et sur deux pods. Les sept decks originaux du repo
+sont relus et contrôlés SHA256 avant chaque campagne ; aucune
+modification persistante n'est autorisée.
+
+`brimaz.v37MirrorDuel=true` active la logique V37 **uniquement**
+pour `Brimaz Challenger`. `Brimaz Reference` conserve les choix
+Forge d'origine dans le même JAR ayant les correctifs communs ;
+les anciens automatismes V17 sont désactivés symétriquement.
+Les deux Kaal utilisent également la politique d'origine de
+ce JAR compatible. Les journalisations de cast, de sacrifice et
+de fin de partie sont conservées dans des logs Forge bruts.
+
+Les résultats sont : victoires du challenger, victoires de la
+référence, victoires des Kaal, parties censurées/invalides, puis
+test binomial bilatéral conditionnel *uniquement* sur les duels
+où l'un des deux Brimaz gagne. **Un petit échantillon,
+un avantage de 1 victoire ou un test synthétique ne prouve pas
+la supériorité générale d'une IA.** Les résultats des vraies
+parties ne peuvent être annoncés qu'après exécution réussie.

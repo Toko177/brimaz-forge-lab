@@ -1,3 +1,11 @@
+**Nouvelle validation directe V37 :** deux decks Brimaz strictement identiques
+(à l'exception de leur nom) jouent dans **une même partie Forge** :
+l'IA V37 affronte la référence sur les mêmes cartes, règles, tirages globaux
+et adversaires. Les copies sont temporaires et les 7 decks canoniques
+ne sont jamais modifiés. Le test ne certifie une amélioration qu'avec
+des résultats naturels répétés sur plusieurs graines.
+[Protocole](docs/V36_EVIDENCE_POLICY.md).
+
 [V36 policy and exact inherited V17 vs Forge distinction](docs/V36_EVIDENCE_POLICY.md).
 
 **V36 — challenger à décision conditionnelle :** désormais un moteur

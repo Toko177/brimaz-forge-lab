@@ -31,6 +31,10 @@ public final class MultiplayerStrategicSequencerV35 {
      */
     public static boolean enabledFor(Player ai) {
         if(!ENABLED || ai==null)return false;
+        // Real SAME-JVM mirror: only one of two identical Brimaz pilots
+        // receives V37; the reference keeps the same original Forge AI.
+        if(Boolean.getBoolean("brimaz.v37MirrorDuel"))
+            return ai.getName().contains("Brimaz Challenger");
         if(!Boolean.getBoolean("brimaz.v35BrimazOnly"))return true;
         // Stable pinned Forge-deck display name ("Brimaz V3") is the
         // controller identity even when the commander leaves command zone.

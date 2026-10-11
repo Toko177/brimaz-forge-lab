@@ -6,6 +6,8 @@ on:
       - scripts/patch_forge_brimaz_v13.py
       - scripts/audit_v35_real_search.py
       - scripts/run_local_four_ai.py
+      - scripts/run_v37_mirror.py
+      - tests/test_run_v37_mirror.py
       - patches/java/forge/ai/MultiplayerStrategicModel.java
       - patches/java/forge/ai/MultiplayerStrategicSequencer.java
       - patches/java/forge/ai/MultiplayerStrategicSearchV35.java
@@ -31,8 +33,6 @@ jobs:
       max-parallel: 4
       matrix:
         include:
-          - {pod: artifact, reference: forge_stock_compat, experiment: v35_strategy}
-          - {pod: aristo, reference: forge_stock_compat, experiment: v35_strategy}
           - {pod: artifact, reference: v37_stock_control, experiment: v37_brimaz_challenger}
           - {pod: aristo, reference: v37_stock_control, experiment: v37_brimaz_challenger}
     steps:
@@ -94,5 +94,48 @@ jobs:
           path: |
             results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}/
             results/v35_strategic_audit_${{ matrix.reference }}_${{ matrix.experiment }}.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  mirror-same-cardlist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache/restore@v4
+        with:
+          key: forge-2.0.15-linux-shared-20261009
+          path: forge-dist/
+      - name: Verify pinned genuine Forge executable
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Test same-cardlist integrity and independent statistical calculation
+        run: python3 tests/test_run_v37_mirror.py
+      - name: Real same-JVM mirror between two identical Brimaz Commander decks
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
+          test -s "$JAR"
+          python3 scripts/run_v37_mirror.py --jar "$JAR" \
+            --out results/v37_mirror_20270503 --repeats 2 --parallel 2 \
+            --clock 420 --seed-base 20270503
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v37-genuine-same-deck-direct-ai-mirror
+          path: results/v37_mirror_20270503/
           retention-days: 30
           if-no-files-found: ignore
