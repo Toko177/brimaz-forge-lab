@@ -59,6 +59,16 @@ jobs:
             --games-per-rotation 1 --parallel 2 --clock 420 \
             --seed-base 20261111 \
             --out results/v31_ci_pairs
+      - name: Strict release gate — all 8 REAL JVM games naturally complete, all 4 paired transcripts equivalent
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          reports=(results/v31_ci_pairs/*/comparison.json)
+          test "${#reports[@]}" -eq 1
+          python3 scripts/verify_real_paired_gate.py \
+            --input "${reports[0]}" --expected-pairs 4 \
+            --out results/v31_ci_pairs/functional_gate.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
