@@ -52,12 +52,15 @@ public final class MultiplayerEvidenceGateV36 {
         List<MultiplayerStrategicSearchV35.CardPlan> affordable=new ArrayList<>();
         MultiplayerStrategicSearchV35.CardPlan knownCommander=null;
         boolean knownPhyrexian=false;
+        final int knownNextMana=Math.max(table.mana(),
+            table.lands()+(table.handLands()>0?1:0));
         for(var card:plans) {
             if(card==null)continue;
             if(card.role()==MultiplayerStrategicModel.Role.COMMANDER
                     && card.name().equals("Brimaz, Blight of Oreskos"))
                 knownCommander=card;
-            if(card.has(MultiplayerStrategicSearchV35.PHYREXIAN_CAST))
+            if(card.has(MultiplayerStrategicSearchV35.PHYREXIAN_CAST)
+                    && card.cost()<=knownNextMana)
                 knownPhyrexian=true;
             // Conservative: never take a speculative action costing more
             // than a current estimated mana resource.
@@ -68,8 +71,7 @@ public final class MultiplayerEvidenceGateV36 {
         // Brimaz must already be on the battlefield for the Incubate cast
         // trigger. Future known Phyrexian cards never imply extra draws.
         if(!table.commanderPresent() && knownCommander!=null
-             && knownPhyrexian && affordable.contains(knownCommander)
-             && realCreatureTokens>=0) {
+             && knownPhyrexian && affordable.contains(knownCommander)) {
             return new Evidence(knownCommander,"BRIMAZ_BEFORE_KNOWN_PHYREXIAN",
                                 affordable.size());
         }
@@ -125,8 +127,12 @@ public final class MultiplayerEvidenceGateV36 {
                  || !(c.isCreature()||c.isArtifact()||c.isEnchantment()
                      ||c.isPlaneswalker()) || !seen.add(c))continue;
             sa.setActivatingPlayer(ai);
+            // Known current *payability* is checked with Forge's cost engine,
+            // as in the existing V33 bridge; no optimistic mana estimate can
+            // independently make an unaffordable spell a V36 proposal.
             var card=MultiplayerStrategicSequencerV35.describeCard(
-                c,sa.canPlay() && sa.canCastTiming(ai));
+                c,sa.canPlay() && sa.canCastTiming(ai)
+                   && ComputerUtilCost.canPayCost(sa,ai,false));
             cards.add(card);
             spells.add(sa);
             if(cards.size()>=64)break;

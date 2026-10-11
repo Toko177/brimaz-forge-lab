@@ -379,3 +379,42 @@ cache d'images et base), indépendamment du moteur IA, puis
 l'agrégateur affiche la vraie exception des jeux échoués.
 Cela ne garantit pas l'absence de bugs Forge, et ne rend pas valide un
 match censuré.
+
+## V36 — version expérimentale réellement intégrée
+
+Le nouveau `MultiplayerEvidenceGateV36.java` est activé uniquement
+par `v36_brimaz_challenger` et **uniquement sur le siège Brimaz**.
+Trois classes de décisions peuvent devancer Forge ; sans preuve
+locale sur les cartes réellement connues, le moteur Forge d'origine
+sélectionne le sort.
+
+1. Lancement de Brimaz avant une créature Phyrexian **déjà connue et
+   abordable avec le mana connu maintenant ou au prochain tour**.
+2. Lancement d'une créature Phyrexian réellement connue avec Brimaz
+   déjà en jeu, pour sa capacité d'incubation au lancement.
+3. Rocher de mana connu et payable, qui déverrouille le *coût imprimé*
+   de Brimaz au tour suivant sans inventer de pioche ni de terrain.
+   La taxe du commandant et les couleurs restent soumises à Forge.
+
+Chaque proposition immédiate passe **ComputerUtilCost.canPayCost**,
+`SpellAbility.canPlay` et `canCastTiming` et doit ensuite être
+approuvée séparément par le véritable `AiController.canPlayAndPayFor`.
+Ce contrôle local ne garantit **ni la résolution du sort, ni que la
+décision soit meilleure que Forge**. La politique désactive les
+interventions tactiques V35 non démontrées, s'abstient en situation
+de forte menace, et distingue les vrais jetons créatures des
+Incubateurs non transformés.
+
+**Preuves techniques** : exécution des assertions Java V36 sur le
+véritable Forge 2.0.15 et CI Python 3.10/3.12. Le challenger est soumis
+à un benchmark de vrais jeux avec trois adversaires V17 fixes,
+deux pods, quatre rotations et graines inédites `20270131`.
+L'ancien moteur V35 demeure disponible pour les comparaisons.
+Aucune victoire supplémentaire V36 n'est revendiquée avant la
+validation des vrais journaux.
+
+**Critère de passage** : ne jamais transformer le nombre de décisions
+acceptées ou le nombre de versions en preuve de force. L'amélioration
+doit être reproduite sur des graines jamais utilisées pour le
+développement et rester favorable après prise en compte des
+parties censurées et des sièges.

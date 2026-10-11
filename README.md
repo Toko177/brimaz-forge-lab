@@ -1,3 +1,11 @@
+**V36 — challenger à décision conditionnelle :** désormais un moteur
+expérimental réel, branché sur Forge 2.0.15, n'intervient que pour des
+ordonnancements Brimaz/Phyrexian ou un déverrouillage de mana démontrable
+sur les cartes connues, et vérifie le paiement par le moteur Forge.
+Sans avantage local suffisant, elle laisse décider Forge.
+La qualité compétitive reste à mesurer, séparément de la compilation.
+[Documentation V36](docs/V35_STRATEGIC_SEARCH.md).
+
 # Brimaz Forge Lab
 
 Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur

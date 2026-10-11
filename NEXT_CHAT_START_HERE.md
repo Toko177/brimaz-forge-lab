@@ -115,3 +115,13 @@ les deux bras sur 7 paires valides. Duel Brimaz V35 sur pod Artifact :
 `aristo/v17_strict` a une JVM rotation 0 sans log d'actions.
 **Aucune démonstration que V35 est supérieure à Forge.**
 Lire `docs/V35_STRATEGIC_SEARCH.md` pour les censures et la méthode.
+
+## Challenger V36 (non fusionné)
+
+La version `v36_brimaz_challenger` utilise
+`patches/java/forge/ai/MultiplayerEvidenceGateV36.java`.
+Futur connu uniquement, contrôles de coût Forge, repli stock sur les
+situations sans preuve locale. Les adversaires sont strictement
+V17 inchangés. Benchmark sur nouvelles graines `20270131`,
+voir `docs/V35_STRATEGIC_SEARCH.md`. Une compilation réussie ne
+constitue pas une preuve de victoire ou d'amélioration.

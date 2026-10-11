@@ -45,6 +45,12 @@ public final class MultiplayerEvidenceGateV36Checks {
         ok(MultiplayerEvidenceGateV36.choose(
             state(4,4,0,35,4,true,0),List.of(phy,vanilla),0).selected()==phy,
             "cast a real Phyrexian when Brimaz is present");
+        var remotePhy=c("Uncastable 9-cost Phyrexian",9,
+            MultiplayerStrategicModel.Role.CREATURE,
+            MultiplayerStrategicSearchV35.PHYREXIAN_CAST,true);
+        ok(MultiplayerEvidenceGateV36.choose(
+            safe,List.of(br,remotePhy,vanilla),0)==null,
+            "no invented affordable future Phyrexian");
         ok(MultiplayerEvidenceGateV36.choose(
             safe,List.of(br,vanilla),0)==null,
             "no speculative Brimaz preference without known Phyrexian");
