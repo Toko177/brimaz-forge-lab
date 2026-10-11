@@ -24,6 +24,8 @@ expected = {
     ".github/workflows/v33-real-strategy-ab.yml",
     ".github/workflows/v31-operator-validation.yml",
     ".github/workflows/repository-health.yml",
+    ".github/workflows/commander-four-ai-simulator.yml",
+    "docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md",
 }
 assert all((ROOT / p).is_file() for p in expected), "Active source or documentation was removed"
 hashes = validate_decks(
@@ -33,7 +35,7 @@ hashes = validate_decks(
 assert hashes == CANONICAL_DECK_SHA256, "Canonical Commander deck bytes were changed"
 assert len(list((ROOT / "forge_decks").glob("*.dck"))) == 7, "Unexpected canonical deck count"
 workflows = sorted((ROOT / ".github/workflows").glob("*.yml"))
-assert len(workflows) == 15, f"Expected exactly 15 maintained workflows, got {len(workflows)}"
+assert len(workflows) == 16, f"Expected exactly 16 maintained workflows, got {len(workflows)}"
 for version in ("", *(f"_v{i}" for i in range(2, 13))):
     assert not (ROOT / ("scripts/patch_forge_brimaz" + version + ".py")).exists(), "Legacy patch not pruned"
 
