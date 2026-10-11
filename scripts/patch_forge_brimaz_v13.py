@@ -525,6 +525,11 @@ public final class BrimazTurnPlanner {
                 || !sa.getPayCosts().hasSpecificCostType(CostSacrifice.class)) return false;
         String name = sa.getHostCard().getName();
         int parts = sa.getPayCosts().getCostParts().size();
+        if (Boolean.getBoolean("brimaz.v41SacrificeAccess")) {
+            return MultiplayerSacrificeAccessV41.recognizedOutlet(
+                name,sa.getApi()==null?"":sa.getApi().name(),true,parts,
+                sa.getPayCosts().hasSpecificCostType(CostTap.class));
+        }
         boolean plainSac = parts == 1 && sa.getApi() == ApiType.PutCounter;
         if (plainSac && (name.equals("Arcbound Ravager")
                 || name.equals("Bartolomé del Presidio")
@@ -543,7 +548,10 @@ public final class BrimazTurnPlanner {
         if (sa == null || sa.getHostCard() == null
                 || !(sa.getHostCard().getName().equals("Spawning Pit")
                       || sa.getHostCard().getName().equals("Throne of Geth")
-                      || sa.getHostCard().getName().equals("Krark-Clan Ironworks"))
+                      || sa.getHostCard().getName().equals("Krark-Clan Ironworks")
+                      || (Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                          && (sa.getHostCard().getName().equals("Ashnod's Altar")
+                              || sa.getHostCard().getName().equals("Phyrexian Altar"))))
                 || !needEndStepDeath(ai) || !isOutlet(sa)) return false;
         CostSacrifice sac = sa.getPayCosts().getCostPartByType(CostSacrifice.class);
         return sac != null && selectToken(ai, sac.getType(), sa, sac.getAbilityAmount(sa)) != null;
@@ -629,9 +637,14 @@ public final class BrimazTurnPlanner {
         Card selected = null;
         int bestScore = 0; // strictly positive utility required
         for (Card c : valid) {
-            if (!c.isToken() || !c.isCreature() || !c.getType().hasCreatureType("Phyrexian")
-                    || c == source || !c.canBeSacrificedBy(sa, false)
-                    || c.getNetPower() > 4) continue;
+            boolean plausible = Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                ? MultiplayerSacrificeAccessV41.plausibleSacrificeFodder(
+                    c.isToken(),c.isCreature(),c.getType().hasCreatureType("Phyrexian"),
+                    c.getNetPower())
+                : (c.isToken() && c.isCreature()
+                   && c.getType().hasCreatureType("Phyrexian") && c.getNetPower() <= 4);
+            if (!plausible || c == source || !c.canBeSacrificedBy(sa, false))
+                continue;
             int score = evaluate(ai, c, source.getName());
             if (score > bestScore) {
                 selected = c;
@@ -690,6 +703,18 @@ public final class BrimazTurnPlanner {
             for (SpellAbility sa : available) {
                 if (isOutlet(sa)) listedOutlets++;
             }
+        }
+        if (Boolean.getBoolean("brimaz.v41SacrificeAccess")) {
+            System.out.println("FOUR_AI_V41_SAC_WINDOW player="+ai.getName()
+                +" turn="+turn+" pilotAuthorized="
+                +MultiplayerSacrificeAccessV41.authorized(ai.getName(),
+                    Boolean.getBoolean("brimaz.v37MirrorDuel"))
+                +" commanderPresent="+hasBrimaz
+                +" alreadyDead="+(deaths>0)
+                +" phyrexianCreatureTokens="+candidateTokens
+                +" outletPermanents="+liveOutletCards
+                +" listedActualOutletAbilities="+listedOutlets
+                +" proposalNotResolution=true");
         }
         System.out.println("BRIMAZ_WINDOW: V7 turn=" + turn
                 + " active=" + phase.getPlayerTurn().getName()
@@ -887,7 +912,8 @@ with tempfile.TemporaryDirectory() as d:
                   "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java",
                   "MultiplayerTacticalPlannerV35.java", "MultiplayerEvidenceGateV36.java",
                   "MultiplayerIncubatorTempoV38.java",
-                  "MultiplayerIncubatorEngineV39.java"):
+                  "MultiplayerIncubatorEngineV39.java",
+                  "MultiplayerSacrificeAccessV41.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -902,7 +928,8 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"MultiplayerTacticalPlannerV35.java"),
              str(target/"MultiplayerEvidenceGateV36.java"),
              str(target/"MultiplayerIncubatorTempoV38.java"),
-             str(target/"MultiplayerIncubatorEngineV39.java")]
+             str(target/"MultiplayerIncubatorEngineV39.java"),
+             str(target/"MultiplayerSacrificeAccessV41.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
     for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
@@ -910,7 +937,8 @@ with tempfile.TemporaryDirectory() as d:
                  "MultiplayerTacticalPlannerV35.class",
                  "MultiplayerEvidenceGateV36.class",
                  "MultiplayerIncubatorTempoV38.class",
-                 "MultiplayerIncubatorEngineV39.class"):
+                 "MultiplayerIncubatorEngineV39.class",
+                 "MultiplayerSacrificeAccessV41.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
@@ -933,6 +961,8 @@ with tempfile.TemporaryDirectory() as d:
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerIncubatorTempoV38*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerIncubatorEngineV39*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerSacrificeAccessV41*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)

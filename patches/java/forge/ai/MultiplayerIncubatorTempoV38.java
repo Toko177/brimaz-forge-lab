@@ -91,7 +91,10 @@ public final class MultiplayerIncubatorTempoV38 {
            !Boolean.getBoolean("brimaz.v37Challenger") ||
            !Boolean.getBoolean("brimaz.v37ControlledDuel") ||
            ai==null || ai.getGame()==null || spells==null ||
-           !ai.getName().contains("Brimaz Challenger"))return null;
+           !(Boolean.getBoolean("brimaz.v41SacrificeAccess")
+              ? MultiplayerSacrificeAccessV41.authorized(
+                    ai.getName(),Boolean.getBoolean("brimaz.v37MirrorDuel"))
+              : ai.getName().contains("Brimaz Challenger")))return null;
         var phase=ai.getGame().getPhaseHandler();
         if(!phase.isPlayerTurn(ai) || !phase.is(PhaseType.MAIN2)
              || !ai.getGame().getStack().isEmpty()
