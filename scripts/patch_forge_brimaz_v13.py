@@ -225,6 +225,27 @@ player_controller=player_controller.replace(mulligan_anchor,mulligan_inject,1)
 
 anchor1="        SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);"
 insert1=(
+"        // V35 phase II: tactical emergency before proactive engine deployment.\n"
+"        if (MultiplayerStrategicSequencerV35.ENABLED) {\n"
+"            int refusedTacticsV35 = 0;\n"
+"            for (SpellAbility tacticalV35 : MultiplayerTacticalPlannerV35.rank(player, saList)) {\n"
+"                AiPlayDecision tacticalApprovalV35 = canPlayAndPayFor(tacticalV35);\n"
+"                if (tacticalApprovalV35 == AiPlayDecision.WillPlay) {\n"
+"                    System.out.println(\"FOUR_AI_V35_TACTICAL_STOCK_APPROVED player=\" + player.getName()\n"
+"                        + \" turn=\" + game.getPhaseHandler().getTurn()\n"
+"                        + \" card=\" + tacticalV35.getHostCard().getName()\n"
+"                        + \" rejectedEarlier=\" + refusedTacticsV35\n"
+"                        + \" genuineForgeAIDecision=true\");\n"
+"                    return tacticalV35;\n"
+"                }\n"
+"                refusedTacticsV35++;\n"
+"            }\n"
+"            if(refusedTacticsV35>0) {\n"
+"                System.out.println(\"FOUR_AI_V35_TACTICAL_STOCK_REJECTED player=\" + player.getName()\n"
+"                    + \" turn=\" + game.getPhaseHandler().getTurn()\n"
+"                    + \" rejected=\" + refusedTacticsV35 + \" stockFallback=true\");\n"
+"            }\n"
+"        }\n"
 "        // V35: bounded known-card strategy for all four AIs.\n"
 "        // The ORIGINAL Forge AI must approve every proposed spell.\n"
 "        if (MultiplayerStrategicSequencerV35.ENABLED) {\n"
@@ -802,7 +823,8 @@ with tempfile.TemporaryDirectory() as d:
     (ability_dir/"IncubateAi.java").write_text(incubate_ai,encoding="utf-8")
     (target/"BrimazTurnPlanner.java").write_text(planner,encoding="utf-8")
     for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java",
-                  "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java"):
+                  "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java",
+                  "MultiplayerTacticalPlannerV35.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -813,11 +835,13 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"MultiplayerStrategicModel.java"),
              str(target/"MultiplayerStrategicSequencer.java"),
              str(target/"MultiplayerStrategicSearchV35.java"),
-             str(target/"MultiplayerStrategicSequencerV35.java")]
+             str(target/"MultiplayerStrategicSequencerV35.java"),
+             str(target/"MultiplayerTacticalPlannerV35.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
     for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
-                 "MultiplayerStrategicSearchV35.class", "MultiplayerStrategicSequencerV35.class"):
+                 "MultiplayerStrategicSearchV35.class", "MultiplayerStrategicSequencerV35.class",
+                 "MultiplayerTacticalPlannerV35.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
@@ -832,6 +856,8 @@ with tempfile.TemporaryDirectory() as d:
              "-C",str(classes),"forge/ai/SpellApiToAi.class",
              "-C",str(classes),"forge/ai/ability/IncubateAi.class"]
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerStrategic*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerTacticalPlannerV35*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)
