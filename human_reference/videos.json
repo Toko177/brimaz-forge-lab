@@ -1,0 +1,93 @@
+{
+  "schema_version": "human_edh_video_refs_v1",
+  "scope": "Four-player Commander human decision-candidate indexing. No claim of access to hidden cards, full rules state or exact plays.",
+  "sources": [
+    {
+      "id": "command-zone-game-knights-75",
+      "channel": "The Command Zone",
+      "series": "Game Knights",
+      "title": "We Play YOUR Decks! Game Knights 75",
+      "youtube_url": "https://www.youtube.com/watch?v=ALUxJPWwGUE",
+      "video_id": "ALUxJPWwGUE",
+      "observed_from_public_description": [
+        "four-player pod",
+        "monarch strategy",
+        "fan-submitted decks"
+      ],
+      "hypotheses_to_test": [
+        "monarch_attacks",
+        "table_threat_assessment",
+        "interaction_timing"
+      ],
+      "transcript_verified": false
+    },
+    {
+      "id": "command-zone-game-knights-40",
+      "channel": "The Command Zone",
+      "series": "Game Knights",
+      "title": "Commander Legends Game Knights 40",
+      "youtube_url": "https://www.youtube.com/watch?v=latDzZF5yFE",
+      "video_id": "latDzZF5yFE",
+      "observed_from_public_description": [
+        "four-player pod",
+        "partner commanders"
+      ],
+      "hypotheses_to_test": [
+        "multiple_commanders",
+        "commander_damage",
+        "opponent_selection"
+      ],
+      "transcript_verified": false
+    },
+    {
+      "id": "solring-powerful-pod-2024",
+      "channel": "Bandit",
+      "series": "SOLRING",
+      "title": "Commander multiplayer pod: Animar, Kozilek, Yuma, Judith",
+      "youtube_url": "https://www.youtube.com/watch?v=FWikJjDig14",
+      "video_id": "FWikJjDig14",
+      "observed_from_public_description": [
+        "four players",
+        "Animar",
+        "Kozilek",
+        "Yuma",
+        "Judith"
+      ],
+      "hypotheses_to_test": [
+        "spell_stack_interactions",
+        "table_threat_assessment",
+        "combat_targeting"
+      ],
+      "transcript_verified": false
+    },
+    {
+      "id": "solring-pauper-edh",
+      "channel": "Bandit",
+      "series": "SOLRING",
+      "title": "How to Play Magic WITHOUT Going Broke in Pauper Commander?",
+      "youtube_url": "https://www.youtube.com/watch?v=s7qc5zZC3uQ",
+      "video_id": "s7qc5zZC3uQ",
+      "observed_from_public_description": [
+        "four players",
+        "Pauper Commander gameplay"
+      ],
+      "hypotheses_to_test": [
+        "mana_efficiency",
+        "combat_targeting",
+        "removal_parity"
+      ],
+      "transcript_verified": false
+    }
+  ],
+  "annotations_format": {
+    "video_id": "YouTube ID",
+    "timestamp_seconds": "Non-negative integer",
+    "actor": "Name or seat verified visually from original gameplay",
+    "visible_public_state": "Manual visible public snapshot; no presumed hidden information",
+    "legal_choices": "Verified Forge legal candidate actions under matched state (not inferred from subtitles)",
+    "observed_action": "Human action verified against video at timestamp",
+    "confidence": "0..1",
+    "status": "needs_review | verified | rejected",
+    "reviewer": "Human source annotation identifier"
+  }
+}

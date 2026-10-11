@@ -1,0 +1,42 @@
+name: V31 reproducible four-AI operator checks
+on:
+  pull_request:
+    branches:
+      - feature/v30-exact-card-property-fastpath-20261011
+    paths:
+      - scripts/run_local_four_ai.py
+      - scripts/run_paired_four_ai.py
+      - scripts/compare_local_four_ai_campaigns.py
+      - scripts/setup_and_run_four_ai.ps1
+      - tests/test_v31_paired_four_ai.py
+      - tests/test_run_local_four_ai.py
+      - tests/test_compare_local_four_ai_campaigns.py
+      - .github/workflows/v31-operator-validation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-and-operator-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile operator and result validation without Forge substitutions
+        run: |
+          python -m py_compile scripts/run_local_four_ai.py scripts/run_paired_four_ai.py scripts/compare_local_four_ai_campaigns.py
+      - name: Exercise synthetic-only contract and Forge log validation
+        run: |
+          python tests/test_run_local_four_ai.py
+          python tests/test_compare_local_four_ai_campaigns.py
+          python tests/test_v31_paired_four_ai.py
+      - name: Validate actual operator CLI arguments
+        run: |
+          python scripts/run_paired_four_ai.py --help
+          python scripts/run_local_four_ai.py --help

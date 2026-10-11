@@ -1,0 +1,53 @@
+{
+  "schema_version": "human_edh_case_v1",
+  "benchmark_eligibility_rule": "Only reviewed case records with public board state and legal alternatives verified from the video itself may become learning labels. Secondary summaries are research leads only.",
+  "cases": [
+    {
+      "id": "GK75_OLIVIA_JIMMY_ESPER_SENTINEL_TAX",
+      "youtube_video_id": "ALUxJPWwGUE",
+      "youtube_url": "https://www.youtube.com/watch?v=ALUxJPWwGUE",
+      "secondary_source": "https://watchedh.com/videos/aluxjpwwgue/",
+      "source_type": "third-party gameplay recap, not full video transcript",
+      "evidence": "The gameplay recap describes Jimmy delaying some development to avoid giving Olivia free Esper Sentinel draws.",
+      "public_information_in_evidence": [
+        "Olivia had Esper Sentinel early"
+      ],
+      "decision_maker": "Jimmy (playing Orthion)",
+      "observation": "Deferred some optional actions rather than enable additional opposing card draws.",
+      "timestamp_seconds": null,
+      "complete_visible_board_state": null,
+      "visible_mana_state": null,
+      "legal_alternative_actions": null,
+      "candidate_ai_lessons": [
+        "Include the marginal card advantage granted to an opponent when evaluating spell timing",
+        "Consider holding a nonurgent action when an opposing tax permanent changes exchange value"
+      ],
+      "rules_warning": "Does not prove that passing is optimal, that the spell was legally playable, or that mana could not pay for the Sentinel tax.",
+      "review_status": "secondary_summary_unverified",
+      "usable_as_supervised_ground_truth": false
+    },
+    {
+      "id": "GK75_KENRITH_MONARCH_ARCHETYPE",
+      "youtube_video_id": "ALUxJPWwGUE",
+      "youtube_url": "https://www.youtube.com/watch?v=ALUxJPWwGUE",
+      "secondary_source": "https://watchedh.com/videos/aluxjpwwgue/",
+      "source_type": "third-party deck/episode overview",
+      "evidence": "The Kenrith list is presented as a monarch-focused value strategy.",
+      "public_information_in_evidence": [
+        "Monarch-based commander deck present"
+      ],
+      "decision_maker": null,
+      "observation": null,
+      "timestamp_seconds": null,
+      "complete_visible_board_state": null,
+      "visible_mana_state": null,
+      "legal_alternative_actions": null,
+      "candidate_ai_lessons": [
+        "Evaluate card draw from becoming and remaining monarch across the three opponents' turns"
+      ],
+      "rules_warning": "An archetype description cannot be labeled as an individual human action.",
+      "review_status": "research_topic_not_action",
+      "usable_as_supervised_ground_truth": false
+    }
+  ]
+}

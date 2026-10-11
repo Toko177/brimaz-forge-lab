@@ -1,0 +1,70 @@
+name: Audit four Commander candidates against one proven common Forge baseline
+on:
+  push:
+    paths: [.github/workflows/deckbuild-cross-tournament-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  independently-cross-rank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify cross-candidate reference-provenance regression tests
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_rank.py' -v
+      - name: Await both real 4-player Forge tournament sources, fail closed on incomplete games
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          complete=0
+          for attempt in $(seq 1 40); do
+            old="$(gh api 'repos/${{ github.repository }}/actions/runs/38040171940' --jq '.status')"
+            newer="$(gh api 'repos/${{ github.repository }}/actions/runs/38040810924' --jq '.status')"
+            echo "Previous tournament $old; second tournament $newer; check $attempt"
+            if [[ "$old" == completed && "$newer" == completed ]]; then complete=1; break; fi
+            sleep 30
+          done
+          [[ "$complete" == 1 ]] || { echo "Neither invent nor aggregate unavailable Forge results"; exit 2; }
+          for id in 38040171940 38040810924; do
+            conclusion="$(gh api "repos/${{ github.repository }}/actions/runs/$id" --jq '.conclusion')"
+            [[ "$conclusion" == success ]] || { echo "Original real tournament $id failed: $conclusion"; exit 2; }
+          done
+      - uses: actions/download-artifact@v4
+        with:
+          name: commander-multivariant-certified-ranking
+          run-id: 38040171940
+          github-token: ${{ github.token }}
+          path: original/
+      - uses: actions/download-artifact@v4
+        with:
+          name: commander-multivariant-certified-ranking
+          run-id: 38040810924
+          github-token: ${{ github.token }}
+          path: newer/
+      - name: Rank four real swap experiments ONLY if the eight original Forge reference logs are byte-identical
+        run: |
+          python3 - <<'PY'
+          import pathlib,subprocess,json
+          old=sorted(pathlib.Path('original').rglob('comparison.json'))
+          new=sorted(pathlib.Path('newer').rglob('comparison.json'))
+          assert len(old)==2 and len(new)==2,(old,new)
+          files=[str(f) for f in old+new]
+          subprocess.run(['python3','scripts/deckbuild_rank.py','--reports',*files,
+              '--output','results/cross-tournament/four-variants.json',
+              '--markdown','results/cross-tournament/four-variants.md'],check=True)
+          report=json.loads(pathlib.Path('results/cross-tournament/four-variants.json').read_text())
+          assert report['summary']['unique_original_reference_games']==8
+          assert report['summary']['variants_compared']==4
+          print('FOUR_DISTINCT_COMMANDER_EXPERIMENTS_ONE_IDENTICAL_BASELINE',
+                json.dumps(report['summary'],ensure_ascii=False))
+          PY
+          cat results/cross-tournament/four-variants.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commander-four-variants-one-identical-original-baseline
+          path: results/cross-tournament/
+          if-no-files-found: ignore

@@ -4,7 +4,10 @@ on:
     paths:
       - ".github/workflows/forge-smoke.yml"
       - "scripts/smoke.py"
-      - "decks/**"
+      # Candidate deck updates are already covered by the reusable A/B workflow.
+      # Do not download pristine Forge and run an unrelated stock smoke
+      # on every exploratory Commander card swap.
+      - "decks/Brimaz_V3.txt"
   workflow_dispatch:
 jobs:
   four-seat-smoke:

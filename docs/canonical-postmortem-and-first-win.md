@@ -1,4 +1,17 @@
 # Audit des 32 parties canoniques, première victoire et correction des exceptions
+
+> **RECTIFICATIF du 9 octobre 2026 :** la victoire de Brimaz à la graine
+> `20291010` (356 476 ms / horloge 360 s) a été observée et automatiquement
+> certifiée au niveau du transcript, MAIS **n'est pas reproduite** quand
+> on rejoue la même graine et les mêmes sièges avec une horloge de 900 s.
+> Radha gagne à 437 493 ms ; le premier événement divergent survient
+> au tour Forge 33, une décision de donjon de l'IA adverse.
+> Aucune causalité exclusivement due au cutoff n'est établie.
+> Cette victoire historique ne constitue donc pas une preuve de robustesse
+> ou de niveau de jeu et ne doit pas alimenter les comparaisons de winrate.
+> [Rapport de replay](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37994894861).
+
+
 Date : 2026-10-09.
 
 ## Résultats observés, sans extrapolation

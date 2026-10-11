@@ -1,0 +1,311 @@
+#!/usr/bin/env python3
+"""Opt-in, all-four-seat Commander multiplayer attack target planning.
+
+Only replaces defender preference used by Forge's standard attack planner;
+Forge still decides legal attacks/blocks and resolves all damage/triggers.
+No hidden opponent hand, deck peek, spell casting, rule change, or extra cards.
+"""
+import argparse
+import hashlib
+import pathlib
+import subprocess
+import tempfile
+import urllib.request
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--jar", required=True)
+parser.add_argument("--tag", default="forge-2.0.15")
+args = parser.parse_args()
+jar = pathlib.Path(args.jar).resolve()
+if not jar.is_file():
+    parser.error("Forge executable jar is required")
+
+source_file = "forge-ai/src/main/java/forge/ai/AiAttackController.java"
+url = "https://raw.githubusercontent.com/Card-Forge/forge/" + args.tag + "/" + source_file
+with urllib.request.urlopen(url, timeout=90) as resp:
+    source = resp.read().decode("utf-8")
+
+anchor = '''    public static Player choosePreferredDefenderPlayer(Player ai, boolean forCombatDmg) {
+        PlayerCollection opponents = ai.getOpponents();'''
+replacement = '''    public static Player choosePreferredDefenderPlayer(Player ai, boolean forCombatDmg) {
+        if (forCombatDmg && Boolean.getBoolean("brimaz.fourSeatCombatTarget")) {
+            Player tactical = MultiplayerCombatTargetPolicy.chooseTarget(ai);
+            if (tactical != null) {
+                return tactical;
+            }
+        }
+        PlayerCollection opponents = ai.getOpponents();'''
+if source.count(anchor) != 1:
+    raise ValueError("Forge AiAttackController target-choice source drift")
+source = source.replace(anchor, replacement, 1)
+
+
+# V15: forced mandatory attacks previously allocate an unbounded worker-pool
+# per combat, then execute against a shared mutable combat object. Offer an
+# opt-in deterministic serial path and bound fallback parallelism to 4 workers.
+old_start = """            ExecutorService executor = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors(), r -> {
+                    Thread t = Executors.defaultThreadFactory().newThread(r);
+                    t.setDaemon(true);
+                    return t;
+                }
+            );
+            List<Callable<Integer>> tasks = new ArrayList<>();"""
+new_start = """            List<Callable<Integer>> tasks = new ArrayList<>();"""
+if source.count(old_start) != 1:
+    raise ValueError("Forge mandatory-attacker executor source drift")
+source = source.replace(old_start, new_start, 1)
+
+old_invoke = """            try {
+                executor.invokeAll(tasks, ai.getGame().getAITimeout(), TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                executor.shutdownNow();
+            }"""
+new_invoke = """            if (Boolean.getBoolean("brimaz.deterministicForcedAttacks")) {
+                if (!tasks.isEmpty()) {
+                    System.out.println("FOUR_AI_SERIAL_FORCED_ATTACKS controller="
+                            + ai.getName() + " candidates=" + tasks.size());
+                }
+                // Ordered evaluation avoids racing modifications to Combat.
+                for (Callable<Integer> task : tasks) {
+                    try {
+                        task.call();
+                    } catch (Exception error) {
+                        throw new IllegalStateException("Mandatory attack failed", error);
+                    }
+                }
+            } else {
+                ExecutorService executor = Executors.newFixedThreadPool(
+                    Math.min(4, Math.max(1, this.attackers.size())), r -> {
+                        Thread t = Executors.defaultThreadFactory().newThread(r);
+                        t.setDaemon(true);
+                        return t;
+                    }
+                );
+                try {
+                    executor.invokeAll(tasks, ai.getGame().getAITimeout(), TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    executor.shutdownNow();
+                }
+            }"""
+if source.count(old_invoke) != 1:
+    raise ValueError("Forge mandatory-attacker invocation source drift")
+source = source.replace(old_invoke, new_invoke, 1)
+
+# V16: add a publicly visible, four-opponent-threat-aware safety gate at
+# the end of Forge's normal keep-back-blockers computation. Magic's existing
+# restriction/attack and block legality checks remain the ultimate authority.
+defense_anchor = """        return notNeededAsBlockers;
+    }
+
+    public void reinforceWithBanding(final Combat combat) {"""
+defense_replacement = """        if (!nextTurn && Boolean.getBoolean("brimaz.fourSeatDefenseCoverage")) {
+            MultiplayerDefenseCoverage.reserve(ai, notNeededAsBlockers, currentAttackers);
+        } else if (!nextTurn && Boolean.getBoolean("brimaz.fourSeatDefensiveReserve")) {
+            MultiOpponentDefensePolicy.reserve(ai, notNeededAsBlockers, currentAttackers);
+        }
+        return notNeededAsBlockers;
+    }
+
+    public void reinforceWithBanding(final Combat combat) {"""
+if source.count(defense_anchor) != 1:
+    raise ValueError("Forge four-seat defensive-reserve source anchor drift")
+source = source.replace(defense_anchor, defense_replacement, 1)
+
+# Static evaluation takes only public/visible input. The original Forge
+# attacker/blocker algorithm remains authoritative after this choice.
+policy = r'''package forge.ai;
+
+import forge.game.card.Card;
+import forge.game.combat.CombatUtil;
+import forge.game.keyword.Keyword;
+import forge.game.phase.PhaseType;
+import forge.game.player.GameLossReason;
+import forge.game.player.Player;
+import forge.game.zone.ZoneType;
+import java.util.List;
+
+/**
+ * Conservative multiplayer attack target policy, opt-in for EVERY seat.
+ * Examine the three publicly visible defenders and count creatures that
+ * can currently attack, plus damage unlikely to be blocked by any present
+ * legally capable blocker. This is a ranking estimate, NOT a replacement
+ * for Forge's combat resolution, and not a guaranteed lethal solver.
+ *
+ * If the board is enormous or evaluation is on another player's turn,
+ * return null so unchanged Forge heuristics select a defender.
+ */
+public final class MultiplayerCombatTargetPolicy {
+    private MultiplayerCombatTargetPolicy() {}
+
+    public static int tacticalScore(final int boardThreat, final int life,
+                                    final int immediateLifeDamage,
+                                    final int attackableCreatures,
+                                    final boolean monarch,
+                                    final boolean initiative,
+                                    final boolean canLoseLife,
+                                    final boolean cantLoseAtZero) {
+        int lowLifeThreshold = 20;
+        int deficit = life > 0 ? Math.max(0, lowLifeThreshold - life) : 0;
+        int score = boardThreat + deficit * deficit;
+        if (monarch) score += 80;
+        if (initiative) score += 80;
+        if (!canLoseLife) score -= 100;
+        if (cantLoseAtZero) score -= 50;
+
+        // Force a clear, visible immediate elimination over a more powerful
+        // but untouchable threat. Not a certainty: instants remain unknown.
+        if (life > 0 && canLoseLife && !cantLoseAtZero
+                && immediateLifeDamage >= life) {
+            score += 10000;
+        } else {
+            score += Math.min(90, Math.max(0, immediateLifeDamage) * 6);
+        }
+        score += Math.min(24, Math.max(0, attackableCreatures) * 3);
+        return score;
+    }
+
+    /** Poison also eliminates a player at ten counters, independent of life. */
+    public static int poisonPressure(final int currentPoison, final int safeInfectDamage,
+                                     final boolean cannotLose) {
+        if (cannotLose || safeInfectDamage <= 0) return 0;
+        if (currentPoison + safeInfectDamage >= 10) return 10000;
+        return Math.min(90, safeInfectDamage * 7);
+    }
+
+    /** One commander reaches a lethal 21 *combat* damage accumulated. */
+    public static int commanderPressure(final int alreadyDealt,
+                                        final int visibleUnblockedCommanderDamage) {
+        if (visibleUnblockedCommanderDamage <= 0) return 0;
+        if (alreadyDealt + visibleUnblockedCommanderDamage >= 21) return 10000;
+        return Math.min(90, visibleUnblockedCommanderDamage * 7);
+    }
+
+    public static Player chooseTarget(final Player ai) {
+        if (ai == null || ai.getGame() == null
+                || !ai.getGame().getPhaseHandler().isPlayerTurn(ai)
+                || !ai.getGame().getPhaseHandler().is(PhaseType.COMBAT_DECLARE_ATTACKERS)) {
+            return null;
+        }
+        final List<Card> ourCreatures = ai.getCreaturesInPlay();
+        if (ourCreatures.isEmpty() || ourCreatures.size() > 35) return null;
+
+        Player best = null;
+        int bestScore = Integer.MIN_VALUE;
+        int bestSafe = 0;
+        int bestPoison = 0;
+        int bestCommander = 0;
+        int examined = 0;
+        for (Player opp : ai.getOpponents()) {
+            // Stock helper includes payable Incubator transformations / animated
+            // blockers, unlike a plain snapshot of current creature types.
+            final List<Card> blockers = AiAttackController.getOpponentCreatures(opp);
+            if (blockers.size() > 40) return null; // conservative fallback
+            int ready = 0;
+            int safeDamage = 0;
+            int safePoison = 0;
+            int topCommanderThreat = 0;
+            for (Card a : ourCreatures) {
+                if (!CombatUtil.canAttack(a, opp)) continue;
+                ready++;
+                int damage = Math.max(0, a.getNetCombatDamage());
+                if (damage == 0) continue;
+                boolean canBeBlocked = false;
+                for (Card b : blockers) {
+                    if (CombatUtil.canBlock(a, b)) {
+                        canBeBlocked = true;
+                        break;
+                    }
+                }
+                if (!canBeBlocked) {
+                    if (a.hasDoubleStrike()) damage *= 2;
+                    if (a.isCommander() && !opp.cantLoseCheck(GameLossReason.CommanderDamage)) {
+                        topCommanderThreat = Math.max(topCommanderThreat,
+                                commanderPressure(opp.getCommanderDamage(a), damage));
+                    }
+                    if (a.hasKeyword(Keyword.INFECT)) safePoison += damage;
+                    else safeDamage += damage; // wither still damages player life
+                }
+            }
+            if (ready == 0) continue;
+            examined++;
+            int score = tacticalScore(
+                    ComputerUtil.evaluateBoardPosition(ai, opp),
+                    opp.getLife(), safeDamage, ready,
+                    opp.isMonarch() && ai.canBecomeMonarch(),
+                    opp.hasInitiative(),
+                    opp.canLoseLife(),
+                    opp.cantLoseForZeroOrLessLife());
+            score += poisonPressure(opp.getPoisonCounters(), safePoison,
+                    opp.cantLoseCheck(GameLossReason.Poisoned));
+            score += topCommanderThreat;
+            if (score > bestScore) {
+                bestScore = score;
+                bestSafe = safeDamage;
+                bestPoison = safePoison;
+                bestCommander = topCommanderThreat;
+                best = opp;
+            }
+        }
+        if (best != null) {
+            System.out.println("FOUR_AI_TARGET: controller=" + ai.getName()
+                    + " chosen=" + best.getName()
+                    + " visibleSafeDamage=" + bestSafe
+                    + " visibleSafePoison=" + bestPoison
+                    + " commanderThreat=" + bestCommander
+                    + " opponentsScored=" + examined
+                    + " score=" + bestScore
+                    + " globalTurn=" + ai.getGame().getPhaseHandler().getTurn());
+        }
+        return best;
+    }
+}
+'''
+with tempfile.TemporaryDirectory() as td:
+    root = pathlib.Path(td)
+    folder = root / "forge/ai"
+    folder.mkdir(parents=True)
+    (folder / "AiAttackController.java").write_text(source, encoding="utf-8")
+    (folder / "MultiplayerCombatTargetPolicy.java").write_text(policy, encoding="utf-8")
+    defense_java = pathlib.Path(__file__).resolve().parents[1] / "patches/java/forge/ai/MultiOpponentDefensePolicy.java"
+    (folder / "MultiOpponentDefensePolicy.java").write_text(defense_java.read_text(encoding="utf-8"), encoding="utf-8")
+    for helper in ("DefenseCoverageModel.java", "MultiplayerDefenseCoverage.java"):
+        (folder / helper).write_text(
+            (pathlib.Path(__file__).resolve().parents[1] / "patches/java/forge/ai" / helper).read_text(encoding="utf-8"),
+            encoding="utf-8")
+    classes = root / "classes"
+    classes.mkdir()
+    subprocess.run(
+        ["javac", "--release", "21", "-cp", str(jar), "-d", str(classes),
+         str(folder / "AiAttackController.java"),
+         str(folder / "MultiplayerCombatTargetPolicy.java"),
+         str(folder / "MultiOpponentDefensePolicy.java"),
+         str(folder / "DefenseCoverageModel.java"),
+         str(folder / "MultiplayerDefenseCoverage.java")],
+        check=True, timeout=240,
+    )
+    for name in ("AiAttackController.class", "MultiplayerCombatTargetPolicy.class",
+                 "MultiOpponentDefensePolicy.class",
+                 "DefenseCoverageModel.class", "DefenseCoverageModel$Threat.class",
+                 "DefenseCoverageModel$Risk.class", "MultiplayerDefenseCoverage.class"):
+        if not (classes / "forge/ai" / name).is_file():
+            raise RuntimeError("Missing compiled " + name)
+    # Avoid losing nested classes from the upstream AI controller: only
+    # replace the top-level compiled class and the new, dependency-free helper.
+    subprocess.run(["jar", "uf", str(jar), "-C", str(classes),
+                    "forge/ai/AiAttackController.class",
+                    "-C", str(classes),
+                    "forge/ai/MultiplayerCombatTargetPolicy.class",
+                    "-C", str(classes), "forge/ai/MultiOpponentDefensePolicy.class",
+                    "-C", str(classes), "forge/ai/DefenseCoverageModel.class",
+                    "-C", str(classes), "forge/ai/DefenseCoverageModel$Threat.class",
+                    "-C", str(classes), "forge/ai/DefenseCoverageModel$Risk.class",
+                    "-C", str(classes), "forge/ai/MultiplayerDefenseCoverage.class"],
+                   check=True, timeout=120)
+    print("FOUR_AI_TARGET_CLASS_SHA256", hashlib.sha256(
+          (classes/"forge/ai/MultiplayerCombatTargetPolicy.class").read_bytes()).hexdigest())
+print("FOUR_AI_TARGET_PATCHED_JAR_SHA256", hashlib.sha256(jar.read_bytes()).hexdigest())
