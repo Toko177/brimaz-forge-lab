@@ -273,3 +273,22 @@ un `V35_WINDOW`/une approbation survient dans un siège non-Brimaz.
 Les processus purgent `_JAVA_OPTIONS`, `JDK_JAVA_OPTIONS` et
 `JAVA_TOOL_OPTIONS` hérités ; le véritable bras `forge_stock`
 n'injecte **aucun** de ces paramètres.
+
+## V35 — typal phyrexian et ordre des sorts Brimaz
+
+Le planificateur emploie désormais `Card.getType().hasCreatureType("Phyrexian")`
+dans le véritable Forge 2.0.15, et non une liste fragile de noms,
+pour distinguer les créatures phyrexianes des autres créatures à
+coût/puissance semblables. Lorsque Brimaz est réellement présent sur
+le plateau, leur lancement reçoit une valeur supplémentaire fondée
+sur le mana du sort, reflétant sa capacité à **incuber X** lors du cast.
+Cela donne du poids à des lignes comme « Brimaz avant créature
+phyrexiane », et ne crédite pas le déclenchement lorsque Brimaz
+n'est pas sur le plateau.
+
+Un **Incubateur est un jeton artefact non-créature** avant transformation :
+la projection ajoute sa contribution aux artefacts disponibles, pas
+aux créatures sacrifiables. Les choix d'activation, de transformation
+et les déclenchements restent exclusivement ceux du vrai Forge.
+Les tests adversariaux vérifient ces règles de priorisation abstraite
+sans les confondre avec une simulation des capacités résolues.

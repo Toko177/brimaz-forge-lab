@@ -91,6 +91,8 @@ public final class MultiplayerStrategicSequencerV35 {
         if(DOUBLERS.contains(name))v|=MultiplayerStrategicSearchV35.TOKEN_MULTIPLIER;
         if(TOKENS.contains(name))v|=MultiplayerStrategicSearchV35.INCUBATE_ENGINE;
         if(RECURSION.contains(name))v|=MultiplayerStrategicSearchV35.RECURSION;
+        if(c.isCreature() && c.getType().hasCreatureType("Phyrexian"))
+            v|=MultiplayerStrategicSearchV35.PHYREXIAN_CAST;
         if(c.getCMC()>=6 && !c.isCreature())v|=
             MultiplayerStrategicSearchV35.EXPENSIVE_NONCREATURE;
         // Only fixed known cards with a genuine immediate positive mana ability.

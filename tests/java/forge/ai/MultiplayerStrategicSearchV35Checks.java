@@ -63,6 +63,27 @@ public final class MultiplayerStrategicSearchV35Checks {
         ok(MultiplayerStrategicSearchV35.choose(table(4,5,0,35,4,2,0,3,
               new int[]{3,2,1}),List.of(doubler,plain)).first()==doubler,
            "choose doubler over same-cost non-synergistic permanent");
+        var withBrimaz=new MultiplayerStrategicSearchV35.Table(
+            4,4,0,29,3,3,0,2,1,1,0,1,true,
+            4,3,2,40,40,40,6);
+        var phyrexian=card("Phyrexian Fleshgorger",3,
+            MultiplayerStrategicModel.Role.CREATURE,3,
+            MultiplayerStrategicSearchV35.PHYREXIAN_CAST,true);
+        var sameCostVanilla=card("Vanilla creature",3,
+            MultiplayerStrategicModel.Role.CREATURE,3,0,true);
+        ok(MultiplayerStrategicSearchV35.evaluate(
+             withBrimaz,phyrexian,0,1,1,0,1,true)
+           > MultiplayerStrategicSearchV35.evaluate(
+             withBrimaz,sameCostVanilla,0,1,1,0,1,true),
+           "cast Phyrexian creature with Brimaz online to obtain incubation trigger");
+        ok(MultiplayerStrategicSearchV35.choose(
+             withBrimaz,List.of(phyrexian,sameCostVanilla)).first()==phyrexian,
+           "rank genuine Phyrexian type ahead of equal-cost vanilla creature");
+        ok(MultiplayerStrategicSearchV35.evaluate(
+             withBrimaz,phyrexian,0,1,1,0,1,false)
+           == MultiplayerStrategicSearchV35.evaluate(
+             withBrimaz,sameCostVanilla,0,1,1,0,1,false),
+           "no imagined Brimaz cast trigger before commander is on battlefield");
         var illegal=card("Unavailable",7,MultiplayerStrategicModel.Role.ENGINE,0,0,false);
         ok(MultiplayerStrategicSearchV35.choose(safe,List.of(illegal))==null,
            "never override Forge timing legality");

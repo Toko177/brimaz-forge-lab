@@ -24,6 +24,7 @@ public final class MultiplayerStrategicSearchV35 {
     public static final int RECURSION = 8;
     public static final int EXPENSIVE_NONCREATURE = 16;
     public static final int INSTANT_MANA = 32;
+    public static final int PHYREXIAN_CAST = 64; // Actual Forge creature type, not a name guess.
 
     public record CardPlan(String name, int cost, MultiplayerStrategicModel.Role role,
                            int power, int features, boolean forgeTimingLegal) {
@@ -99,9 +100,14 @@ public final class MultiplayerStrategicSearchV35 {
         int next = s.nextMana() + ramp;
         int mana = s.mana() - c.cost();
         if (firstTurn && c.has(INSTANT_MANA)) mana+=2;
+        // Brimaz's cast trigger creates an Incubator ARTIFACT token.
+        // It is not a creature yet and cannot be counted as a creature
+        // sacrifice resource before Forge actually transforms it.
+        int incubated=(s.commanderPresent() && c.has(PHYREXIAN_CAST))?1:0;
         return new State(atLeast(mana),next,s.ownCreatures()+creature,
-                s.tokens()+token,s.artifacts()+((c.role()==MultiplayerStrategicModel.Role.RAMP ||
-                    c.role()==MultiplayerStrategicModel.Role.SAC_OUTLET)?1:0),
+                s.tokens()+token,s.artifacts()+incubated+
+                    ((c.role()==MultiplayerStrategicModel.Role.RAMP ||
+                      c.role()==MultiplayerStrategicModel.Role.SAC_OUTLET)?1:0),
                 s.outlets()+outlet,s.payoffs()+(c.has(DEATH_PAYOFF)?1:0),
                 s.multipliers()+(c.has(TOKEN_MULTIPLIER)?1:0),
                 s.tokenEngines()+(c.role()==MultiplayerStrategicModel.Role.TOKEN_ENGINE ||
@@ -136,6 +142,12 @@ public final class MultiplayerStrategicSearchV35 {
         if(c.has(TOKEN_MULTIPLIER)) base+=10+7*min(engines,4);
         if(c.has(INCUBATE_ENGINE)) base+=8+5*min(outletCount+payoffs,4);
         if(c.has(RECURSION)) base+=4+4*min(payoffs+outletCount,3);
+        if(c.has(PHYREXIAN_CAST) && commanderPresent) {
+            // The real Brimaz triggered ability incubates X on cast,
+            // X being that Phyrexian creature spell's mana value.
+            // Estimate incremental synergy, NEVER assert a token resolves.
+            base+=9+3*min(c.cost(),6)+2*min(outletCount+payoffs,4);
+        }
         if(c.has(EXPENSIVE_NONCREATURE) && t.lands()<=4)base-=14;
         if (emergency) {
             // This is an *approximation*. No claim about who can actually attack.
