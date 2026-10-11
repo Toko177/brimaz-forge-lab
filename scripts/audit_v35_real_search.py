@@ -26,6 +26,22 @@ REJECTED=re.compile(
     r"(?P<deck>.*?) turn=(?P<turn>\d+) proposed=(?P<count>\d+) "
     r"stockFallback=true$",re.M)
 
+
+TACTICAL_WINDOW=re.compile(
+    r"^FOUR_AI_V35_TACTICAL_WINDOW player=Ai\((?P<seat>[1-4])\)-"
+    r"(?P<deck>.*?) turn=(?P<turn>\d+) intervention=(?P<type>\w+) "
+    r"ownCreatures=(?P<own>\d+) enemyCreatures=(?P<enemy>\d+) "
+    r"worstOpponentPower=(?P<power>\d+) life=(?P<life>-?\d+) "
+    r"candidateSpells=(?P<candidates>\d+) originalForgeValidationPending=true$",re.M)
+TACTICAL_APPROVED=re.compile(
+    r"^FOUR_AI_V35_TACTICAL_STOCK_APPROVED player=Ai\((?P<seat>[1-4])\)-"
+    r"(?P<deck>.*?) turn=(?P<turn>\d+) card=(?P<card>.*?) "
+    r"rejectedEarlier=(?P<rejected>\d+) genuineForgeAIDecision=true$",re.M)
+TACTICAL_REJECTED=re.compile(
+    r"^FOUR_AI_V35_TACTICAL_STOCK_REJECTED player=Ai\((?P<seat>[1-4])\)-"
+    r"(?P<deck>.*?) turn=(?P<turn>\d+) rejected=(?P<count>\d+) "
+    r"stockFallback=true$",re.M)
+
 def audit(report):
     if report.get("type")!="Actual Forge 2.0.15 four-AI Commander controlled real-game campaign A/B":
         raise ValueError("Not the genuine Forge A/B format")
@@ -40,6 +56,8 @@ def audit(report):
         raise ValueError("Missing genuine matched JVMs")
     seat=Counter(); role=Counter(); by_pod=Counter(); per_arm=Counter()
     statuses=Counter(); changes=0; windows=0; proposed=0; fallback=0
+    tactical_windows=0; tactical_approved=Counter(); tactical_rejected=0
+    tactical_by_card=Counter()
     samples=[]
     for pair in pairs:
         a=pair["reference"];b=pair["experiment"]
@@ -47,7 +65,7 @@ def audit(report):
         y=Path(b["log"]).read_text(encoding="utf-8",errors="replace")
         if "Ai(1)-" not in x or "Ai(4)-" not in y or "Turn: " not in y:
             raise ValueError("Missing four-seat real-game transcript markers")
-        if APPROVED.search(x) or WINDOW.search(x) or REJECTED.search(x):
+        if any(regex.search(x) for regex in (APPROVED,WINDOW,REJECTED,TACTICAL_WINDOW,TACTICAL_APPROVED,TACTICAL_REJECTED)):
             raise ValueError("V35 code touched control arm")
         candidates=list(WINDOW.finditer(y))
         approvals=list(APPROVED.finditer(y))
@@ -55,6 +73,18 @@ def audit(report):
         windows+=len(candidates)
         proposed+=sum(int(m["ranked"]) for m in candidates)
         fallback+=sum(int(m["count"]) for m in rejects)
+        task_windows=list(TACTICAL_WINDOW.finditer(y))
+        task_approvals=list(TACTICAL_APPROVED.finditer(y))
+        task_rejects=list(TACTICAL_REJECTED.finditer(y))
+        tactical_windows+=len(task_windows)
+        tactical_rejected+=sum(int(m["count"]) for m in task_rejects)
+        for approved in task_approvals:
+            if int(approved["turn"])<1 or int(approved["rejected"])>5:
+                raise ValueError("Invalid original Forge tactical approval")
+            if not task_windows:
+                raise ValueError("Tactical approval without public-board decision window")
+            tactical_approved[int(approved["seat"])]+=1
+            tactical_by_card[approved["card"]]+=1
         for m in approvals:
             index=int(m["seat"])
             if int(m["turn"])<1 or int(m["rejected"])>3:
@@ -82,10 +112,16 @@ def audit(report):
       "actual_stock_forge_approved_strategic_actions_not_cast_proof":sum(seat.values()),
       "approved_actions_by_seat":dict(sorted(seat.items())),
       "approved_actions_by_pod":dict(by_pod),
+      "public_board_tactical_windows_logged":tactical_windows,
+      "tactical_stock_forge_approved_not_cast_proof":sum(tactical_approved.values()),
+      "tactical_approved_by_seat":dict(sorted(tactical_approved.items())),
+      "tactical_approved_by_card":dict(tactical_by_card),
+      "tactical_candidates_rejected_by_forge":tactical_rejected,
       "statuses":{str(k):v for k,v in statuses.items()},
       "approved_examples":samples,
       "limits":[
         "V35_WINDOW is only a bounded abstract search proposal",
+        "V35_TACTICAL_WINDOW is a potential emergency, not proof the card was usable or cast",
         "V35_STOCK_APPROVED means original Forge AI agreed to play; it does not independently prove actual spell resolution",
         "Natural wins do not prove better strategy or statistically significant win rate",
         "Same-seed games are not guaranteed deterministic; censures are not losses",
@@ -107,7 +143,9 @@ def main():
            "naturally_finished_both_arms","pairs_censored_or_faulted",
            "diagnostic_windows_logged","candidate_slots_ranked",
            "actual_stock_forge_approved_strategic_actions_not_cast_proof",
-           "approved_actions_by_seat","different_game_event_sequences")
+           "approved_actions_by_seat","different_game_event_sequences",
+           "public_board_tactical_windows_logged","tactical_stock_forge_approved_not_cast_proof",
+           "tactical_approved_by_card")
         }),flush=True)
     if r["actual_stock_forge_approved_strategic_actions_not_cast_proof"]<args.min_approved:
         raise SystemExit("V35_FAIL_NO_DEMONSTRATED_STOCK_FORGE_APPROVED_INTERVENTIONS")
