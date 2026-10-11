@@ -32,6 +32,24 @@ testable et modifie l'ordre de préférence quand Forge donne son accord.
   textes ne permettent pas de généralisation fiable (en particulier le
   vrai deck Brimaz V3 conservé byte à byte).
 
+### Trois modules IA complémentaires de la V35
+
+1. **Planification proactive** : recherche bornée de trois cartes connues.
+2. **Retraits tactiques** : la politique historique
+   `MultiplayerRemovalUrgencyPolicy.publicThreatBonus` ne classe que des
+   créatures déjà légalement ciblables par Forge. Elle utilise les
+   menaces publiques imminentes (vie, poison, dégâts de commandant).
+3. **Contresorts défensifs** : `MultiplayerCriticalCounterPolicy`
+   intervient uniquement lorsque Forge envisage une réponse réelle à
+   une menace sur la pile. La politique évite un refus heuristique face
+   à une destruction ciblée du commandant ou une menace létale chiffrable.
+
+Ces deux modules existaient séparément depuis V19/V22, mais **la V35
+les active simultanément, avec la recherche stratégique, pour les quatre
+sièges**. Le benchmark global mesure la politique composée, pas la
+contribution individuelle de chaque sous-module. Les règles, cibles,
+coûts, réponses sur la pile et autorisations restent ceux de Forge.
+
 ### Priorités contextuelles
 
 Le modèle augmente le poids d'une créature utile quand la table représente
@@ -66,7 +84,7 @@ déjà existants, identiques au moteur d'origine.
 
 Activation opt-in **pour les quatre sièges** :
 `-Dbrimaz.v35StrategicSearch=true` ou `--policy v35_strategy`.
-Tous les autres modes conservent ce flag à false.
+Tous les autres modes conservent ce flag à false. Les flags de priorité de retrait et de contresorts défensifs sont également activés uniquement pour V35 ou leurs modes individuels historiques ; le mode de référence les désactive.
 
 ## Traces interprétables
 
