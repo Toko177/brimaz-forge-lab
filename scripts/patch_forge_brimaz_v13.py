@@ -306,10 +306,10 @@ insert1=(
 "                && player.getName().contains(\"Brimaz\")\n"
 "                && (!Boolean.getBoolean(\"brimaz.v37MirrorDuel\")\n"
 "                    || player.getName().contains(\"Challenger\"))) {\n"
-"            if (Boolean.getBoolean("brimaz.v40SeatScopedActions")) {
-                BrimazTurnPlanner.diagnoseDecisionWindow(player,saList);
-            }
-            SpellAbility v37Sac = BrimazTurnPlanner.plan(player, saList);\n"
+"            if (Boolean.getBoolean(\"brimaz.v40SeatScopedActions\")) {\n"
+"                BrimazTurnPlanner.diagnoseDecisionWindow(player,saList);\n"
+"            }\n"
+"            SpellAbility v37Sac = BrimazTurnPlanner.plan(player, saList);\n"
 "            if (v37Sac != null && canPlayAndPayFor(v37Sac) == AiPlayDecision.WillPlay) {\n"
 "                System.out.println(\"FOUR_AI_V37_POSITIVE_SAC_FORGE_APPROVED player=\"\n"
 "                    +player.getName()+\" card=\"+v37Sac.getHostCard().getName());\n"
