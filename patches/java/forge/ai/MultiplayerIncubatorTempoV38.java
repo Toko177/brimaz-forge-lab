@@ -48,6 +48,13 @@ public final class MultiplayerIncubatorTempoV38 {
     }
 
     private static int latestTurn = Integer.MIN_VALUE;
+    private static final java.util.Set<String> PRIORITY_RAMP=java.util.Set.of(
+        "Sol Ring","Arcane Signet","Orzhov Signet","Fellwar Stone",
+        "Talisman of Hierarchy","Mind Stone","Thought Vessel",
+        "Commander's Sphere");
+    private static final java.util.Set<String> SACRIFICE_OUTLETS=java.util.Set.of(
+        "Arcbound Ravager","Spawning Pit","Bartolomé del Presidio",
+        "Krark-Clan Ironworks","Throne of Geth");
 
     public static SpellAbility choose(Player ai, List<SpellAbility> spells) {
         if(!Boolean.getBoolean("brimaz.v38IncubatorTempo") ||
@@ -60,12 +67,15 @@ public final class MultiplayerIncubatorTempoV38 {
              || !ai.getGame().getStack().isEmpty()
              || latestTurn==phase.getTurn())return null;
 
-        boolean commanderPresent=false;
-        int readyBlockers=0,enemyPower=0;
+        final boolean v39=Boolean.getBoolean("brimaz.v39EngineEconomics");
+        boolean commanderPresent=false,hasOutlet=false,payableRamp=false;
+        int readyBlockers=0,enemyPower=0,counteredPermanents=0;
         for(Card c:ai.getCardsIn(ZoneType.Battlefield)) {
             if(c.getName().equals("Brimaz, Blight of Oreskos"))commanderPresent=true;
             if(c.isCreature() && !c.isTapped() && c.getNetToughness()>0)
                 readyBlockers++;
+            if(c.hasCounters())counteredPermanents++;
+            if(SACRIFICE_OUTLETS.contains(c.getName()))hasOutlet=true;
         }
         for(Player opp:ai.getOpponents()) {
             int power=0;
@@ -75,8 +85,26 @@ public final class MultiplayerIncubatorTempoV38 {
             }
             enemyPower=Math.max(enemyPower,power);
         }
+        if(v39) {
+            for(SpellAbility sa:spells) {
+                if(sa==null || !sa.isSpell() || sa.getHostCard()==null
+                     || !sa.getHostCard().isInZone(ZoneType.Hand)
+                     || !PRIORITY_RAMP.contains(sa.getHostCard().getName()))
+                    continue;
+                sa.setActivatingPlayer(ai);
+                if(sa.canPlay() && sa.canCastTiming(ai) &&
+                     ComputerUtilCost.canPayCost(sa,ai,false)) {
+                    payableRamp=true;
+                    break;
+                }
+            }
+            if(MultiplayerIncubatorEngineV39.shouldPreserveManaForRamp(
+                 payableRamp,ai.getLife(),enemyPower,readyBlockers))return null;
+        }
         SpellAbility best=null;
-        int bestSize=-1;
+        int bestSize=-1,bestPriority=Integer.MIN_VALUE;
+        boolean bestEngine=false;
+        int bestEngineBenefit=0;
         for(SpellAbility sa:spells) {
             if(sa==null || sa.getHostCard()==null ||
                !sa.isActivatedAbility() ||
@@ -87,12 +115,27 @@ public final class MultiplayerIncubatorTempoV38 {
                !c.isToken() || c.isCreature() ||
                !"Incubator Token".equals(c.getName()))continue;
             int size=c.getCounters(CounterType.getType("P1P1"));
-            if(!shouldTransform(size,ai.getLife(),readyBlockers,enemyPower,
-                                commanderPresent))continue;
+            boolean tempo=shouldTransform(size,ai.getLife(),readyBlockers,
+                                           enemyPower,commanderPresent);
+            int others=Math.max(0,counteredPermanents-
+                                  (c.hasCounters()?1:0));
+            int engineBenefit=v39
+                ? MultiplayerIncubatorEngineV39.minimumVisibleNetEngineValue(
+                    size,others,commanderPresent,hasOutlet) : 0;
+            int priority=v39
+                ? MultiplayerIncubatorEngineV39.visibleTransformationPriority(
+                    size,tempo,engineBenefit) : (tempo?size:-1);
+            if(priority<0)continue;
             sa.setActivatingPlayer(ai);
             if(!sa.canPlay() || !sa.canCastTiming(ai) ||
                !ComputerUtilCost.canPayCost(sa,ai,false))continue;
-            if(size>bestSize){bestSize=size;best=sa;}
+            if(priority>bestPriority) {
+                bestPriority=priority;
+                bestSize=size;
+                best=sa;
+                bestEngine=v39 && engineBenefit>0;
+                bestEngineBenefit=engineBenefit;
+            }
         }
         if(best!=null) {
             latestTurn=phase.getTurn();
@@ -100,6 +143,10 @@ public final class MultiplayerIncubatorTempoV38 {
                  +ai.getName()+" turn="+phase.getTurn()+" incubatorSize="+bestSize
                  +" blockers="+readyBlockers+" enemyBoardPower="+enemyPower
                  +" commanderPresent="+commanderPresent
+                 +" source="+(bestEngine?"KNOWN_COUNTER_ENGINE":"DEFENSIVE_TEMPO")
+                 +" engineBenefit="+bestEngineBenefit
+                 +" realOutletPresent="+hasOutlet
+                 +" payableRampSeen="+payableRamp
                  +" stockForgeApprovalPending=true");
         }
         return best;
