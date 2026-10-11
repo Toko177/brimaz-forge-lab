@@ -5,8 +5,9 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
-**Branche active : `main`.** Anciennes expériences conservées dans
-`archive/experimental-branches-20261011`, aucune PR ouverte.
+**Branche stable : `main`.** Une seule expérimentation active :
+`feature/v35-strategic-search-20261011` ([PR #29](https://github.com/Toko177/brimaz-forge-lab/pull/29)),
+en plus de l'archive historique `archive/experimental-branches-20261011`.
 Nettoyage global effectué le 11 octobre 2026 :
 [30 anciennes branches supprimées](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38131746597),
 [PR de consolidation #28](https://github.com/Toko177/brimaz-forge-lab/pull/28).
@@ -23,7 +24,9 @@ et [historique du nettoyage](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
 `feature/v35-strategic-search-20261011`, basée sur `main`.
 Recherche bornée d'un plan de **trois sorts sur deux tours**,
 synergies Brimaz jetons/sacrifice/mort, ressources, sécurité et
-menaces visibles des trois adversaires. Toute vraie action doit rester
+menaces visibles des trois adversaires, priorisation des retraits
+et protection contre les menaces publiques critiques sur la pile.
+Toute vraie action doit rester
 validée par `AiController.canPlayAndPayFor` de Forge ; la proposition ne
 constitue pas un sort joué. La **qualité stratégique V35 n'est pas encore
 démontrée par des parties réelles**.
@@ -51,17 +54,17 @@ aux sept decks épinglés par SHA256.
 
 Voir [la V33 et ses limites](docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md)
 et [l'organisation épurée](docs/REPOSITORY_STRUCTURE.md).
-La priorité est de **réauditer les journaux réels V33 avec le parseur corrigé**,
+La priorité est de **valider la V35 sur de vrais matchs**, puis de réauditer les journaux V33 avec le parseur corrigé,
 puis d'évaluer les refus éventuels de Forge et d'améliorer la décision
 sans déformer les règles.
 
 ### Installation et exécution (Windows)
 
-Prérequis : Python 3.10+, JDK 21 et `gh auth login`.
+Prérequis : Python 3.10+ et JDK 21 ; `gh` uniquement pour les anciennes branches dont les decks ne sont pas versionnés.
 Le programme récupère l'archive officielle Forge et vérifie son SHA256.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Paired -ReferencePolicy v17_strict -Policy v33_strategy -Pod both -GamesPerRotation 1 -Parallel 2 -Clock 420 -PreflightOnly
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Paired -ReferencePolicy v17_strict -Policy v35_strategy -Pod both -GamesPerRotation 1 -Parallel 2 -Clock 420 -PreflightOnly
 ```
 
 Pour lancer **16 véritables processus Forge** (2 pods × 4 positions ×

@@ -13,10 +13,10 @@ et journaux d'interventions ne sont pas inspectés.
 
 **11 octobre 2026 — dépôt consolidé et nettoyage global achevé.**
 
-- Branche active pour tout développement : `main`.
-- Une seule autre branche distante :
-  `archive/experimental-branches-20261011`.
-- **Aucune PR ouverte.** [PR de consolidation #28](https://github.com/Toko177/brimaz-forge-lab/pull/28),
+- Branche stable : `main` ; branche actuelle de travail : `feature/v35-strategic-search-20261011`.
+- Deux autres branches distantes : `archive/experimental-branches-20261011`
+  (archive) et `feature/v35-strategic-search-20261011` (PR #29).
+- **Une PR ouverte (#29).** [PR de consolidation #28](https://github.com/Toko177/brimaz-forge-lab/pull/28),
   fusionnée par GitHub sans force-push : l'historique préexistant de
   `main`, celui de V34 et les six historiques divergents sont accessibles
   depuis le nouveau `main`.
@@ -43,7 +43,9 @@ et journaux d'interventions ne sont pas inspectés.
 
 ## Priorité pour le prochain développement
 
-Réanalyser les preuves des choix stratégiques V33 dans les artifacts
+La V35 combine recherche multi-cartes, priorisation des retraits et
+contresorts défensifs. Vérifier le **vrai match A/B 16 JVM** et ses journaux
+`FOUR_AI_V35_STOCK_APPROVED` avant toute fusion. Puis réanalyser les preuves des choix stratégiques V33 dans les artifacts
 originaux ; vérifier le chemin proposition → approbation par l'IA Forge →
 lancement du sort → résultat. Construire des cas tactiques validés par un
 joueur compétent, pas de nouvelles versions de scoring mineures sans mesure.
