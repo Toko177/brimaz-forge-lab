@@ -40,8 +40,10 @@ public final class MultiplayerStrategicSearchV35Checks {
         var b=MultiplayerStrategicSearchV35.choose(risky,List.of(ramp,blocker));
         ok(b.underThreat(),"public three-player board pressure detected");
         ok(b.first()==blocker,"under acute threat prioritize actual board development");
-        ok(MultiplayerStrategicSearchV35.underThreat(table(3,3,0,12,0,0,0,0,new int[]{5,5,5})),
-                "low life alone conservatively triggers survival mode");
+        ok(!MultiplayerStrategicSearchV35.underThreat(table(3,3,0,12,0,0,0,0,new int[]{5,5,5})),
+                "three modest opponents do not magically combine into one lethal attack");
+        ok(!MultiplayerStrategicSearchV35.underThreat(table(2,3,0,3,0,0,0,0,new int[]{0,0,0})),
+                "no public attackers means no threat even on three life");
         var altar=card("Ashnod's Altar",3,MultiplayerStrategicModel.Role.SAC_OUTLET,0,0,true);
         var cmd=card("Brimaz",3,MultiplayerStrategicModel.Role.COMMANDER,4,
                 MultiplayerStrategicSearchV35.INCUBATE_ENGINE,true);
