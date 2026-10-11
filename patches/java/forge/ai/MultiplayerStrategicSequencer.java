@@ -143,7 +143,7 @@ public final class MultiplayerStrategicSequencer {
         SpellAbility sa = actions.get(choice.selected());
         if (sa == null || !sa.canPlay() || !sa.canCastTiming(ai)
                 || !ComputerUtilCost.canPayCost(sa, ai, false)) return null;
-        System.out.println("FOUR_AI_V33_STRATEGIC_CHOICE player=" + ai.getName()
+        System.out.println("FOUR_AI_V33_STRATEGIC_PROPOSAL player=" + ai.getName()
             + " turn=" + board.turn() + " first=" + choice.selected().name()
             + " role=" + choice.selected().role()
             + " second=" + (choice.projectedNext() == null ? "none"
