@@ -364,8 +364,20 @@ public final class BrimazTurnPlanner {
         if (ai == null || available == null || ai.getGame() == null) return null;
         var game = ai.getGame();
         var phase = game.getPhaseHandler();
+
         if (!phase.isPlayerTurn(ai) || !phase.is(PhaseType.MAIN1)
                 || !game.getStack().isEmpty()) return null;
+        // V36 correction to V17: don't FORCE economy/Brimaz into an
+        // aggregate multi-creature damage threat when Forge needs to decide
+        // which actions can actually prevent elimination.
+        if (Boolean.getBoolean("brimaz.v36EvidenceGate") &&
+                MultiplayerStrategicSearchV35.underThreat(
+                    MultiplayerStrategicSequencerV35.observe(ai))) {
+            System.out.println("FOUR_AI_V36_DEFENSIVE_ABSTAIN player="
+                +ai.getName()+" turn="+phase.getTurn()
+                +" source=legacy_development stockV17Fallback=true");
+            return null;
+        }
         boolean brimazOnField = false;
         for (Card c : ai.getCardsIn(ZoneType.Battlefield)) {
             if (c.getName().equals("Brimaz, Blight of Oreskos")) {

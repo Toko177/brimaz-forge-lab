@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * V35 used broad role scores and a hypothetical next turn as if its abstract
  * forecast were a reason to override actual Forge AI. This policy ABSTAINS
- * unless a narrow play-order benefit is derivable from already known cards.
+ * unless a narrow play-order benefit is derivable from already known cards.\n * The abstention path is the V17 Brimaz-aware controller, NOT a byte-identical stock Forge AI.
  *
  * A proposal is NOT payment, casting, card-resolution or Magic legal proof:
  * patched AiController still calls its original canPlayAndPayFor.
@@ -39,7 +39,7 @@ public final class MultiplayerEvidenceGateV36 {
     /**
      * Pure, falsifiable comparison on visible board + our own known cards.
      * Returns null when observations are insufficient to justify overriding
-     * the much broader original Forge AI.
+     * the much broader inherited V17 / Forge AI decision stack.
      */
     public static Evidence choose(MultiplayerStrategicSearchV35.Table table,
                                   List<MultiplayerStrategicSearchV35.CardPlan> plans,

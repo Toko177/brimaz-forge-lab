@@ -77,7 +77,7 @@ jobs:
             --jar "$JAR" --pod "${{ matrix.pod }}" \
             --reference-policy "${{ matrix.reference }}" --experiment-policy "${{ matrix.experiment }}" \
             --profile Default --games-per-rotation 1 --parallel 2 \
-            --clock 420 --seed-base 20270131 \
+            --clock 420 --seed-base 20270217 \
             --out "results/v35_strategic_pairs_${{ matrix.reference }}_${{ matrix.experiment }}"
       - name: Audit real changed four-seat decisions and censoring
         run: |

@@ -1,3 +1,5 @@
+[V36 policy and exact inherited V17 vs Forge distinction](docs/V36_EVIDENCE_POLICY.md).
+
 **V36 — challenger à décision conditionnelle :** désormais un moteur
 expérimental réel, branché sur Forge 2.0.15, n'intervient que pour des
 ordonnancements Brimaz/Phyrexian ou un déverrouillage de mana démontrable

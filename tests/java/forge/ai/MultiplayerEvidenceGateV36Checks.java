@@ -65,6 +65,9 @@ public final class MultiplayerEvidenceGateV36Checks {
             .selected()==sol,"exclude summoning-sick Myr from guaranteed ramp");
         ok(MultiplayerEvidenceGateV36.optimisticNextTurnRockMana("Gold Myr")==0,
             "Myr has no immediately available tap mana");
+        ok(MultiplayerStrategicSearchV35.underThreat(
+             state(4,4,0,12,15,false,0)),
+             "three medium enemy creatures can jointly threaten lethal although V17 checked only maximum single creature");
         ok(MultiplayerEvidenceGateV36.choose(
             state(4,4,0,8,18,false,0),List.of(br,phy,rock),0)==null,
             "acute public threat goes back to original Forge");

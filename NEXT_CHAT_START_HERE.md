@@ -125,3 +125,5 @@ situations sans preuve locale. Les adversaires sont strictement
 V17 inchangés. Benchmark sur nouvelles graines `20270131`,
 voir `docs/V35_STRATEGIC_SEARCH.md`. Une compilation réussie ne
 constitue pas une preuve de victoire ou d'amélioration.
+
+- V36: voir `docs/V36_EVIDENCE_POLICY.md` ; défaut majeur détecté : le planificateur V17 forçait déjà Brimaz sans évaluer les dégâts cumulés des créatures ennemies. V36 supprime cette priorité automatique sous forte pression, sans inventer de résultat de combat. L'abstention revient à la base V17, **pas** à un Forge pur.
