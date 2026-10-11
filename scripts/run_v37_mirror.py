@@ -130,7 +130,7 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
     target.mkdir(parents=True,exist_ok=True)
     env=os.environ.copy()
     for name in ("_JAVA_OPTIONS","JDK_JAVA_OPTIONS","JAVA_TOOL_OPTIONS"):env.pop(name,None)
-    env["JAVA_TOOL_OPTIONS"]=policy_flags("v40_brimaz_challenger")+" -Dbrimaz.v37MirrorDuel=true"
+    env["JAVA_TOOL_OPTIONS"]=policy_flags("v41_brimaz_challenger")+" -Dbrimaz.v37MirrorDuel=true"
     command=["java","-Xmx4g","-jar",str(jar),"sim","-d",
              *[name+".dck" for name in seats],"-D",str(deck_dirs[pod]),
              "-f","Commander","-n","1","-c",str(clock),"-s",str(seed),
@@ -160,6 +160,7 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
             "V40_per_seat_approved":stdout.count(
                 "FOUR_AI_V40_TRANSFORM_APPROVED_BY_SEAT"),
             "V40_sac_diagnostic_windows":stdout.count("BRIMAZ_WINDOW: V7"),
+            "V41_sac_diagnostic_windows":stdout.count("FOUR_AI_V41_SAC_WINDOW"),
             "log":str((target/"game.log").relative_to(out))}
     (target/"result.json").write_text(json.dumps(record,indent=2)+"\n")
     print("V37_ACTUAL_MIRROR_MATCH",json.dumps(record,ensure_ascii=False),flush=True)
