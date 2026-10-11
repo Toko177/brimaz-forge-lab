@@ -70,9 +70,14 @@ public final class MultiplayerStrategicSearchV35 {
 
     /** Under multi-opponent pressure, future speculative plans are discounted. */
     public static boolean underThreat(Table t) {
-        int pressure = t.opponentPower1() + t.opponentPower2() + t.opponentPower3();
-        int defense = Math.min(t.ownCreatures() + t.ownTokens(), 8) * 2;
-        return t.life() <= 14 || (t.life() <= 25 && pressure > t.life() + defense);
+        // Each opponent may choose a different defender: never pretend
+        // the sum of all three boards necessarily attacks us at once.
+        int strongest=Math.max(t.opponentPower1(),
+                       Math.max(t.opponentPower2(),t.opponentPower3()));
+        int visibleDefense=Math.min(t.ownCreatures(),8)*2;
+        int exposed=Math.max(0,strongest-visibleDefense);
+        return (t.life()<=14 && exposed>=Math.max(4,t.life()/2))
+            || (t.life()<=25 && exposed>=t.life());
     }
 
     private static State initial(Table t) {
@@ -93,7 +98,7 @@ public final class MultiplayerStrategicSearchV35 {
         // Any immediate-mana exception remains speculative, never a paid-cost proof.
         int next = s.nextMana() + ramp;
         int mana = s.mana() - c.cost();
-        if (firstTurn && c.has(INSTANT_MANA)) mana++;
+        if (firstTurn && c.has(INSTANT_MANA)) mana+=2;
         return new State(atLeast(mana),next,s.ownCreatures()+creature,
                 s.tokens()+token,s.artifacts()+((c.role()==MultiplayerStrategicModel.Role.RAMP ||
                     c.role()==MultiplayerStrategicModel.Role.SAC_OUTLET)?1:0),
@@ -111,7 +116,7 @@ public final class MultiplayerStrategicSearchV35 {
                                int engines, boolean commanderPresent) {
         boolean emergency=underThreat(t);
         int landDeficit=atLeast(5-t.lands());
-        int lifeRisk=t.opponentPower1()+t.opponentPower2()+t.opponentPower3();
+        int lifeRisk=Math.max(t.opponentPower1(),Math.max(t.opponentPower2(),t.opponentPower3()));
         int base = switch(c.role()) {
             case RAMP -> 16 + 5*landDeficit + (t.lands()<=3 ? 15:0);
             case COMMANDER -> 19 + 6*min(engines,3) + 4*min(t.ownArtifacts(),6)
@@ -157,7 +162,11 @@ public final class MultiplayerStrategicSearchV35 {
 
     private static int nextMana(Table t, State s) {
         // Only a LAND ALREADY IN OWN HAND can justify a next-turn land drop.
-        return min(s.nextMana() + (t.handLands()>0?1:0), 20);
+        // Sources tapped during the current turn normally untap next turn.
+        // Use only already-controlled lands and known ramp, never a blind draw.
+        int recovered=Math.max(t.mana(),t.lands());
+        int gained=Math.max(0,s.nextMana()-t.mana());
+        return min(recovered+gained+(t.handLands()>0?1:0),20);
     }
 
     /**
@@ -190,7 +199,8 @@ public final class MultiplayerStrategicSearchV35 {
             for(int j=-1;j<options.size();j++) {
                 if(j==i)continue;
                 CardPlan second=j<0?null:options.get(j);
-                if(second!=null && second.cost()>afterFirst.mana())continue;
+                if(second!=null && (!second.forgeTimingLegal()
+                        || second.cost()>afterFirst.mana()))continue;
                 State afterSecond=second==null?afterFirst:apply(afterFirst,second,true);
                 int now=initial+(second==null?0:secondWeight*score(t,second,afterFirst));
                 CardPlan next=null;int future=0;
