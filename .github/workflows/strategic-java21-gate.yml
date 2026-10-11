@@ -18,6 +18,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   actual-java21-forge-compile:
     runs-on: ubuntu-latest
@@ -89,3 +90,47 @@ jobs:
           javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
             tests/java/forge/ai/MultiplayerTacticalPlannerV35Checks.java
           java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerTacticalPlannerV35Checks
+
+      - name: Diagnose failed Forge A/B archives without changing evidence
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, subprocess
+          cases=[
+            "v35-v17_strict-vs-v35_brimaz_duel-artifact",
+            "v35-forge_stock-vs-v35_strategy-aristo",
+          ]
+          for i,name in enumerate(cases):
+              folder=pathlib.Path("/tmp/v35_failed_archive")/str(i)
+              folder.mkdir(parents=True,exist_ok=True)
+              result=subprocess.run(["gh","run","download","38136545704",
+                   "--name",name,"--dir",str(folder)],capture_output=True,
+                   text=True,timeout=160)
+              print("FAILED_V35_ARCHIVE",name,"download_rc",result.returncode,flush=True)
+              if result.returncode:
+                  print(result.stderr[-450:],flush=True)
+                  continue
+              files=list(folder.rglob("stderr.log"))+list(folder.rglob("stdout.log"))
+              print("FAILED_V35_LOG_FILES",len(files),flush=True)
+              for path in files:
+                  raw=path.read_text(encoding="utf-8",errors="replace")
+                  lines=raw.splitlines()
+                  relevant=[l for l in lines if any(k in l for k in (
+                      "Traceback","Error:","Exception","RuntimeError","FileNotFound",
+                      "ValueError","AssertionError","not found","MemoryError",
+                      "Killed","OOM","FAILED","failed","returncode","FATAL",
+                      "error:","unparsed","clock_censored","engine_error",
+                      "REAL_FOUR_AI_MATRIX","FOUR_AI_LOCAL_PREFLIGHT",
+                      "FOUR_AI_EXPLORATORY_READINESS_GATE"))]
+                  if not relevant and not path.name.endswith("stderr.log"):continue
+                  print("FAILED_V35_LOG",str(path.relative_to(folder)),
+                        "lines",len(lines),"relevant",len(relevant),flush=True)
+                  for item in relevant[-9:]:
+                      print("  ",item[:260],flush=True)
+                  for item in lines[-5:]:
+                      print("  TAIL",item[:240],flush=True)
+          PY
