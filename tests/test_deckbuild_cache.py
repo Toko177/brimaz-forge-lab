@@ -81,6 +81,16 @@ class CacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
             require_match(self.key,changed)
 
+    def test_switch_to_generic_ai_never_reuses_legacy_reference_games(self):
+        v43=stamp(self.root,self.root/"forge_decks",
+                  self.root/"forge_decks/candidate-manifest.json",
+                  seed_base=21410000,repeats=1,policy="V43-single-seat-generic")
+        self.assertNotEqual(self.key["inputs"]["policy"],v43["inputs"]["policy"])
+        with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
+            require_match(self.key,v43)
+        with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
+            require_match(v43,self.key)
+
     def test_seed_or_repeat_change_rejects_cache(self):
         d=copy.deepcopy(self.key)
         d["inputs"]["seed_base"]+=1

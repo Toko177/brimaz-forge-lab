@@ -220,3 +220,20 @@ le banc d'essai tourne quatre positions sur plusieurs decks.
 victoires spécifiques du challenger sur les parties naturelles.
 Graine indépendante `20261221`. Documentation détaillée :
 `docs/V42_GENERAL_COMMANDER_AI.md`. PR unique, toujours draft.
+
+## Connexion V43 au deckbuilding (opt-in)
+
+Le pipeline `deckbuild-ab.yml` prend maintenant un choix
+`ai_policy` entre `V13-incubate-adaptive` (défaut inchangé)
+et `V43-single-seat-generic`. En V43 le siège-candidat suit la
+rotation des 4 joueurs ; les trois Kaal restent sur Forge.
+`deckbuild_run.py` marque une partie `policy_unverified` si
+aucune décision V43 n'apparaît réellement, et `policy_fault`
+si V43 touche un adversaire. L'archive et le certificat
+conservent ces censures, jamais traitées en défaites ou victoires.
+
+`deckbuild_cache.py` v2 est maintenant conditionné par la
+politique et les SHA256 des vraies classes Java compilées, afin
+qu'aucune référence V13 ne soit réutilisée en V43.
+Tests : `test_deckbuild_pipeline.py`, `test_deckbuild_cache.py`.
+Guide : `docs/DECKBUILDING_QUICKSTART.md`. Garder PR #29 draft.

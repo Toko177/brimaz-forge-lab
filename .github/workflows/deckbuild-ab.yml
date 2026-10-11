@@ -29,6 +29,12 @@ on:
         required: true
         default: "Brimaz, Blight of Oreskos"
         type: string
+      ai_policy:
+        description: "AI for the evaluated deck, following its rotating seat"
+        required: true
+        default: "V13-incubate-adaptive"
+        type: choice
+        options: ["V13-incubate-adaptive", "V43-single-seat-generic"]
       repeats:
         description: "1=16 games, 2=32, 4=64, 6=96"
         required: true
@@ -138,10 +144,11 @@ jobs:
         env:
           REPEATS: ${{ inputs.repeats || '1' }}
           SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           python3 scripts/deckbuild_cache.py --mode create --root . \
             --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-            --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS" --policy "$AI_POLICY" \
             --output forge_decks/reference-cache-key.json
       - name: Find reusable reference results from matching successful GitHub campaigns
         id: cache_lookup
@@ -149,6 +156,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_RUN_ID: ${{ inputs.reference_run_id || '' }}
           SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
           REPEATS: ${{ inputs.repeats || '1' }}
         run: |
           set -euo pipefail
@@ -177,7 +185,7 @@ jobs:
             fi
             if python3 scripts/deckbuild_cache.py --mode verify --root . \
               --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-              --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+              --seed-base "$SEED_BASE" --repeats "$REPEATS" --policy "$AI_POLICY" \
               --previous "candidate-cache/$run_id/forge_decks/reference-cache-key.json"; then
               found="$run_id"
               cp "candidate-cache/$run_id/forge_decks/reference-cache-key.json" \
@@ -271,6 +279,7 @@ jobs:
           ROTATION: ${{ matrix.rotation }}
           REPEATS: ${{ inputs.repeats || '1' }}
           SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           set -euo pipefail
           JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
@@ -280,7 +289,7 @@ jobs:
             --arm "$ARM" --pod "$POD" --rotation "$ROTATION" \
             --seed-base "$seed" --repeats "$REPEATS" \
             --clock 360 --timeout 445 --profile Default \
-            --policy V13-incubate-adaptive \
+            --policy "$AI_POLICY" \
             --out "results/deckbuild/$ARM/$POD/rot$ROTATION"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -317,10 +326,11 @@ jobs:
         env:
           REPEATS: ${{ inputs.repeats || '1' }}
           SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           python3 scripts/deckbuild_cache.py --mode audit-archive --root . \
             --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-            --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS" --policy "$AI_POLICY" \
             --previous forge_decks/verified-reference-key.json \
             --archive match-artifacts/cached-reference/
       - name: Certify raw four-player game outcomes independently of launcher summary

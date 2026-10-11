@@ -1,3 +1,10 @@
+**Deckbuilding avec une seule IA V43 à chaque rotation (opt-in).**
+Le pipeline de decklists accepte `V43-single-seat-generic` à côté de
+la référence V13. Le pilote ciblé suit le siège de la liste évaluée
+et les trois adversaires conservent Forge. Le cache de référence refuse
+tout mélange de politiques et identifie les sources Java compilées.
+[Guide utilisateur](docs/DECKBUILDING_QUICKSTART.md).
+
 **V43 — comparaison directe contre Forge.**
 Le mode `v43_commander_single_seat` active l'IA générique pour
 un unique joueur par partie et maintient trois adversaires contrôlés
