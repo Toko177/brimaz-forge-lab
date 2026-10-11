@@ -11,6 +11,8 @@ on:
       - patches/java/forge/ai/MultiplayerStrategicSearchV35.java
       - patches/java/forge/ai/MultiplayerStrategicSequencerV35.java
       - patches/java/forge/ai/MultiplayerTacticalPlannerV35.java
+      - patches/java/forge/ai/MultiplayerEvidenceGateV36.java
+      - tests/java/forge/ai/MultiplayerEvidenceGateV36Checks.java
       - tests/java/forge/ai/MultiplayerTacticalPlannerV35Checks.java
       - scripts/audit_v35_real_search.py
       - tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
@@ -77,6 +79,8 @@ jobs:
             grep -F 'isCommanderRemovalThreat('
           javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerTacticalPlannerV35 |
             grep -F 'choosePublicAction('
+          javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerEvidenceGateV36 |
+            grep -F 'choose(forge.ai.MultiplayerStrategicSearchV35'
           javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerStrategicSequencerV35 |
             grep -F 'rank(forge.game.player.Player,'
           mkdir -p /tmp/v33-tests
@@ -86,6 +90,9 @@ jobs:
           javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
             tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
           java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerStrategicSearchV35Checks
+          javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
+            tests/java/forge/ai/MultiplayerEvidenceGateV36Checks.java
+          java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerEvidenceGateV36Checks
           javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
             tests/java/forge/ai/MultiplayerTacticalPlannerV35Checks.java
           java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerTacticalPlannerV35Checks

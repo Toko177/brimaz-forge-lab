@@ -81,11 +81,11 @@ def audit(report):
         raise ValueError("Not the genuine Forge A/B format")
     ref=report.get("reference_provenance",{})
     exp=report.get("experiment_provenance",{})
-    if ref.get("policy") not in ("v17_strict","forge_stock","forge_stock_compat") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel"):
+    if ref.get("policy") not in ("v17_strict","forge_stock","forge_stock_compat") or exp.get("policy") not in ("v35_strategy","v35_brimaz_duel","v36_brimaz_challenger"):
         raise ValueError("Invalid Forge stock/V17 control or V35 experiment")
-    if exp["policy"]=="v35_brimaz_duel" and ref["policy"]!="v17_strict":
+    if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger") and ref["policy"]!="v17_strict":
         raise ValueError("Mixed-seat v35_brimaz_duel requires stable identical v17 opponents")
-    if exp["policy"]=="v35_brimaz_duel":
+    if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger"):
         if ref.get("patches")!=exp.get("patches"):
             raise ValueError("Mixed-seat comparator has different Java patches on opponent seats")
         if ref.get("java_tool_options") is None or exp.get("java_tool_options") is None:
@@ -93,6 +93,8 @@ def audit(report):
         if ("v35BrimazOnly=true" not in exp["java_tool_options"]
             or "v35StrategicSearch=true" not in exp["java_tool_options"]
             or "v35StrategicSearch=false" not in ref["java_tool_options"]
+            or (exp["policy"]=="v36_brimaz_challenger"
+                and "v36EvidenceGate=true" not in exp["java_tool_options"])
             or "fourSeatRemovalUrgency=true" in exp["java_tool_options"]
             or "fourSeatCounterCritical=true" in exp["java_tool_options"]):
             raise ValueError("V35 Brimaz-only test was contaminated by global strategy flags")
@@ -132,7 +134,7 @@ def audit(report):
             raise ValueError("V35 code touched control arm")
         candidates=list(WINDOW.finditer(y))
         approvals=list(APPROVED.finditer(y))
-        if exp["policy"]=="v35_brimaz_duel":
+        if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger"):
             for marker in candidates+list(TACTICAL_WINDOW.finditer(y)):
                 if b["seats"][int(marker["seat"])-1]!="Brimaz_V3":
                     raise ValueError("V35 diagnostic window leaked into unchanged opponent")
@@ -146,7 +148,7 @@ def audit(report):
         tactical_windows+=len(task_windows)
         tactical_rejected+=sum(int(m["count"]) for m in task_rejects)
         for approved in task_approvals:
-            if (exp["policy"]=="v35_brimaz_duel"
+            if (exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger")
                 and b["seats"][int(approved["seat"])-1]!="Brimaz_V3"):
                 raise ValueError("V35 tactical policy leaked into unchanged opponent")
             if int(approved["turn"])<1 or int(approved["rejected"])>5:
@@ -157,7 +159,7 @@ def audit(report):
             tactical_by_card[approved["card"]]+=1
         for m in approvals:
             index=int(m["seat"])
-            if exp["policy"]=="v35_brimaz_duel" and b["seats"][index-1]!="Brimaz_V3":
+            if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger") and b["seats"][index-1]!="Brimaz_V3":
                 raise ValueError("V35 strategy leaked into an unchanged v17 opponent")
             if int(m["turn"])<1 or int(m["rejected"])>3:
                 raise ValueError("Invalid V35 original Forge approval marker")
@@ -204,11 +206,12 @@ def audit(report):
       "tactical_approved_by_card":dict(tactical_by_card),
       "tactical_candidates_rejected_by_forge":tactical_rejected,
       "statuses":{str(k):v for k,v in statuses.items()},
+      "v36_challenger": exp["policy"]=="v36_brimaz_challenger",
       "reference_policy":ref["policy"],
       "experimental_policy":exp["policy"],
       "reference_is_byte_identical_to_stock_forge":ref["policy"]=="forge_stock",
       "reference_is_stock_ai_with_shared_compatibility_fix":ref["policy"]=="forge_stock_compat",
-      "mixed_seat_brimaz_vs_v17_opponents":exp["policy"]=="v35_brimaz_duel",
+      "mixed_seat_brimaz_vs_v17_opponents":exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger"),
       "arm_natural_finishes":{"reference":natural_reference,"experiment":natural_experiment},
       "wins_by_deck_all_natural_reference":dict(wins_reference),
       "wins_by_deck_all_natural_experiment":dict(wins_experiment),

@@ -93,6 +93,21 @@ with tempfile.TemporaryDirectory() as td:
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
+    challenger=report()
+    challenger["experiment_provenance"]["policy"]="v36_brimaz_challenger"
+    challenger["reference_provenance"]["patches"]=["common"]
+    challenger["experiment_provenance"]["patches"]=["common"]
+    challenger["reference_provenance"]["java_tool_options"]="-Dbrimaz.v35StrategicSearch=false"
+    challenger["experiment_provenance"]["java_tool_options"]="-Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true -Dbrimaz.v36EvidenceGate=true"
+    challenger["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    challenger["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    assert audit(challenger)["v36_challenger"] is True
+    challenger["experiment_provenance"]["java_tool_options"]="-Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true"
+    try:
+        audit(challenger)
+        raise AssertionError("Challenger missing V36 JVM flag accepted")
+    except ValueError:
+        pass
     duel["experiment_provenance"]["java_tool_options"] += " -Dbrimaz.fourSeatRemovalUrgency=true"
     try:
         audit(duel)
