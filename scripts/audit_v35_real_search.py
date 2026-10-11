@@ -229,7 +229,7 @@ def audit(report):
       "experimental_policy":exp["policy"],
       "reference_is_byte_identical_to_stock_forge":ref["policy"]=="forge_stock",
       "reference_is_stock_ai_with_shared_compatibility_fix":ref["policy"]=="forge_stock_compat",
-      "mixed_seat_brimaz_vs_v17_opponents":exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger","v37_brimaz_challenger"),
+      "mixed_seat_brimaz_vs_v17_opponents":exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger"),
       "arm_natural_finishes":{"reference":natural_reference,"experiment":natural_experiment},
       "wins_by_deck_all_natural_reference":dict(wins_reference),
       "wins_by_deck_all_natural_experiment":dict(wins_experiment),
