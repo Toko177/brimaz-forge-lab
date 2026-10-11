@@ -130,7 +130,7 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
     target.mkdir(parents=True,exist_ok=True)
     env=os.environ.copy()
     for name in ("_JAVA_OPTIONS","JDK_JAVA_OPTIONS","JAVA_TOOL_OPTIONS"):env.pop(name,None)
-    env["JAVA_TOOL_OPTIONS"]=policy_flags("v38_brimaz_challenger")+" -Dbrimaz.v37MirrorDuel=true"
+    env["JAVA_TOOL_OPTIONS"]=policy_flags("v39_brimaz_challenger")+" -Dbrimaz.v37MirrorDuel=true"
     command=["java","-Xmx4g","-jar",str(jar),"sim","-d",
              *[name+".dck" for name in seats],"-D",str(deck_dirs[pod]),
              "-f","Commander","-n","1","-c",str(clock),"-s",str(seed),
@@ -154,6 +154,9 @@ def game(task,jar,run_dir,deck_dirs,out,seed_base,clock,mode):
             "V37_positive_sacrifice_approvals":stdout.count("FOUR_AI_V37_POSITIVE_SAC_FORGE_APPROVED"),
             "V38_transformation_approvals":stdout.count("FOUR_AI_V38_TRANSFORM_STOCK_APPROVED"),
             "V38_transformation_proposals":stdout.count("FOUR_AI_V38_TRANSFORM_PROPOSAL"),
+            "V39_visible_counter_engine_proposals":len(re.findall(
+                r"FOUR_AI_V38_TRANSFORM_PROPOSAL[^\n]*source=KNOWN_COUNTER_ENGINE",
+                stdout)),
             "log":str((target/"game.log").relative_to(out))}
     (target/"result.json").write_text(json.dumps(record,indent=2)+"\n")
     print("V37_ACTUAL_MIRROR_MATCH",json.dumps(record,ensure_ascii=False),flush=True)

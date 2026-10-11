@@ -35,7 +35,7 @@ CANONICAL_DECK_SHA256={
 POLICIES=("forge_stock","forge_stock_compat","v17_strict","v19_removal","v20_shadow","critical_counter",
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
           "v33_strategy","v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_stock_control","v37_brimaz_challenger",
-          "v38_brimaz_challenger")
+          "v38_brimaz_challenger","v39_brimaz_challenger")
 
 def sha(path):
     d=hashlib.sha256()
@@ -87,6 +87,9 @@ def policy_flags(policy):
     if policy == "v38_brimaz_challenger":
         return (policy_flags("v37_brimaz_challenger")
                 +" -Dbrimaz.v38IncubatorTempo=true")
+    if policy == "v39_brimaz_challenger":
+        return (policy_flags("v38_brimaz_challenger")
+                +" -Dbrimaz.v39EngineEconomics=true")
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",

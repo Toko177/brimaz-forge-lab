@@ -93,6 +93,22 @@ with tempfile.TemporaryDirectory() as td:
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
+    v39=report()
+    v39["reference_provenance"].update({
+        "policy":"v37_stock_control","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true"})
+    v39["experiment_provenance"].update({
+        "policy":"v39_brimaz_challenger","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true -Dbrimaz.v37Challenger=true -Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true -Dbrimaz.v36EvidenceGate=true -Dbrimaz.v38IncubatorTempo=true -Dbrimaz.v39EngineEconomics=true"})
+    v39["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    v39["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    assert audit(v39)["v39_engine_challenger"] is True
+    v39["experiment_provenance"]["java_tool_options"]=v39["experiment_provenance"]["java_tool_options"].replace(" -Dbrimaz.v39EngineEconomics=true","")
+    try:
+        audit(v39)
+        raise AssertionError("V39 policy without engine economics flag passed provenance gate")
+    except ValueError:
+        pass
     v38=report()
     v38["reference_provenance"].update({
         "policy":"v37_stock_control","patches":["shared_ai_patch"],
