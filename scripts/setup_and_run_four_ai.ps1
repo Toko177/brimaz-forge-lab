@@ -9,7 +9,8 @@ Does not fabricate wins or overwrite modified decks.
 param(
   [ValidateSet("both","aristo","artifact")][string]$Pod="both",
   [ValidateSet("v17_strict","v19_removal","v20_shadow",
-               "critical_counter","v23_cooldown","v24_trigger_prune")][string]$Policy="v17_strict",
+               "critical_counter","v23_cooldown","v24_trigger_prune",
+               "v30_exact_rules","v30_shadow_verify")][string]$Policy="v17_strict",
   [ValidateSet("Default","Experimental","Cautious","Reckless")][string]$AiProfile="Default",
   [ValidateRange(1,5)][int]$GamesPerRotation=1,
   [ValidateRange(1,4)][int]$Parallel=2,
