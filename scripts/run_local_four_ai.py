@@ -36,7 +36,7 @@ POLICIES=("forge_stock","forge_stock_compat","v17_strict","v19_removal","v20_sha
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
           "v33_strategy","v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_stock_control","v37_brimaz_challenger",
           "v38_brimaz_challenger","v39_brimaz_challenger",
-          "v40_brimaz_challenger","v41_brimaz_challenger")
+          "v40_brimaz_challenger","v41_brimaz_challenger","v42_commander_general")
 
 def sha(path):
     d=hashlib.sha256()
@@ -97,6 +97,10 @@ def policy_flags(policy):
     if policy == "v41_brimaz_challenger":
         return (policy_flags("v40_brimaz_challenger")
                 +" -Dbrimaz.v41SacrificeAccess=true")
+    if policy == "v42_commander_general":
+        # Same Forge patches as V37 control, with older Brimaz policy off.
+        return ("-Dbrimaz.v37ControlledDuel=true "
+                "-Dcommander.v42GeneralPolicy=true")
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",

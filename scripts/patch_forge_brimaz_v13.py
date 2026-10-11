@@ -225,6 +225,24 @@ player_controller=player_controller.replace(mulligan_anchor,mulligan_inject,1)
 
 anchor1="        SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);"
 insert1=(
+"        // V42 deck-agnostic Commander advisor. All four seats, opt-in only.\n"
+"        // Forge still owns costs, legality, targeting and stack decisions.\n"
+"        if (CommanderGenericSequencerV42.enabled()) {\n"
+"            int refusedV42 = 0;\n"
+"            for (SpellAbility candidateV42 : CommanderGenericSequencerV42.rank(player, saList)) {\n"
+"                if (canPlayAndPayFor(candidateV42) == AiPlayDecision.WillPlay) {\n"
+"                    System.out.println(\"FOUR_AI_V42_STOCK_APPROVED player=\"+player.getName()\n"
+"                        +\" turn=\"+game.getPhaseHandler().getTurn()\n"
+"                        +\" card=\"+candidateV42.getHostCard().getName()\n"
+"                        +\" rejectedEarlier=\"+refusedV42\n"
+"                        +\" nativeForgeAIDecision=true notResolvedYet=true\");\n"
+"                    return candidateV42;\n"
+"                }\n"
+"                refusedV42++;\n"
+"            }\n"
+"            if (refusedV42 > 0) System.out.println(\"FOUR_AI_V42_STOCK_REJECTED player=\"\n"
+"                +player.getName()+\" rejected=\"+refusedV42+\" fallback=originalForge\");\n"
+"        }\n"
 "        // V35 phase II: tactical emergency before proactive engine deployment.\n"
 "        if (MultiplayerStrategicSequencerV35.ENABLED) {\n"
 "            int refusedTacticsV35 = 0;\n"
@@ -916,7 +934,8 @@ with tempfile.TemporaryDirectory() as d:
                   "MultiplayerTacticalPlannerV35.java", "MultiplayerEvidenceGateV36.java",
                   "MultiplayerIncubatorTempoV38.java",
                   "MultiplayerIncubatorEngineV39.java",
-                  "MultiplayerSacrificeAccessV41.java"):
+                  "MultiplayerSacrificeAccessV41.java",
+                  "CommanderGenericModelV42.java", "CommanderGenericSequencerV42.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -932,7 +951,9 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"MultiplayerEvidenceGateV36.java"),
              str(target/"MultiplayerIncubatorTempoV38.java"),
              str(target/"MultiplayerIncubatorEngineV39.java"),
-             str(target/"MultiplayerSacrificeAccessV41.java")]
+             str(target/"MultiplayerSacrificeAccessV41.java"),
+             str(target/"CommanderGenericModelV42.java"),
+             str(target/"CommanderGenericSequencerV42.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
     for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
@@ -941,7 +962,8 @@ with tempfile.TemporaryDirectory() as d:
                  "MultiplayerEvidenceGateV36.class",
                  "MultiplayerIncubatorTempoV38.class",
                  "MultiplayerIncubatorEngineV39.class",
-                 "MultiplayerSacrificeAccessV41.class"):
+                 "MultiplayerSacrificeAccessV41.class",
+                 "CommanderGenericModelV42.class", "CommanderGenericSequencerV42.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
@@ -966,6 +988,8 @@ with tempfile.TemporaryDirectory() as d:
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerIncubatorEngineV39*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerSacrificeAccessV41*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("CommanderGeneric*V42*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)

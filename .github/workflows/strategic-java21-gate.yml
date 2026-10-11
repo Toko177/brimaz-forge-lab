@@ -19,6 +19,9 @@ on:
       - patches/java/forge/ai/MultiplayerIncubatorTempoV38.java
       - patches/java/forge/ai/MultiplayerIncubatorEngineV39.java
       - patches/java/forge/ai/MultiplayerSacrificeAccessV41.java
+      - patches/java/forge/ai/CommanderGenericModelV42.java
+      - patches/java/forge/ai/CommanderGenericSequencerV42.java
+      - tests/java/forge/ai/CommanderGenericModelV42Checks.java
       - tests/java/forge/ai/MultiplayerSacrificeAccessV41Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorEngineV39Checks.java
       - tests/java/forge/ai/MultiplayerIncubatorTempoV38Checks.java
@@ -54,6 +57,10 @@ jobs:
             tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
           java -cp /tmp/v33-model forge.ai.MultiplayerStrategicModelChecks
           java -cp /tmp/v33-model forge.ai.MultiplayerStrategicSearchV35Checks
+          javac --release 21 -d /tmp/v33-model \
+            patches/java/forge/ai/CommanderGenericModelV42.java \
+            tests/java/forge/ai/CommanderGenericModelV42Checks.java
+          java -cp /tmp/v33-model forge.ai.CommanderGenericModelV42Checks
       - name: Check pinned canonical files and Python operator controls
         run: |
           python3 tests/test_run_local_four_ai.py
@@ -91,6 +98,8 @@ jobs:
             grep -F 'isCommanderRemovalThreat('
           javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerTacticalPlannerV35 |
             grep -F 'choosePublicAction('
+          javap -classpath /tmp/v33-test.jar forge.ai.CommanderGenericSequencerV42 |
+            grep -F 'rank(forge.game.player.Player,'
           javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerSacrificeAccessV41 |
             grep -F 'authorized('
           javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerIncubatorEngineV39 |
