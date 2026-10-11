@@ -1,4 +1,4 @@
-name: V33 verify 4-AI strategic planner compiles against real Forge
+name: V35 4-AI strategic search Java21 compile and adversarial tests
 on:
   pull_request:
     branches: [main]
@@ -8,6 +8,9 @@ on:
       - patches/java/forge/ai/MultiplayerStrategicModel.java
       - patches/java/forge/ai/MultiplayerStrategicSequencer.java
       - tests/java/forge/ai/MultiplayerStrategicModelChecks.java
+      - patches/java/forge/ai/MultiplayerStrategicSearchV35.java
+      - patches/java/forge/ai/MultiplayerStrategicSequencerV35.java
+      - tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
       - .github/workflows/v33-strategic-compile.yml
   workflow_dispatch:
 permissions:
@@ -31,13 +34,16 @@ jobs:
           mkdir -p /tmp/v33-model
           javac --release 21 -d /tmp/v33-model \
             patches/java/forge/ai/MultiplayerStrategicModel.java \
-            tests/java/forge/ai/MultiplayerStrategicModelChecks.java
+            patches/java/forge/ai/MultiplayerStrategicSearchV35.java \
+            tests/java/forge/ai/MultiplayerStrategicModelChecks.java \
+            tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
           java -cp /tmp/v33-model forge.ai.MultiplayerStrategicModelChecks
+          java -cp /tmp/v33-model forge.ai.MultiplayerStrategicSearchV35Checks
       - name: Check pinned canonical files and Python operator controls
         run: |
           python3 tests/test_run_local_four_ai.py
           python3 tests/test_v31_paired_four_ai.py
-          python3 -m py_compile scripts/patch_forge_brimaz_v13.py scripts/run_local_four_ai.py
+          python3 -m py_compile scripts/patch_forge_brimaz_v13.py scripts/run_local_four_ai.py scripts/audit_v35_real_search.py
       - uses: actions/cache/restore@v4
         with:
           key: forge-2.0.15-linux-shared-20261009
@@ -59,9 +65,12 @@ jobs:
           cp "$ORIG" /tmp/v33-test.jar
           python3 scripts/patch_forge_charm_context.py --jar /tmp/v33-test.jar
           python3 scripts/patch_forge_brimaz_v13.py --jar /tmp/v33-test.jar
-          javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerStrategicSequencer |
+          javap -classpath /tmp/v33-test.jar forge.ai.MultiplayerStrategicSequencerV35 |
             grep -F 'choose(forge.game.player.Player,'
           mkdir -p /tmp/v33-tests
           javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
             tests/java/forge/ai/MultiplayerStrategicModelChecks.java
           java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerStrategicModelChecks
+          javac --release 21 -cp /tmp/v33-test.jar -d /tmp/v33-tests \
+            tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
+          java -cp "/tmp/v33-test.jar:/tmp/v33-tests" forge.ai.MultiplayerStrategicSearchV35Checks
