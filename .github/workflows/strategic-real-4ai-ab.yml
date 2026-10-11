@@ -20,7 +20,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: strategic-real-four-ai-v37-true-mirror-launch
+  group: strategic-real-four-ai-v38-balanced-mirror
   cancel-in-progress: true
 jobs:
   real-commanders:
