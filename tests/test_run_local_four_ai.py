@@ -66,6 +66,10 @@ assert "fourSeatCounterCritical=true" in policy_flags("critical_counter")
 assert "fastCardPropertyExactLiterals=true" in policy_flags("v30_exact_rules")
 assert "v35_strategy" in POLICIES
 assert "v35StrategicSearch=true" in policy_flags("v35_strategy")
+assert "fourSeatRemovalUrgency=true" in policy_flags("v35_strategy")
+assert "fourSeatCounterCritical=true" in policy_flags("v35_strategy")
+assert "fourSeatRemovalUrgency=false" in policy_flags("v17_strict")
+assert "fourSeatCounterCritical=false" in policy_flags("v17_strict")
 assert "v35StrategicSearch=false" in policy_flags("v17_strict")
 assert "v35StrategicSearch=false" in policy_flags("v33_strategy")
 try:
