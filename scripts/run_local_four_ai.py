@@ -21,7 +21,7 @@ import uuid
 ROOT=Path(__file__).resolve().parents[1]
 PODS=("aristo","artifact")
 POLICIES=("v17_strict","v19_removal","v20_shadow","critical_counter",
-          "v23_cooldown","v24_trigger_prune")
+          "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify")
 
 def sha(path):
     d=hashlib.sha256()
@@ -68,6 +68,9 @@ def policy_flags(policy):
       "-Dbrimaz.fourSeatCounterCritical=false",
       "-Dbrimaz.aiTimeoutCooldown=false",
       "-Dbrimaz.fastCombatTriggerNegativePrune=false",
+      "-Dbrimaz.fastCardPropertyExactLiterals=false",
+      "-Dbrimaz.cardPropertyShadowVerify=false",
+      "-Dbrimaz.cardPropertyFastTrace=false",
     ]
     opts={
       "v17_strict":[],
@@ -78,6 +81,11 @@ def policy_flags(policy):
       "v23_cooldown":["-Dbrimaz.aiTimeoutCooldown=true"],
       "v24_trigger_prune":["-Dbrimaz.fastCombatTriggerNegativePrune=true",
                            "-Dbrimaz.fastCombatTriggerTrace=true"],
+      "v30_exact_rules":["-Dbrimaz.fastCardPropertyExactLiterals=true",
+                         "-Dbrimaz.cardPropertyFastTrace=true"],
+      "v30_shadow_verify":["-Dbrimaz.fastCardPropertyExactLiterals=true",
+                            "-Dbrimaz.cardPropertyFastTrace=true",
+                            "-Dbrimaz.cardPropertyShadowVerify=true"],
     }
     if policy not in opts:raise ValueError("Unsupported AI policy "+policy)
     # Last Java property wins; reset flag overrides in one location.
@@ -95,6 +103,9 @@ def patch_jar(original,output,policy):
         scripts+=["patch_forge_counter_critical.py"]
     if policy=="v24_trigger_prune":
         scripts+=["patch_forge_combat_trigger_prune.py"]
+    if policy in ("v30_exact_rules","v30_shadow_verify"):
+        # V30 same-state verified fast paths, opt-in; default Forge rules otherwise.
+        scripts+=["patch_forge_card_property_fastpath.py"]
     for file in scripts:
         subprocess.run([sys.executable,str(ROOT/"scripts"/file),
                         "--jar",str(output)],check=True,cwd=ROOT)
@@ -194,6 +205,7 @@ def main():
         "scryfall_legality_report_file":str(args.scryfall_legality_report.resolve()) if args.scryfall_legality_report else None,
         "java_tool_options":flags,
         "jfr_enabled":bool(args.jfr),
+        "diagnostic_shadow_verification":args.policy=="v30_shadow_verify",
         "warning_on_jfr":"JFR sampling may alter timing; do not interpret profile-on/off timing as game engine speedup",
         "source_commit":subprocess.run(["git","rev-parse","HEAD"],
                             cwd=ROOT,capture_output=True,text=True).stdout.strip(),
