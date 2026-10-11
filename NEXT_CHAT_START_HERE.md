@@ -9,6 +9,18 @@ Forge ; lire d'abord [la note V35](docs/V35_STRATEGIC_SEARCH.md).
 Résultat de qualité IA non démontré tant que les véritables A/B
 et journaux d'interventions ne sont pas inspectés.
 
+## Statut empirique réel de la V35
+
+Le pilote original ([16 parties Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38133124128))
+a enregistré 230 propositions approuvées par le vrai contrôleur Forge
+(101 Aristo, 129 Artifact), 15 fins naturelles et une partie censurée.
+**Aucun gain stratégique ou winrate statistiquement validé**. Depuis
+ce pilote, la branche inclut `MultiplayerTacticalPlannerV35` pour
+retrait ciblé, nettoyage de plateau et réanimation défensive, plus
+une correction de la menace multiadversaire et du mana futur.
+Relire `docs/V35_STRATEGIC_SEARCH.md` avant la fusion et vérifier la
+dernière CI Java21 et la nouvelle comparaison A/B de 16 vraies JVM.
+
 ## Socle intégré sur main
 
 **11 octobre 2026 — dépôt consolidé et nettoyage global achevé.**

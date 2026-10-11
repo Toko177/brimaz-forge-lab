@@ -82,3 +82,13 @@ La porte de mesure de cette évolution est
 inventées. Il compte les propositions, les refus et les décisions
 acceptées par le **véritable** contrôle de jouabilité de Forge ; aucune
 approbation n'est par elle-même preuve de résolution ou de victoire.
+
+## Mesures tactiques V35
+
+L'auditeur `scripts/audit_v35_real_search.py` sépare désormais les
+interventions de développement `FOUR_AI_V35_STOCK_APPROVED` des
+interventions de retrait/nettoyage/réanimation
+`FOUR_AI_V35_TACTICAL_STOCK_APPROVED`. Ni l'une ni l'autre n'est
+une preuve de lancement ou de résolution effective du sort.
+Les propositions refusées par les critères originaux de Forge
+sont journalisées et ne sont pas comptées comme des actions.

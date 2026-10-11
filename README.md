@@ -36,6 +36,13 @@ Ne pas fusionner sans vérifier la compilation Java 21 réelle,
 les journaux de décisions approuvées et les parties A/B, sans toucher
 aux sept decks épinglés par SHA256.
 
+**Pilotage tactique complémentaire :** la V35 évalue désormais les
+retraits urgents, les remises à zéro de plateau et la reconstruction depuis
+le cimetière, toujours avec le contrôle original de Forge. Le pilote
+initial sur 16 JVM a enregistré **230 choix approuvés** (15 fins
+naturelles, 1 censure), sans preuve de gain de victoire ; les modifications
+tactiques ultérieures nécessitent une nouvelle mesure.
+
 ## Ce qui fonctionne réellement
 
 - Compilation du patch V33 contre le véritable JAR Forge Java 21,

@@ -132,6 +132,59 @@ de déroulement, censures, erreurs et vainqueurs.
    Diagnostiquer `saList`, l'impact de `canPlayAndPayFor` et les critères
    restrictifs sans dégrader la légalité.
 
+## Mesure empirique de la V35 initiale (avant la couche tactique)
+
+Le [benchmark réel du 11 octobre 2026](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38133124128)
+s'est terminé sans erreur de CI. Il a exécuté 16 JVM Forge avec les 7 decks
+canoniques originaux : **15 parties se sont terminées naturellement**,
+une paire comporte une censure ou un défaut. L'auditeur a détecté
+**230 décisions de permanents V35 réellement approuvées par l'IA Forge** :
+101 dans le pod Aristo et 129 dans le pod Artifact, réparties sur
+les quatre sièges. Six paires ont changé de vainqueur, dont une paire
+non intégralement naturelle. Ces résultats prouvent que le planificateur
+**intervient**, mais ils ne prouvent pas que ses décisions sont meilleures
+ni que les 230 sorts ont été effectivement résolus.
+
+## Phase II — nouvelles décisions tactiques et corrections causales
+
+`MultiplayerTacticalPlannerV35` propose, uniquement dans une véritable
+fenêtre de phase principale avec pile vide, trois catégories de décisions
+non traitées par le premier planificateur :
+
+- **Retrait ciblé** en cas de forte pression d'un adversaire, en laissant
+  le moteur Forge sélectionner et vérifier les cibles réelles.
+- **Nettoyage du plateau** lorsqu'il faut survivre à un déséquilibre net
+  de créatures et de puissance (p. ex. `Sunfall`). Un plateau allié
+  solide, incluant le commandant, est protégé par des conditions
+  restrictives.
+- **Reconstruction depuis son propre cimetière** (p. ex. `Living Death`)
+  si un nombre suffisant de créatures y sont déjà connues du joueur.
+
+Cette couche n'affirme aucune prédiction exacte des prochains attaquants :
+la puissance du pire adversaire est un indicateur, pas une preuve de
+dommages imminents. Pour la même raison, la recherche proactive ne
+**somme plus les trois plateaux adverses comme une unique attaque**.
+Elle tient compte des propres bloqueurs, de l'exposition et de la santé.
+
+La projection de mana du tour suivant est aussi corrigée : elle repose
+désormais sur les terrains effectivement en jeu, ceux **connus** en main
+et les accélérations mises en place, plutôt que de croire que les sources
+déjà engagées ne se dégageront jamais. Ce n'est toujours pas une
+simulation des couleurs, des coûts supplémentaires ou des effets exacts.
+
+Chaque proposition reste conditionnée à
+`AiController.canPlayAndPayFor(...) == AiPlayDecision.WillPlay`.
+Les cas tactiques sont vérifiés par
+`tests/java/forge/ai/MultiplayerTacticalPlannerV35Checks.java` avec
+compilation Java21 contre la version officielle de Forge. Le nouvel
+auditeur distingue `FOUR_AI_V35_TACTICAL_WINDOW`,
+`FOUR_AI_V35_TACTICAL_STOCK_APPROVED` et
+`FOUR_AI_V35_TACTICAL_STOCK_REJECTED`.
+
+**Le gain de qualité de cette phase II n'a pas encore été mesuré.**
+Ses 16 vraies parties A/B doivent être inspectées séparément du pilote
+V35 initial ; les tests synthétiques ne valent pas certification de jeu.
+
 ## Note pour les versions ultérieures
 
 Un prochain saut vers une IA de niveau humain nécessitera des **états
