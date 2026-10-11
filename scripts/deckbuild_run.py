@@ -136,9 +136,10 @@ def run_games(*,jar,directory,manifest,arm,pod,rotation,seed_base,repeats,clock,
         else: status="complete"
         # Even if the game finished, we cannot certify a chosen AI policy
         # that never ran, or one that changed any of the three control seats.
-        if policy_evidence["wrong_seat"]:status="policy_fault"
-        elif policy==V43_POLICY and not policy_evidence["observed"]:
-            status="policy_unverified"
+        if status=="complete":
+            if policy_evidence["wrong_seat"]:status="policy_fault"
+            elif policy==V43_POLICY and not policy_evidence["observed"]:
+                status="policy_unverified"
         winner_seat=int(matches[0][1]) if status=="complete" else None
         game_ms=int(matches[0][0]) if matches else None
         item={
