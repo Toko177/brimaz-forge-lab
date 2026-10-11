@@ -225,6 +225,28 @@ player_controller=player_controller.replace(mulligan_anchor,mulligan_inject,1)
 
 anchor1="        SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);"
 insert1=(
+"        // V35: bounded known-card strategy for all four AIs.\n"
+"        // The ORIGINAL Forge AI must approve every proposed spell.\n"
+"        if (MultiplayerStrategicSequencerV35.ENABLED) {\n"
+"            int rejectedV35 = 0;\n"
+"            for (SpellAbility v35 : MultiplayerStrategicSequencerV35.rank(player, saList)) {\n"
+"                AiPlayDecision decisionV35 = canPlayAndPayFor(v35);\n"
+"                if (decisionV35 == AiPlayDecision.WillPlay) {\n"
+"                    System.out.println(\"FOUR_AI_V35_STOCK_APPROVED player=\" + player.getName()\n"
+"                        + \" turn=\" + game.getPhaseHandler().getTurn()\n"
+"                        + \" card=\" + v35.getHostCard().getName()\n"
+"                        + \" rejectedEarlier=\" + rejectedV35\n"
+"                        + \" genuineForgeAIDecision=true\");\n"
+"                    return v35;\n"
+"                }\n"
+"                rejectedV35++;\n"
+"            }\n"
+"            if (rejectedV35>0) {\n"
+"                System.out.println(\"FOUR_AI_V35_STOCK_REJECTED player=\"+player.getName()\n"
+"                    +\" turn=\"+game.getPhaseHandler().getTurn()\n"
+"                    +\" proposed=\"+rejectedV35+\" stockFallback=true\");\n"
+"            }\n"
+"        }\n"
 "        // V33: shared, public-board two-turn planner for ALL FOUR seats.\n"
 "        // Choose only actual Forge-playable non-targeting permanent spells.\n"
 "        // Preserve stack responses and every Magic rule / cost resolution.\n"
@@ -779,7 +801,8 @@ with tempfile.TemporaryDirectory() as d:
     ability_dir=target/"ability";ability_dir.mkdir(parents=True,exist_ok=True)
     (ability_dir/"IncubateAi.java").write_text(incubate_ai,encoding="utf-8")
     (target/"BrimazTurnPlanner.java").write_text(planner,encoding="utf-8")
-    for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java"):
+    for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java",
+                  "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -788,29 +811,28 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"PlayerControllerAi.java"),str(target/"BrimazMulliganPolicy.java"),
              str(target/"SpellApiToAi.java"),str(ability_dir/"IncubateAi.java"),
              str(target/"MultiplayerStrategicModel.java"),
-             str(target/"MultiplayerStrategicSequencer.java")]
+             str(target/"MultiplayerStrategicSequencer.java"),
+             str(target/"MultiplayerStrategicSearchV35.java"),
+             str(target/"MultiplayerStrategicSequencerV35.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
-    for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class"):
+    for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
+                 "MultiplayerStrategicSearchV35.class", "MultiplayerStrategicSequencerV35.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
                  "PlayerControllerAi.class","BrimazMulliganPolicy.class","SpellApiToAi.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("Missing compiled "+name)
-    subprocess.run(["jar","uf",str(jar),"-C",str(classes),"forge/ai/AiController.class",
-                    "-C",str(classes),"forge/ai/AiTimeoutCooldownPolicy.class",
-                    "-C",str(classes),"forge/ai/BrimazTurnPlanner.class",
-                    "-C",str(classes),"forge/ai/PlayerControllerAi.class",
-                    "-C",str(classes),"forge/ai/BrimazMulliganPolicy.class",
-                    "-C",str(classes),"forge/ai/SpellApiToAi.class",
-                    "-C",str(classes),"forge/ai/ability/IncubateAi.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Option.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Snapshot.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Choice.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Role.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicSequencer.class"],
-                   check=True,timeout=180)
+    archive=["jar","uf",str(jar),"-C",str(classes),"forge/ai/AiController.class",
+             "-C",str(classes),"forge/ai/AiTimeoutCooldownPolicy.class",
+             "-C",str(classes),"forge/ai/BrimazTurnPlanner.class",
+             "-C",str(classes),"forge/ai/PlayerControllerAi.class",
+             "-C",str(classes),"forge/ai/BrimazMulliganPolicy.class",
+             "-C",str(classes),"forge/ai/SpellApiToAi.class",
+             "-C",str(classes),"forge/ai/ability/IncubateAi.class"]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerStrategic*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)
 print("PATCHED_BRIMAZ_JAR_SHA256",hashlib.sha256(jar.read_bytes()).hexdigest(),flush=True)
