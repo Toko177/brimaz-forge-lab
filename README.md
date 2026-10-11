@@ -1,5 +1,27 @@
 # Brimaz Forge Lab
 
+## V31 — véritable simulateur Forge à quatre IA : exploitation et limites
+
+**État actif du 11 octobre 2026 :**
+[passation V31](docs/PASSATION_ACTIVE_V31_2026-10-11.md) ·
+[reprise du développement](NEXT_CHAT_START_HERE.md).
+
+Le moteur exécute effectivement des parties Commander à quatre IA.
+Le pilote V30 a enregistré trois fins naturelles sur le pod artifact,
+trois censures à l'horloge sur aristo, et aucune divergence des cinq
+règles optimisées parmi 16,88 millions de comparaisons avec leur méthode
+originale. **Ni la fin des matchs ni le niveau stratégique humain ne sont
+garantis.** Le mode normal reste la référence.
+
+Le nouveau lanceur `scripts/run_paired_four_ai.py` exécute deux
+campagnes authentiques contrôlées sur quatre rotations, avec preuves
+SHA256, logs préservés, résultats censurés séparés et comparaison
+d'actions. Windows : `scripts/setup_and_run_four_ai.ps1 -Paired
+-ReferencePolicy v17_strict -Policy v30_exact_rules -Pod artifact`.
+L'intégration des PR empilées vers `main` exige des portes de validation
+réelles ; une V31 n'est **pas** une version production.
+
+
 Projet : simulation réelle de Magic: The Gathering Commander à **quatre IA Forge 2.0.15**, avec contrôle de légalité des 100 cartes, parallélisation GitHub Actions, audit des décisions IA et certification des parties.
 
 ## Point d'entrée pour reprendre le projet
