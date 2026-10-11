@@ -1,3 +1,22 @@
+# Brimaz Forge Lab — REPRENDRE ICI (V32)
+
+**Version de travail 11 octobre 2026 :**
+[docs/PASSATION_ACTIVE_V32_2026-10-11.md](docs/PASSATION_ACTIVE_V32_2026-10-11.md)
+pour les sept decks canoniques désormais **permanents**, le moteur
+Forge 4 IA et les contrôles de provenance ; puis
+[docs/PASSATION_ACTIVE_V31_2026-10-11.md](docs/PASSATION_ACTIVE_V31_2026-10-11.md)
+pour l'orchestrateur A/B de huit ou seize vrais processus Forge.
+
+V32 est une branche fille de V31 (PR #24), elle-même basée sur V30,
+et **n'est pas fusionnée dans main**. Source originelle des decks :
+[run 37966009166](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37966009166).
+La récupération/commit SHA vérifiés sont **réellement réussis** :
+[run 38127191276](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38127191276).
+L'exécution des nouveaux tests et huit JVM V31/V32 est à vérifier
+séparément. Ne jamais déduire qualité IA ni vrai winrate d'une CI verte.
+
+---
+
 # Reprise du développement — Brimaz Forge Lab
 
 **Version de travail : V31, 11 octobre 2026.**
