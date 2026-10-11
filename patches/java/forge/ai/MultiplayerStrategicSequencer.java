@@ -111,7 +111,7 @@ public final class MultiplayerStrategicSequencer {
         for (SpellAbility sa : available) {
             if (sa == null || sa.getHostCard() == null || !sa.isSpell()
                     || sa.usesTargeting() || sa.isLandAbility()
-                    || sa.isAlternativeCost() || sa.isCopied())
+                    || sa.isCopied())
                 continue;
             Card card = sa.getHostCard();
             if (!(card.isCreature() || card.isArtifact()
