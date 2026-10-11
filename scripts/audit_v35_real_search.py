@@ -85,7 +85,7 @@ def audit(report):
         raise ValueError("Invalid Forge stock/V17 control or V35 experiment")
     if exp["policy"] in ("v35_brimaz_duel","v36_brimaz_challenger") and ref["policy"]!="v17_strict":
         raise ValueError("Mixed-seat v35_brimaz_duel requires stable identical v17 opponents")
-    if exp["policy"] in ("v37_brimaz_challenger","v38_brimaz_challenger"):
+    if exp["policy"] in ("v37_brimaz_challenger","v38_brimaz_challenger","v39_brimaz_challenger"):
         if ref["policy"]!="v37_stock_control" or ref.get("patches")!=exp.get("patches"):
             raise ValueError("V37 reference and challenger must use identical patched jar")
         refopts=ref.get("java_tool_options","")
