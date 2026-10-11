@@ -69,3 +69,46 @@ distingués. Une approbation n'est pas une résolution.
 qu'après des changements de décisions approuvés, résultats A/B naturels
 à graines inédites, plusieurs stratégies adverses, et une analyse
 statistique qui ne traite pas un tirage de petite taille comme preuve.
+
+## Correctif fondé sur les vraies traces — V43 / identité des sièges
+
+La campagne V42 historique
+[38175519441](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38175519441)
+a fait tourner **16 vrais processus Forge**, 8 paires de parties
+(4 artifact + 4 aristocrats). Les deux bras ont fini naturellement
+dans **7 paires** (4 artifact + 3 aristocrats). Les deux audits
+ont pourtant échoué sur `Unknown V42 seat Ai(4)-EDH Amalia` et
+`Ai(4)-EDH Zimone and Dina aristo`. Cette erreur appartient
+au *parseur des traces*, pas au moteur de règles. Les résultats ne
+démontrent pas une meilleure politique.
+
+La cause est maintenant confirmée : le nom observé est
+`Ai(<numéro de siège>)-<Name= du .dck>`, tandis que le banc d'essai
+utilise un identifiant de fichier comme `Kaal_22193355`.
+`scripts/forge_seat_identity.py` valide strictement les deux
+dimensions (siège **et** nom du deck déclaré), en lisant les
+métadonnées canoniques originales, y compris les caractères
+accentués, sans recherche partielle. Les miroirs utilisent uniquement
+leurs six labels exacts, dérivés des clones temporaires.
+
+Le contrôle Java `MultiplayerSacrificeAccessV41.authorized`
+reconnaît le vrai préfixe Forge `Ai(1)-` à `Ai(4)-` avant
+d'appliquer l'allowlist strictement bornée. Les anciennes campagnes V41
+marquant **toutes** les fenêtres `unauthorized_pilot` ne peuvent pas
+servir de preuve de la stratégie ; le correctif est vérifié par de
+nouveaux tests adversariaux.
+
+Un second défaut de généralisation est corrigé : `Card.getCMC()`
+ne représente pas toujours le coût à payer. Le classement ne
+rejette plus une action que Forge juge légalement payable sous
+prétexte que sa valeur de mana imprimée dépasse une estimation
+des sources de mana. La validité réelle reste déterminée par
+`sa.canPlay`, `canCastTiming`, `ComputerUtilCost.canPayCost`
+et surtout `AiController.canPlayAndPayFor`.
+
+**Protocole de retest à graines inédites** : `20261213` pour
+les miroirs V41 et `20261217` pour les paires génériques V42.
+Les campagnes précédentes restent conservées et invalides lorsque
+l'audit n'a pas pu établir la bonne identité de pilote.
+Aucune affirmation de gain de victoire avant de nouveaux résultats
+non censurés, comparés sur plusieurs decks, sans contamination.

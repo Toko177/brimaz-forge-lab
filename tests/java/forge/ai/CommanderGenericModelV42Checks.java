@@ -49,6 +49,14 @@ public final class CommanderGenericModelV42Checks {
                 ramp,c("Not payable",CommanderGenericModelV42.Kind.CREATURE,
                         7,7,7,false,false))).ranked().isEmpty(),
                 "cannot force costs not approved by real candidate checks");
+        var reduced=c("Expensive printed MV but real Forge payment verified",
+                CommanderGenericModelV42.Kind.CREATURE,8,7,7,false,true);
+        ok(CommanderGenericModelV42.score(early,reduced)!=Integer.MIN_VALUE,
+                "cost reduction/alternative payment must not be vetoed by printed MV");
+        var stillNotPayable=c("Cannot pay in real Forge",
+                CommanderGenericModelV42.Kind.CREATURE,8,7,7,false,false);
+        ok(CommanderGenericModelV42.score(early,stillNotPayable)==Integer.MIN_VALUE,
+                "actual native Forge payment still blocks forbidden action");
         ok(CommanderGenericModelV42.decide(early,List.of(ramp,stone,soldier))
                 .ranked().equals(CommanderGenericModelV42.decide(
                     early,List.of(ramp,stone,soldier)).ranked()),

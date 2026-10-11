@@ -14,13 +14,17 @@ with tempfile.TemporaryDirectory() as d:
     ref=root/"reference.log"
     exp=root/"experiment.log"
     ref.write_text("Turn: Turn 1\n",encoding="utf-8")
+    from forge_seat_identity import display_for_seat
+    displays=[f"Ai({i+1})-"+display_for_seat(deck,
+              Path(__file__).resolve().parents[1]/"forge_decks")
+              for i,deck in enumerate(seats)]
     window=("FOUR_AI_V42_WINDOW player={} turn=5 options=2 ranked=1 "
             "margin=18 pressure=false reason=distinct_public_development_preference "
             "nativeForgeApprovalPending=true\n")
     approval=("FOUR_AI_V42_STOCK_APPROVED player={} turn=5 card=Any Card "
               "rejectedEarlier=0 nativeForgeAIDecision=true notResolvedYet=true\n")
-    exp.write_text("Turn: Turn 1\n"+"".join(window.format(x) for x in seats)
-                   +approval.format(seats[1]),encoding="utf-8")
+    exp.write_text("Turn: Turn 1\n"+"".join(window.format(x) for x in displays)
+                   +approval.format(displays[1]),encoding="utf-8")
     refp={"policy":"v37_stock_control","patches":["same-real-source"],
           "canonical_seven_deck_sha256":{"pinned":"hash"},
           "java_tool_options":"-Dbrimaz.v37ControlledDuel=true"}
@@ -39,17 +43,17 @@ with tempfile.TemporaryDirectory() as d:
     assert r["four_seat_observed_distinct_decks"]==sorted(seats)
     assert r["approved_not_resolved_by_deck"]=={seats[1]:1}
     assert r["natural_pairs"]==1 and not r["skill_gain_proven"]
-    ref.write_text(window.format(seats[0]),encoding="utf-8")
+    ref.write_text(window.format(displays[0]),encoding="utf-8")
     try:audit(obj);raise AssertionError("control contamination passed")
     except ValueError:pass
     ref.write_text("Turn: Turn 1\n",encoding="utf-8")
-    exp.write_text(window.format(seats[0])+approval.format(seats[0]))
+    exp.write_text(window.format(displays[0])+approval.format(displays[0]))
     try:audit(obj);raise AssertionError("one-deck Brimaz-only behavior passed")
     except ValueError:pass
-    exp.write_text(window.format("Unknown_Player")+approval.format(seats[0]))
+    exp.write_text(window.format("Ai(1)-EDH WRONG NAME")+approval.format(displays[0]))
     try:audit(obj);raise AssertionError("unknown participant passed")
     except ValueError:pass
-    exp.write_text("".join(window.format(x) for x in seats))
+    exp.write_text("".join(window.format(x) for x in displays))
     try:audit(obj);raise AssertionError("zero real approvals passed")
     except ValueError:pass
     assert audit(obj,require_approvals=False)["natural_pairs"]==1

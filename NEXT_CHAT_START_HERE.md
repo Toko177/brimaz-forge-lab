@@ -197,3 +197,16 @@ deck ID `Brimaz_Challenger_A`. La liste d'identités est corrigée,
 la télémétrie rejette désormais les résultats avec mauvais pilote,
 et les deux autels sont comptés sous V41. Graines de retest
 `20281019`. Lire `docs/V36_EVIDENCE_POLICY.md`.
+
+## V43 — identité réelle des pilotes Forge et coût réel
+
+La campagne V42 historique [#38175519441](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38175519441)
+a exécuté 16 JVM réelles, 7/8 paires naturellement terminées, mais
+l'audit échouait en comparant `Ai(n)-Name=` aux IDs `Kaal_...`.
+La V43 ajoute `scripts/forge_seat_identity.py`, un mapping strict
+et vérifié contre les 7 decks originaux. Cela corrige V41 et V42
+sans désactiver les contrôles. Elle cesse aussi de rejeter une carte
+Forge-payable sur la seule base de son CMC imprimé.
+Les nouveaux tests sont dans `tests/test_forge_seat_identity.py`
+et dans les tests Java V41/V42. Graines 20261213/20261217.
+Pas de victoire supérieure revendiquée. Conserver une seule PR draft.

@@ -10,6 +10,7 @@ from collections import Counter
 import json
 from pathlib import Path
 import re
+from forge_seat_identity import resolve_ai_player
 
 WINDOW=re.compile(
     r"^FOUR_AI_V42_WINDOW player=(.*?) turn=(\d+) options=(\d+) "
@@ -46,6 +47,7 @@ def audit(report, *, min_distinct_decks=3, require_approvals=True):
     pairs=report.get("pairs",[])
     if not pairs or len(pairs)!=report.get("real_process_pairs"):
         raise ValueError("Missing paired real JVM records")
+    deck_dir=Path(__file__).resolve().parents[1]/"forge_decks"
     windows=Counter(); approvals=Counter(); refusals=Counter(); reasons=Counter()
     statuses=Counter(); seen_keys=set(); natural=[]
     for pair in pairs:
@@ -60,19 +62,18 @@ def audit(report, *, min_distinct_decks=3, require_approvals=True):
         raw_ref=_read(a["log"]);raw_exp=_read(b["log"])
         if WINDOW.search(raw_ref) or APPROVED.search(raw_ref) or REJECTED.search(raw_ref):
             raise ValueError("Reference controller executed V42 experimental code")
-        permitted=set(b["seats"])
         for player,turn,options,ranked,margin,pressure,reason in WINDOW.findall(raw_exp):
-            if player not in permitted:raise ValueError("Unknown V42 seat "+player)
+            deck=resolve_ai_player(player,b["seats"],deck_dir)
             if int(options)<2 or int(ranked)>3 or int(ranked)>int(options):
                 raise ValueError("Incoherent V42 public decision window")
-            windows[player]+=1
+            windows[deck]+=1
             reasons[reason]+=1
         for player,turn,card,rejected in APPROVED.findall(raw_exp):
-            if player not in permitted:raise ValueError("Unattributed V42 approval")
-            approvals[player]+=1
+            deck=resolve_ai_player(player,b["seats"],deck_dir)
+            approvals[deck]+=1
         for player,count in REJECTED.findall(raw_exp):
-            if player not in permitted:raise ValueError("Unattributed V42 Forge rejection")
-            refusals[player]+=int(count)
+            deck=resolve_ai_player(player,b["seats"],deck_dir)
+            refusals[deck]+=int(count)
         statuses[(a["status"],b["status"])]+=1
         if a["status"]=="complete" and b["status"]=="complete":
             natural.append((a.get("winner"),b.get("winner")))

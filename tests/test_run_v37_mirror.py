@@ -54,19 +54,24 @@ assert m["reference_brimaz_wins"]==7
 four[0]["winner"]="Kaal_Wrong"
 assert summarize(four)["same_deck_2vs2_required_winner_integrity"] is False
 
-# Actual Forge simulator uses ID=Brimaz_Challenger_A, unlike Name= display.
+# Actual Forge player.getName() is 'Ai(seat)-Name='; seat must match.
 seats=("Brimaz_Challenger_A","Brimaz_Challenger_B",
        "Brimaz_Reference_A","Brimaz_Reference_B")
 def window(player,approved):
     return (f"FOUR_AI_V41_SAC_WINDOW player={player} turn=4 "
             f"pilotAuthorized={str(approved).lower()} commanderPresent=true")
 v=verify_v41_pilot_identity(
-    window("Brimaz_Challenger_A",True)+"\n"+
-    window("Brimaz Challenger B",True)+"\n"+
-    window("Brimaz_Reference_A",False)+"\n",seats)
+    window("Ai(1)-Brimaz Challenger A",True)+"\n"+
+    window("Ai(2)-Brimaz Challenger B",True)+"\n"+
+    window("Ai(3)-Brimaz Reference A",False)+"\n",seats)
 assert v["challenger_windows"]==2 and not v["bad_windows"]
-assert verify_v41_pilot_identity(window("Brimaz_Challenger_A",False),seats)["bad_windows"]
-assert verify_v41_pilot_identity(window("Brimaz_Reference_B",True),seats)["bad_windows"]
-assert verify_v41_pilot_identity(window("Kaal_9594008",False),seats)["bad_windows"]
+assert verify_v41_pilot_identity(
+    window("Ai(1)-Brimaz Challenger A",False),seats)["bad_windows"]
+assert verify_v41_pilot_identity(
+    window("Ai(4)-Brimaz Reference B",True),seats)["bad_windows"]
+assert verify_v41_pilot_identity(
+    window("Ai(2)-Brimaz Challenger A",True),seats)["bad_windows"]
+assert verify_v41_pilot_identity(
+    window("Ai(5)-Brimaz Challenger A",True),seats)["bad_windows"]
 assert verify_v41_pilot_identity("ordinary Forge result",seats)["windows"]==0
 print("V37_MIRROR_SYNTHETIC_PASS not_real_games=true")

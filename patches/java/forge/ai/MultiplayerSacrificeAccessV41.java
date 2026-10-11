@@ -14,9 +14,17 @@ public final class MultiplayerSacrificeAccessV41 {
      * are disjoint. Both require the explicit challenger JVM flag.
      */
     public static boolean authorized(String playerName, boolean mirror) {
-        if(playerName == null)return false;
-        // Forge AI telemetry uses deck IDs (underscores), while in-game
-        // winner banners may contain display names (spaces). Exact allowlist.
+        if (playerName == null) return false;
+        // Forge's actual getName() is "Ai(1)-Brimaz Challenger", not just
+        // the deck Name= field or file basename. Only a strictly numbered
+        // seat prefix and one of the exact permitted deck labels is accepted.
+        if (playerName.startsWith("Ai(")) {
+            if (playerName.length()<7 || playerName.charAt(4)!=')'
+                    || playerName.charAt(5)!='-'
+                    || playerName.charAt(3)<'1' || playerName.charAt(3)>'4')
+                return false;
+            playerName=playerName.substring(6);
+        }
         if (mirror) {
             return playerName.equals("Brimaz_Challenger")
                 || playerName.equals("Brimaz_Challenger_A")

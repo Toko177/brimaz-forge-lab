@@ -1,3 +1,11 @@
+**V43 — fiabilisation des traces de vraies parties (sans nouveau workflow).**
+Les premiers benchmarks génériques ont révélé le format des identifiants
+réels `Ai(n)-Name=` dans Forge, différent des fichiers de decks.
+L'audit confirme maintenant strictement le siège et le label du deck,
+et les politiques historiques distinguent cette erreur d'un échec
+stratégique. Le planificateur ne confond plus valeur de mana imprimée
+et coût réellement payable. [Constats et retests](docs/V42_GENERAL_COMMANDER_AI.md).
+
 ## V42 — vers une IA Commander générique (expérimental)
 
 Le nouveau mode `v42_commander_general` utilise un évaluateur fondé sur

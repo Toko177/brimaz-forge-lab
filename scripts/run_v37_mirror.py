@@ -9,6 +9,7 @@ import re,subprocess,sys,tempfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from run_local_four_ai import validate_decks,patch_jar,policy_flags,prepare_forge_shared_profile_paths,sha,CANONICAL_DECK_SHA256
+from forge_seat_identity import resolve_ai_player
 PODS={"aristo":("Kaal_9594008","Kaal_10347090"),
       "artifact":("Kaal_23328062","Kaal_11485202")}
 MIRRORS=("Brimaz_Challenger","Brimaz_Reference")
@@ -48,14 +49,14 @@ def verify_v41_pilot_identity(raw,seats):
     Forge telemetry uses underscore deck IDs; winner banners may use the
     deck's Name= label instead. Match exact seats only, never substrings.
     """
-    expected=set(seats)
     bad=[]
     challenger_windows=0
     windows=V41_WINDOW.findall(raw)
     for name,flag in windows:
-        key=name if name in expected else name.replace(" ","_")
-        if key not in expected:
-            bad.append({"player":name,"reason":"unknown_seat"})
+        try:
+            key=resolve_ai_player(name,seats,ROOT/"forge_decks",mirror=True)
+        except ValueError:
+            bad.append({"player":name,"reason":"seat_name_mismatch"})
             continue
         challenger=category(key)=="challenger"
         if challenger:challenger_windows+=1

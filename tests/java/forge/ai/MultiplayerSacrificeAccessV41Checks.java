@@ -6,6 +6,20 @@ public final class MultiplayerSacrificeAccessV41Checks {
     private static void ok(boolean b,String s){n++;if(!b)throw new AssertionError(s);}
     public static void main(String[] args) {
         var m=MultiplayerSacrificeAccessV41.class;
+        ok(MultiplayerSacrificeAccessV41.authorized("Ai(3)-Brimaz V3",false),
+             "real canonical Forge AI numbered pilot");
+        ok(MultiplayerSacrificeAccessV41.authorized("Ai(1)-Brimaz Challenger",true),
+             "real two-deck Forge mirror pilot");
+        ok(MultiplayerSacrificeAccessV41.authorized("Ai(4)-Brimaz Challenger A",true),
+             "real four-deck Forge mirror pilot");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Ai(3)-Brimaz Reference B",true),
+             "real Forge reference must not receive challenger policy");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Ai(2)-EDH Urza",true),
+             "real opponent must not receive challenger policy");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Ai(5)-Brimaz Challenger",true),
+             "invalid seat number rejected");
+        ok(!MultiplayerSacrificeAccessV41.authorized("Ai(12)-Brimaz Challenger",true),
+             "multi-digit seat number rejected");
         ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_V3",false),"canonical mixed-seat deck ID");
         ok(MultiplayerSacrificeAccessV41.authorized("Brimaz V3",false),"canonical display name");
         ok(MultiplayerSacrificeAccessV41.authorized("Brimaz_Challenger",true),"two-Brimaz mirror ID");

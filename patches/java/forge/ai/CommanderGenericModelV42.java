@@ -58,7 +58,12 @@ public final class CommanderGenericModelV42 {
 
     /** A transparent marginal development score, NOT probability of winning. */
     public static int score(State s, Candidate c) {
-        if (!c.playableNow() || c.manaValue() > s.mana())return Integer.MIN_VALUE;
+        // Real Forge already verified the CURRENT mana payment and casting
+        // restrictions on the offered SpellAbility. Card mana value is NOT
+        // the payable amount (cost reductions, alternate costs, convoke,
+        // commander tax, etc). Never veto a Forge-payable spell solely
+        // because its printed mana value exceeds a rough mana estimate.
+        if (!c.playableNow())return Integer.MIN_VALUE;
         int early = Math.max(0, 5 - s.lands());
         int score = switch(c.kind()) {
             case COMMANDER -> s.commanderPresent() ? -30 : 38;
