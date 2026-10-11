@@ -1,0 +1,37 @@
+name: Repository health and canonical decks
+on:
+  push:
+    branches:
+      - main
+      - integration/consolidated-main-20261011
+      - feature/v34-repository-cleanup-20261011
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  clean-repository-and-operator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify current source tree and original deck SHA256
+        run: python tests/test_repository_structure.py
+      - name: Verify all retained Python source syntax
+        run: python -m compileall -q scripts tests
+      - name: Operator and result regression tests
+        run: |
+          python tests/test_run_local_four_ai.py
+          python tests/test_v31_paired_four_ai.py
+          python tests/test_compare_local_four_ai_campaigns.py
+          python tests/test_verify_real_paired_gate.py
+          python tests/test_audit_v33_real_strategy.py

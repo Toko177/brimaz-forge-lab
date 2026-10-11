@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Forge EDH batch: 4 independent games, rotating the four deck seat positions.
+"""Forge EDH batch: genuine independent 4-AI games, with seat rotation.
 
 This is a REAL Forge subprocess driver, not a Monte Carlo draw proxy.
 Unfinished games and simulation-clock "winners" are never counted as wins.
@@ -12,9 +12,13 @@ import re
 import subprocess
 import sys
 import time
+from forge_result_evidence import inspect_ai_quality_signatures
 
 p=argparse.ArgumentParser()
 p.add_argument("--jar",required=True)
+p.add_argument("--runtime-dir",default=None,
+               help="Original Forge installation directory for resource lookups when using a copied patched JAR")
+p.add_argument("--jfr",action="store_true",help="Opt-in bounded 128MB Java Flight Recorder per genuine 4-player game; affects timings")
 p.add_argument("--pod",choices=["aristo","artifact"],default="aristo")
 p.add_argument("--clock",type=int,default=360)
 p.add_argument("--timeout",type=int,default=445)
@@ -69,6 +73,9 @@ if not brimaz_file.is_file():
         "[Commander]\n1 Brimaz, Blight of Oreskos\n",encoding="utf-8"
     )
 jar=pathlib.Path(args.jar).resolve()
+runtime_dir=pathlib.Path(args.runtime_dir).resolve() if args.runtime_dir else jar.parent
+if not runtime_dir.is_dir():
+    raise FileNotFoundError("Forge runtime directory missing: "+str(runtime_dir))
 out=root/"results"/"batch"/args.pod/args.out_tag
 out.mkdir(parents=True,exist_ok=True)
 summary=[]
@@ -81,7 +88,11 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         num=len(summary)+1
         seed=args.seed_base + 10000*shift + repeat
         profiles=[args.profile_brimaz if d=="Brimaz_V3" else args.profile_opponents for d in seats]
-        cmd=["java","-Xmx4g","-jar",str(jar),"sim","-d",
+        # JFR is for identifying sampled JVM hot methods; it may alter timing,
+        # so profile runs must NOT be used as unprofiled speed benchmarks.
+        jfr_path=out/f"game_rot{shift}_rep{repeat:03d}_seat{br_index}.jfr" if args.jfr else None
+        jvm_flags=[f"-XX:StartFlightRecording=filename={jfr_path.resolve()},settings=profile,dumponexit=true,maxsize=128m"] if jfr_path else []
+        cmd=["java","-Xmx4g",*jvm_flags,"-jar",str(jar),"sim","-d",
              *[x+".dck" for x in seats],"-D",str(directory),
              "-f","Commander","-n","1","-c",str(args.clock),
              "-s",str(seed),"-a",*profiles]
@@ -90,7 +101,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         st=time.monotonic()
         proc_timeout=False
         try:
-            proc=subprocess.run(cmd,cwd=jar.parent,text=True,capture_output=True,
+            proc=subprocess.run(cmd,cwd=runtime_dir,text=True,capture_output=True,
                                 errors="replace",timeout=args.timeout)
             stdout,stderr=proc.stdout,proc.stderr
             rc=proc.returncode
@@ -122,6 +133,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         winner_index=int(winners[-1][1]) if status=="complete" else None
         record={
             "game":num,"pod":args.pod,"rotation":shift,"repeat":repeat,
+            "clock_seconds":args.clock,
             "seed":seed,"profiles":profiles,"brimaz_profile":args.profile_brimaz,
             "policy":args.policy_label,"planner_decisions":raw.count("BRIMAZ_PLANNER:"),
             "development_actions":raw.count("BRIMAZ_DEVELOPMENT:"),
@@ -132,12 +144,15 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
             "winner_deck":seats[winner_index-1] if winner_index else None,
             "brimaz_win":winner_index==br_index if winner_index else None,
             "game_milliseconds":int(winners[-1][0]) if winners else None,
+            "jfr_enabled":bool(args.jfr),
+            "jfr_file":str(jfr_path.relative_to(root)) if jfr_path and jfr_path.is_file() else None,
             "wall_seconds":elapsed,"process_exit":rc,
             "brimaz_casts":len(re.findall(r"\bcast Brimaz, Blight of Oreskos\b",stdout)),
             "brimaz_triggered":len(re.findall(r"\btriggered Brimaz, Blight of Oreskos\b",stdout)),
             "incubator_transforms":len(re.findall(r"\bactivated Incubator Token\b",stdout)),
             "end_step_mentions":len(re.findall(r"Phase: .* End step",stdout)),
             "ai_incubate_warning":"No AI assigned for API: Incubate" in stderr,
+            "ai_quality_signatures":inspect_ai_quality_signatures(raw),
             "log":str(logfile.relative_to(root)),
         }
         summary.append(record)
@@ -153,8 +168,8 @@ stats={
   "wins_by_deck":dict(collections.Counter(x["winner_deck"] for x in valid)),
   "status_counts":dict(collections.Counter(x["status"] for x in summary)),
   "elapsed_total_seconds":round(time.monotonic()-start,2),
-  "method":"Independent Forge JVM processes, deterministic -s seeds, isolated by GitHub Actions matrix jobs",
-  "caveat":"Small pilot sample. AI quality, card support and bracket legality not completely audited."
+  "method":"Independent Forge JVM processes with fixed -s seeds; same seed DOES NOT guarantee identical gameplay; isolated matrix jobs",
+  "caveat":"Seeded independent games can diverge across replays due to AI timing or nondeterminism. Status complete is NOT sufficient for a certified win: independently run certify_commander_games.py."
 }
 (out/"summary.json").write_text(json.dumps(stats,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
 print("POD SUMMARY",json.dumps(stats,ensure_ascii=False),flush=True)

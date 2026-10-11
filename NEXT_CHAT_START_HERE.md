@@ -1,495 +1,56 @@
-# NOUVEAU DÉVELOPPEMENT PRIORITAIRE — 11 octobre 2026
-
-## V28 : mesure de la vraie charge de CardProperty
-
-V28 https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095587094
-a **RÉUSSI** sa compilation + 4 tests Java + vrai Forge 2.0.15
-quatre IA / sept decks canoniques (420s, partie censurée,
-**aucun gagnant**). **41 345 798 appels** à
-`CardProperty.cardHasProperty`, dont cinq propriétés
-exactes représentent environ **94,7 % des appels** :
-
-| Expression | Appels |
-|---|---:|
-| `IsCommander` | 23 959 728 |
-| `Self` | 7 518 016 |
-| `YouCtrl` | 5 380 719 |
-| `YouOwn` | 1 518 191 |
-| `Other` | 770 792 |
-
-Cela recoupe la vraie trace JFR où `CardProperty.cardHasProperty`
-était présente dans 46,18 % des échantillons de méthodes exécutées.
-L'instrumentation elle-même ralentit : **ne pas comparer le
-temps de partie V28 à un temps de référence non instrumenté**.
-
-## V29 et V30 : deux expériences réelles EN COURS
-
-- [PR #22 V29](https://github.com/Toko177/brimaz-forge-lab/pull/22),
-  branche `feature/v29-real-commander-recast-legal-alternatives-20261011`,
-  [CI de quatre vrais Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38096203285) :
-  quand le planificateur sélectionne Brimaz légalement et de
-  façon payable, il **observe uniquement** s'il existait au
-  **même état** l'option individuellement payable `Orzhov Signet`,
-  `Spawning Pit` ou `Krark-Clan Ironworks`. Ne change AUCUN
-  choix. Quatre parties réelles pour A/B contrôles/trace.
-  Les occasions d'alternative ne signifient pas qu'un changement
-  est stratégique supérieur.
-- [PR #23 V30](https://github.com/Toko177/brimaz-forge-lab/pull/23),
-  branche `feature/v30-exact-card-property-fastpath-20261011`,
-  [CI de six vrais Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38096353743) :
-  raccourcis strictement **limités à ces cinq propriétés
-  littérales exactes**, OFF par défaut. La **méthode originale
-  CardProperty** est conservée dans le même bytecode sous
-  `cardHasPropertyV30Stock`, sans modifier son corps.
-  Triples comparaisons par pod : stock, fast, fast + appel
-  stock sur **chaque règle accélérée au même état**,
-  exception fatale à la moindre différence de booléen ;
-  sauvegarde des journaux, gains seulement si parties naturelles
-  et mêmes événements. **Ne pas fusionner V30, qui modifie le
-  chemin des règles Magic, avant résultats de CI et de
-  non-régression étendus.** Aucun gain V30 n'est prouvé à ce jour.
-
-Ne pas modifier les branches V29/V30 pendant la CI (GitHub
-`cancel-in-progress: true`). Lire d'abord leur état final
-puis corriger les échecs réels de compilation, de règles ou
-de comparaison. La grande candidate de fusion vers main
-est toujours **PR #15 DRAFT**.
-
----
-
-# NOUVEAU POINT DE REPRISE — 11 octobre 2026, après V25/V27
-
-**La candidate d'intégration vers main reste la PR #15 DRAFT**, pas
-les dernières branches expérimentales. Les vrais tests CI ont
-désormais établi les résultats suivants :
-
-- **V24** Java21 Forge2.0.15 : 2 vraies paires naturelles aux événements
-  identiques, 30 921 calculs hypothétiques inutiles évités, ratio
-  descriptif 1,041× / 1,022× :
-  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38093688269.
-- **V25** 16 véritables JVM (2 pods × 4 positions × 2 politiques) :
-  **14 naturelles, 2 censurées**, **1 518 901** calculs évités,
-  **6/8 paires identiques**, médiane descriptive des seules 6 paires
-  identiques **0,9959×** — **aucune accélération globale démontrée**.
-  2 paires divergentes : aristo rotation0 gagnants différents,
-  artifact rotation0 censurée. La première divergence survient après
-  1 timeout dans chaque match, aux indices 850 et 882 :
-  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616.
-- **V27** PR #21 : audit rigoureux de ces 16 vrais journaux,
-  `scripts/first_real_four_ai_divergence.py`,
-  `scripts/triage_real_four_ai_strategy.py` : **19 occurrences
-  joueur-partie avec évaluations lentes**, **4 parties aux relances
-  répétées de Brimaz**, **2 parties aux fenêtres de jetons
-  phyrexians sans outlet observé**. Ne pas conclure à une action
-  légale manquée sans interroger Forge au même état. Réparation
-  de `assess_simulator_readiness.py` : une vraie `clock_censored`
-  ne compte plus comme erreur Java ; **exploratory 4-AI pilot PASS**
-  sur 16 parties, mais **expert AI/Oracle indépendant/winrate
-  statistiquement valide NON démontrés** :
-  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095705276.
-- **V26** PR #19 : JFR réel sur 4 IA, 305,55 s, 2 timeouts
-  (combat + static rules) : la méthode
-  `CardProperty.cardHasProperty` concentre **11 059
-  échantillons, soit 46,18 % du top des méthodes échantillonnées**.
-  `CardState.getStaticAbilities` 2,51 %. Ce n'est qu'un jeu
-  mesuré ; ne pas généraliser.
-  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095235384.
-- **V28** PR #20 : en cours sur
-  `feature/v28-real-card-property-hotpath-profile-20261011`.
-  Source exact Forge2.0.15 ; télémétrie des chaînes `property`
-  **en lecture seule**, OFF par défaut, aucun changement de
-  l'Oracle ni du retour de CardProperty :
-  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095587094.
-  Lire son vrai résultat avant tout conseil sur les optimisations
-  possibles. **NE PAS CACHER LES PROPRIÉTÉS DES CARTES SANS
-  INVALIDATION DES STATICS, LKI, ZONES ET CONTROLEURS.**
-
-**Priorité prochaine :** utiliser le diagnostic légal à état
-identique pour les décisions de combats, les contre-réponses et
-la relance répétée de Brimaz (4 vrais jeux). Ne pas renforcer
-une heuristique sans choix réellement modifié et vérifié légal
-par Forge. La vitesse (V24) ne suffit pas à rendre une IA experte.
-
-**Branches:**
-- V25 `feature/v25-all-seats-real-evidence-20261011` PR #18;
-- V26 `feature/v26-real-forge-jfr-cpu-20261011` PR #19;
-- V27 `feature/v27-four-ai-strategic-forensics-20261011` PR #21;
-- V28 `feature/v28-real-card-property-hotpath-profile-20261011` PR #20.
-
-Voir les passations
-`docs/PASSATION_ACTIVE_V27_2026-10-11.md` (V27) et
-`docs/PASSATION_ACTIVE_V28_2026-10-11.md` (V28),
-ainsi que
-[le guide pour lancer 4 IA en local](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md).
-Ne pas confondre résultats d'un test synthétique avec les
-16 vrais processus JVM archivés.
-
----
-
-# NOUVEAU RÉSULTAT — V25 divergence + CPU JFR, 11 octobre 2026
-
-Le [run 16 vrais matchs V25](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616)
-a révélé au moins **une paire de parties naturelles aux gagnants différents** :
-`aristo` rotation 0, contrôle **Brimaz_V3** contre V24
-**Kaal_9594008**, avec **1 timeout IA dans chacune**, malgré
-757 948 calculs de trigger hypothétiques évités. On ne peut donc
-PAS affirmer une équivalence complète des trajectoires sous V24,
-même si les cas du pilote initial étaient identiques.
-Forge inclut des recherches IA sensibles au temps ; différencier
-non-déterminisme, timeout et véritable décision sémantique exige
-l'analyse de la **première divergence** des journaux.
-Nouveau script :
-`scripts/first_real_four_ai_divergence.py` sur
-`feature/v27-four-ai-strategic-forensics-20261011`.
-Les branches V27/V28 sont en préparation ; **pas encore des
-benchmarks validés**.
-
-**Profilage Java21 JFR réel RÉUSSI :**
-https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094816646
-et [lecture des hot methods](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38095235384).
-Un match aristo rotation 1, 305,55 s, 2 timeouts IA dans combat
-et capacités statiques. Le top CPU :
-`forge.game.card.CardProperty.cardHasProperty` **11 059
-échantillons (46,18 %)**, puis `FCollection.addAll` 3,55 %,
-`CardState.getStaticAbilities` 2,51 %, et
-`Card.updateStaticAbilities` 2,19 %. Cela pointe vers les
-vérifications des propriétés Magic et l'évaluation des bloqueurs.
-**Ne pas mettre en cache les résultats de propriétés de cartes sans
-preuve d'invalidation : les règles du jeu en dépendent.**
-La branche V28
-`feature/v28-real-card-property-hotpath-profile-20261011`
-ajoute un profilage de fréquence **lecture seule, opt-in** pour
-identifier quelles chaînes `property` expliquent ces appels,
-sans modifier les résultats.
-
-Les candidats V25, V26, V27/V28 sont des branches expérimentales
-au-dessus de V24/PR17, et **la candidate principale de fusion
-reste PR #15 en brouillon**. Pas de preuve de compétence
-stratégique humaine. Les suites JFR ne sont pas comparables
-directement en temps aux parties sans profilage.
-
----
-
-# REPRISE PRIORITAIRE — V25/V26, 11 octobre 2026
-
-**Github Actions fonctionne de nouveau :** [V24 véritable benchmark réussi](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38093688269) ; quatre véritables matches Forge 2.0.15 à quatre IA (deux paires A/B). **30 921** prédictions de déclenchement impossibles évitées ; **2 paires naturelles aux événements observés identiques**, ratios de vitesse descriptifs **1,041×** et **1,022×**. Tests Java V24 **16/16** réussis, 7 decks canoniques SHA vérifiés. C'est un *résultat technique*, pas une preuve de compétence tactique humaine.
-
-**Branche active de validation A/B approfondie :**
-`feature/v25-all-seats-real-evidence-20261011` — [PR #18](https://github.com/Toko177/brimaz-forge-lab/pull/18),
-[CI sur 16 vrais JVM](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094639616).
-2 pods × 4 rotations × V24 OFF/ON. Comparaison désormais sensible aux points de vie, dégâts, zones, poison et terres. Un job fan-in exigera 16 journaux réels complets et produira le rapport de tournoi. **Ne pas faire de commit sur V25 durant ce run**, cela peut annuler les jobs en cours.
-
-**Branche distincte de profilage CPU :**
-`feature/v26-real-forge-jfr-cpu-20261011` — [PR #19](https://github.com/Toko177/brimaz-forge-lab/pull/19),
-[un vrai match avec JFR](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38094816646).
-Identifie les méthodes CPU réelles, sans confondre `lastCandidate` avec cause d'un timeout. **Ne pas faire de commit sur V26 tant que le job JFR s'exécute**.
-
-**Constats des 3 premières rotations V25 déjà naturelles et identiques** (aristo) : rotation 1 **145 253** prédictions évitées, ratio **1,016×** ; rotation 2 **223 975**, **1,025×** ; rotation 3 **106 362**, **0,991×**. Le gain réel dépend du match et peut être négatif ; compléter les 8 paires avant de généraliser.
-
-**Candidate fusion vers main toujours DRAFT :** [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15).
-Ne pas fusionner d'heuristique sans effets tactiques légalement valides. Les règles et les issues sont celles du vrai Forge, pas un proxy. Une fin naturelle observée n'est pas la certification exhaustive de toutes les règles Oracle.
-
----
-
-## REPRISE PRIORITAIRE — V24 exécutable sur Windows, 11 octobre 2026
-
-**Priorité 1 :** résoudre le blocage des **GitHub Actions
-sans runner** (les récents jobs V24 échouent en 2–3 secondes,
-`runner_id=0`, étapes vides, pas de logs : la cause exacte
-n'est pas connue). La compilation et le gain de V24 restent
-**NON VALIDÉS** ; voir [PR #17](https://github.com/Toko177/brimaz-forge-lab/pull/17).
-
-**Priorité 2 :** si le runner reste indisponible, utiliser les
-NOUVEAUX scripts sur
-`feature/v24-combat-trigger-fast-negatives-20261011` :
-
-- `scripts/setup_and_run_four_ai.ps1 -CompileOnly` :
-  vrai source Forge 2.0.15, vrai JAR, injection de bytecode
-  et **16 assertions Java**. Non encore exécuté.
-- `scripts/setup_and_run_four_ai.ps1 -PreflightOnly` :
-  Java 21, distribution Forge SHA256, les 7 decks authentiques
-  depuis `gh run download`, sans partie.
-- `scripts/setup_and_run_four_ai.ps1 -Pod both
-  -GamesPerRotation 1 -Parallel 2 -Policy v17_strict` :
-  **8 vraies JVM Forge à 4 IA**, deux pods, 4 rotations, profils
-  identiques. Conserver les fichiers sous `results/local_campaigns`.
-- Relancer les mêmes graines avec `-Policy v24_trigger_prune`,
-  analyser avec `scripts/compare_local_four_ai_campaigns.py`.
-  Aucun ratio de vitesse si les événements naturels divergent.
-- `-Jfr` : `jfr view hot-methods`, CPU par thread et vraies
-  piles des timeouts dans les fichiers de campagne. Les
-  chronométrages JFR ne prouvent pas une accélération.
-- Facultatif `--scryfall-legality-report` dans le CLI Python
-  pour certifier séparément chaque victoire naturelle.
-- `readiness.json` présente un diagnostic indépendant sur la
-  disponibilité des 4 IA et les limites de qualité humaine.
-
-**Passation technique à jour :**
-https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/PASSATION_ACTIVE_V24_2026-10-11.md
-
-**Guide de démarrage Windows/Linux :**
-https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md
-
-La [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15)
-reste la candidate d'intégration, V24 PR #17 reste en brouillon.
-**Ne pas confondre le code commité avec des tests réellement passés.**
-
----
-
-# DERNIÈRE REPRISE ACTIVE — V24, 11 octobre 2026
-
-**Lire en premier cette nouvelle branche et sa passation, AVANT les
-anciennes entrées historiques ci-dessous :**
-
-- **Branche active :** `feature/v24-combat-trigger-fast-negatives-20261011`
-- **PR #17, DRAFT :** https://github.com/Toko177/brimaz-forge-lab/pull/17
-- **Passation V24 détaillée :**
-  https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/PASSATION_ACTIVE_V24_2026-10-11.md
-- **Nouveau lanceur LOCAL Windows/Linux pour de vraies parties Forge
-  quatre IA :**
-  https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md
-- **CI V24 :** https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v24-trigger-prune.yml
-- **Candidate de consolidation PR #15 (toujours en brouillon) :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/15
-
-**Résultats empiriques nouveaux :** le pilote V23 est FINI, 4 vraies
-parties Forge, 18 tests Java, mais **aucune réduction des timeouts**
-(3→3 aristo, 1→1 artifact). V23 n'est pas une accélération prouvée.
-V24 vise un filtre sûr de **prédictions AI de triggers de combat
-impossibles**, avec 16 invariants Java, sans toucher aux règles Magic
-réelles. L'ancrage de patch est vérifié dans le code Forge 2.0.15 ;
-sa compilation et ses gains **ne sont pas encore vérifiés**.
-
-**Blocage d'infrastructure :** depuis V24, les jobs GitHub Actions
-échouent avant toute étape, avec `runner_id=0`, sans logs
-d'exécution ; la cause exacte est inconnue. Ne pas leur attribuer
-un résultat tactique ou de compilation. Le nouveau
-`scripts/run_local_four_ai.py` permet de lancer les mêmes
-vraies parties sur le PC avec Java 21, vérification SHA256 des sept
-decks, plusieurs JVM, archives et rapports ; il n'a pas encore été
-testé complètement sur Windows/Linux. Commencer par
-`--preflight-only`.
-
-**Référence certaine :** 16 vraies parties d'une campagne précédente,
-14 naturelles, 2 censurées et 1 victoire Brimaz **observée**
-(voir `docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md` sur main).
-Ne pas confondre cette observation avec un winrate validé.
-
----
-
-# REPRISE — Simulateur Magic Commander Forge, quatre IA
-
-**Dernière passation : 10 octobre 2026.**
-
-ATTENTION : la branche `main` contient encore un ancien moteur V6.
-Les développements IA actuels sont dans une **pile de branches GitHub**.
-Ne pas commencer à coder sur `main` sans avoir consulté les documents
-ci-dessous.
-
-## Branche ACTIVE et passation
-
-- **Branche expérimentale la plus récente — performance V23 :**
-  `feature/v23-ai-timeout-cooldown-20261010`
-- **Passation des changements les plus récents :**
-  [docs/PASSATION_ACTIVE_V23_2026-10-10.md](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v23-ai-timeout-cooldown-20261010/docs/PASSATION_ACTIVE_V23_2026-10-10.md)
-- **PR #16 expérimentale :**
-  https://github.com/Toko177/brimaz-forge-lab/pull/16
-- **Base d’intégration V22 :**
-  `integration/four-ai-commander-simulator-20261010`,
-  [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15).
-- **Histoire V13–V16 :**
-  [passation V16](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V16.md),
-  [passation V17](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V17.md),
-  [passation V17.1](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_2026-10-10_V17_R1.md).
-
-## Le simulateur peut être lancé depuis GitHub
-
-- **Workflow sur main :**
-  [Commander simulator — run 4 AI games](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml)
-- **Guide d'utilisation :**
-  [docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md)
-- Sélectionner `source_ref` sur la branche de développement la plus récente ci-dessus, un pod
-  `artifact`/`aristo` ou `both`, une politique IA et 1–5 parties
-  par rotation. Chaque partie utilise un **processus Forge réel**
-  avec quatre sièges IA distincts, listes de cartes vérifiées SHA256.
-- Les sorties sont les vrais journaux, manifestes, statistiques
-  per-seat et SHA des exécutables, archivés dans GitHub Actions.
-
-Le workflow manuel a été installé sur main, mais son **premier
-lancement manuel n'a pas encore été vérifié** au moment de cette
-passation. Le futur chat doit vérifier les vrais résultats GitHub
-avant toute affirmation de vitesse.
-
-## Résultats les plus utiles déjà vérifiés
-
-- V17 : [8 parties naturelles et quatre jobs réussis](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38081333961)
-  mais aucun gain de victoire ou de vitesse certifié.
-- V17.1 : [8 parties naturelles, mode anticipatif](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38082154931),
-  1 bloqueur retenu, aucune amélioration de winrate démontrée.
-- V18 : [audit de 8 véritables logs à quatre joueurs](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38082918169),
-  119 sorts Brimaz, 24 lancements du commandant, 26 activations
-  d'Incubateurs, 87 dégâts de combat infligés contre 389 reçus,
-  0 victoire Brimaz. **Quatre conditions appariées, pas huit
-  échantillons stratégiques indépendants.**
-
-## Consignes au prochain ChatGPT
-
-1. **Lire d'abord la passation de la PR #13, puis celle de V20 PR #12.**
-2. Vérifier les nouveaux GitHub Actions, branches, commits et artefacts
-   directement dans le dépôt ; ne pas deviner les résultats.
-3. Continuer à **modifier le code et lancer des tests**, en visant
-   les décisions des **quatre IA**, la survie/pression de Brimaz et
-   les interactions en pile avec trois adversaires.
-4. Garder les options tactiques réversibles et comparables aux
-   variantes V13/V17 et **ne jamais changer les règles Magic ou
-   les decks adverses** pour fabriquer de meilleures statistiques.
-5. Conserver les censures, séparer fonctionnalité du moteur,
-   légalité Scryfall, compétence IA et winrate certifié.
-6. **Mettre à jour la passation ET CE POINTEUR sur main** avant
-   de terminer chaque nouveau chat de développement.
-
-Pour contexte antérieur, conserver :
-`docs/RAPPORT_TRANSFERT_INTEGRAL_2026-10-09.md` et
-`docs/PASSATION_ACTIVE_2026-10-10.md` sur la branche V13.
-
-
-## V19 — amélioration expérimentale des décisions anti-créatures
-
-La PR #11 propose de mieux sélectionner les **cibles de retrait déjà
-légales** en présence d'une menace visible de perte à cause des blessures,
-du poison ou des 21 blessures d'un commandant. Ce calcul s'applique aux
-**quatre IA** mais ne modifie pas les règles Magic. Comparaison A/B :
-https://github.com/Toko177/brimaz-forge-lab/actions/runs/38083587718
-
-Le manuel sur main accepte `policy=v19_removal` ; ne pas considérer ce mode
-comme supérieur tant que ses résultats et son audit ne sont pas examinés.
-
-## V20 : expérience contrefactuelle et agrégation des tournois
-
-La PR #12 ajoute un relevé **à état public identique** des deux cibles
-qu'auraient choisies les politiques de retrait classique et urgente,
-sans modifier les cibles légales ou les règles. Test A/B :
-https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085352043
-
-Le workflow de lancement manuel sur main contient maintenant un job
-`tournament-summary` qui agrège tous les processus Forge indépendants,
-contrôle les artefacts et publie des résultats par pod avec incertitude
-descriptive. Il n'a PAS encore été vérifié en lancement manuel complet.
-Le mode `policy=v20_shadow` exploite la branche V20. La PR #12 doit
-rester en draft jusqu'aux résultats de ses comparaisons à état identique.
-
-## Expérience publique sur la pile — PR #13
-
-Nouvelle politique optionnelle `fourSeatCounterCritical` : si Forge a déjà
-validé la cible et le coût d'un contresort, ne pas le refuser uniquement à
-cause d'une probabilité de contre faible lorsque le sort adverse vise
-précisément à détruire/exiler/voler notre commandant. Pour les quatre IA.
-CI de deux pods appariés :
-https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085855529
-
-**L'ancienne V20 demeure nécessaire**, notamment le test contrefactuel de
-classement des cibles et le rapport de tournoi fan-in sur main.
-Validation V20 :
-https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085885574
-Le job agrégateur sur huit véritables parties archivées a déjà réussi :
-https://github.com/Toko177/brimaz-forge-lab/actions/runs/38085452376
-
-Le lanceur manuel sur main accepte `policy=critical_counter`, mais
-conserver la PR #13 en brouillon tant que les derniers logs et les
-résultats naturels ne sont pas vérifiés. Ne pas conclure à une meilleure
-IA sur des règles de score non exercées.
-
-## V22 — vrai test de bout en bout et trace des décisions sur la pile
-
-- **Passation V22 active :** https://github.com/Toko177/brimaz-forge-lab/blob/feature/v22-four-ai-operator-smoke-and-counter-audit-20261010/docs/PASSATION_ACTIVE_V22_2026-10-10.md
-- Nouveau modèle optionnel de contresort : menace publique ciblée
-  sur notre commandant, ou dommages/perte de vie **chiffrés exactement,
-  ciblant exclusivement notre joueur**, qui atteignent son total de vie.
-  Les règles Forge restent seules maîtresses des cibles, du coût et
-  de la pile ; évite X, répartitions et mains cachées.
-- Les quatre IA journalisent leurs décisions de contresort
-  (`FOUR_AI_COUNTER_DECISION`) : menaces, refus initiaux,
-  acceptations **sans confondre choix et sort lancé**.
-- **CI V22 de bout en bout :** https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v22-end-to-end.yml
-  / PR #14. Elle exécute 1 vraie partie Forge 4 IA avec 7 SHA de decks,
-  compilation et agrégation ; vérifier le **dernier** run.
-- Le lanceur manuel sur main prend `source_ref` V22 et active la
-  télémétrie des contresorts avec `policy=critical_counter`.
-- V20 : **804 évaluations de cibles légales de référence, zéro choix
-  changé par V19** ; six parties naturelles et deux censurées.
-  Ne pas adopter V19 par défaut en affirmant un bénéfice non mesuré.
-
-
-## CANDIDATE D'INTÉGRATION — point de réunion des branches
-
-La [PR #15](https://github.com/Toko177/brimaz-forge-lab/pull/15)
-vise directement `main` depuis
-`integration/four-ai-commander-simulator-20261010`, elle-même basée
-sur la V22. C'est la candidate **unique** pour sortir de l'empilement
-des PR expérimentales. Elle reste volontairement en brouillon :
-ce n'est pas une preuve de niveau humain ni une autorisation de
-fusion sans vérification.
-
-Lire :
-[docs/INTEGRATION_RELEASE_CANDIDATE.md](https://github.com/Toko177/brimaz-forge-lab/blob/integration/four-ai-commander-simulator-20261010/docs/INTEGRATION_RELEASE_CANDIDATE.md).
-
-La PR #15 exige un test d'intégration avec **une vraie partie Forge
-à quatre IA** ; vérifier son dernier GitHub Action.
-Les modifications tactiques peuvent continuer sur la V22, mais
-ne pas perdre la candidate d'intégration ni le lanceur sur main.
-
-## V23 — nouvelle expérimentation contre les répétitions de timeout
-
-**Branche la plus récente :** `feature/v23-ai-timeout-cooldown-20261010`
-**PR #16 :** https://github.com/Toko177/brimaz-forge-lab/pull/16
-**Passation dédiée :**
-https://github.com/Toko177/brimaz-forge-lab/blob/feature/v23-ai-timeout-cooldown-20261010/docs/PASSATION_ACTIVE_V23_2026-10-10.md
-
-V23 descend de la **candidate d'intégration PR #15**, pas de l'ancienne
-V6 sur main. Le smoke E2E de la PR #15 a réussi le pipeline mais sa
-**partie a été censurée à 360 s, sans gagnant naturel**. Elle a signalé
-3 timeouts IA (5/10/15 s) sur l'IA Zimone/Dina avec `Magic Damper`
-comme dernière candidate observée, aux tours 28, 32 et 36.
-
-V23 expérimente, par siège et **uniquement après un véritable timeout**,
-un cooldown borné de 4/8/12/16 tours globaux pour l'ID de carte
-couramment évalué. La politique n'intervient pas dans le choix des
-contresorts sur la pile (`skipCounter=false`), ne blacklist jamais
-une carte définitivement, et reste **désactivée** sans
-`-Dbrimaz.aiTimeoutCooldown=true`.
-
-CI appariée (4 vraies JVM) :
-https://github.com/Toko177/brimaz-forge-lab/actions/workflows/four-ai-v23-cooldown.yml
-Lire ses derniers logs et **vérifier que Forge démarre** avant d'en
-présenter les résultats : une version initiale du patch compilait le
-helper Java sans l'insérer dans le JAR, causant un
-`NoClassDefFoundError` ; ce défaut d'assemblage a été corrigé.
-
-L'ancienne PR #15 demeure candidate de consolidation vers main.
-Ne pas fusionner V23 avant le comparatif réel et les contrôles de
-légalité de la mise à l'écart. Les premiers logs sont des échantillons,
-pas des preuves générales de gain de vitesse ou de niveau d'IA.
-
-## Nouvelles références empiriques pour le prochain chat
-
-La campagne de régression V13 relancée sur le code V23 après correction
- du packaging Java a **réussi les 9 jobs Actions**, avec
-**16 véritables parties** : 14 fins naturelles, 2 censures et
-1 victoire Brimaz observée (sans prétention de winrate indépendant).
-Run : https://github.com/Toko177/brimaz-forge-lab/actions/runs/38089750692
-
-**Référence de victoire Brimaz à quatre IA :**
-[docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md](docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md)
-Seed **20830001**, artifact rotation 2, Brimaz siège 3,
-Forge rapporte une victoire naturelle en 78,474 secondes. Le journal
-comporte Incubateurs, Mirkwood Bats, Essence of Orthodoxy, Athreos,
-Metastatic Evangel et des attaques de jetons phyrexians.
-Le cas est une **référence empirique de synergies présentes**, pas la
-preuve qu'une heuristique particulière est causalement supérieure.
-
-Le lanceur manuel sur main permet désormais un horloge **360/420/480 s**
-(420 par défaut, 480 limitée à trois parties par rotation) et les
-**quatre profils Forge** identiques aux quatre sièges : Default,
-Experimental, Cautious, Reckless. Les profils n'ont pas encore été
-classés en force réelle. Le workflow_dispatch reste à valider en vrai
-pilot manuel complet.
+# Reprise active — V34 (nettoyage V33)
+
+**11 octobre 2026.** Branche de continuation :
+`feature/v34-repository-cleanup-20261011` ;
+parent `feature/v33-multiplayer-strategic-planner-20261011` (PR #26).
+`main` est encore ancien et les PR #24–#26 sont empilées et non
+fusionnées : ne pas repartir de `main` pour le prochain correctif.
+
+## Périmètre du dépôt GitHub
+
+[Inventaire global des 29 branches et 27 PR](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md). 29 branches, 27 PR dont 26 ouvertes, 7 branches avec des commits propres
+non ancêtres de V34 (dont 48 propres à `main`). Ne pas forcer la fusion ou
+supprimer les références sans réconciliation.
+
+## Vérités constatées
+
+- Le vrai Forge 2.0.15 Java 21 exécute des Commander 4 IA avec 7 listes
+  canoniques SHA256 fixes.
+- La V33 compile réellement :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781138
+- Dernier A/B V33 :
+  https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781081
+  **16/16 parties naturelles** ; trois paires ont changé de vainqueur.
+  Le résultat « 0 choix V33 » n'est PAS interprétable : l'audit recherchait
+  `STRATEGIC_CHOICE` au lieu de `STRATEGIC_PROPOSAL` et contenait des
+  échappements regex erronés pour `STRATEGIC_ACTION`.
+  La V34 corrige le parseur et son test synthétique ; il faut rejouer
+  l'analyse des artefacts originaux avant toute conclusion sur l'usage de l'IA.
+- `scripts/patch_forge_brimaz_v13.py` reste le patch actuel,
+  malgré son nom historique : il compile les deux classes V33.
+- Le flag `v33_strategy` est opt-in et symétrique sur les quatre sièges.
+  Les coûts, les règles et les résolutions restent à Forge.
+
+## Priorité immédiate
+
+**Réauditer les artefacts V33 avec les expressions régulières corrigées**, puis
+quantifier propositions, approbations Forge, sorts réellement lancés et
+choix par défaut. Ne pas confondre le résultat initial erroné de l'audit
+avec une absence réelle de décisions. Ne pas inférer l'efficacité
+du planificateur des seuls tests synthétiques ; éviter de relancer
+une grande campagne tant que l'intervention n'est pas démontrée
+sur une partie ciblée.
+
+## Fichiers à consulter
+
+1. `README.md` — installation, points d'entrée et commandes.
+2. `docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md` — modèle et restrictions.
+3. `docs/REPOSITORY_STRUCTURE.md` — protections du nettoyage.
+4. `docs/RUN_LOCAL_4AI_COMMANDER.md` — lancer les expériences.
+5. `docs/COMBAT_CPU_PROFILING.md` — historique du goulot CPU.
+
+Cette branche supprime 110 fichiers historiques/redondants,
+**pas leurs commits Git, leurs branches ou leurs PR**.
+Aucune suppression des sept decks, des contrôles SHA,
+des principaux scripts, des analyses V33 ni des outils
+de deckbuilding.

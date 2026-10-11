@@ -1,0 +1,19 @@
+# Generated Forge distribution, local runtimes and test artifacts
+/forge-dist/
+/.forge-v2.0.15/
+/forge-installer-2.0.15.tar.bz2
+/*.tar.bz2
+/*.jar
+/*.jfr
+/results/
+/canonical/forge_normalized/
+/forge_decks/*.backup
+/__pycache__/
+**/__pycache__/
+*.py[cod]
+*.class
+*.log
+.venv/
+.vscode/
+.idea/
+.DS_Store

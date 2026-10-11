@@ -1,36 +1,77 @@
 # Brimaz Forge Lab
 
-**Lancer de vraies parties à quatre IA :** [GitHub Actions — Commander simulator](https://github.com/Toko177/brimaz-forge-lab/actions/workflows/commander-four-ai-simulator.yml) · [Guide d'utilisation](docs/HOW_TO_RUN_FOUR_AI_SIMULATOR.md).
+Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
+[Forge 2.0.15](https://github.com/Card-Forge/forge), Java 21, parties
+indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
+certification et comparaisons de politiques.
 
-**Nouveau pilote V24 :** [Optimisation expérimentale des combats à quatre IA (PR #17)](https://github.com/Toko177/brimaz-forge-lab/pull/17) · [Guide pour lancer les vrais matchs localement sous Windows/Linux](https://github.com/Toko177/brimaz-forge-lab/blob/feature/v24-combat-trigger-fast-negatives-20261011/docs/RUN_LOCAL_4AI_COMMANDER.md). V24 n'est pas validée par un benchmark : nouveaux jobs GitHub bloqués avant allocation de runner.
+**Branche de développement à poursuivre :**
+`feature/v34-repository-cleanup-20261011`, issue de la V33.
+`main` contient encore l'ancien socle ; les PR empilées ne sont
+pas fusionnées. [Lire la passation active](NEXT_CHAT_START_HERE.md).
 
-**Candidate consolidée :** [PR #15 — simulateur Forge réel à quatre IA](https://github.com/Toko177/brimaz-forge-lab/pull/15) (en brouillon, CI et validation du jeu en cours).
+**Attention : V34 ne nettoie pas encore les références distantes ni `main`.**
+[Inventaire global des 29 branches et 27 PR](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
 
-**Dernier développement et passation :** [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md), branche expérimentale de contresorts en PR #13 (base V20 PR #12). La branche `main` conserve surtout l'ancienne version du moteur.
+## Ce qui fonctionne réellement
 
+- Compilation du patch V33 contre le véritable JAR Forge Java 21,
+  [test validé](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781138).
+- Lancement de quatre sièges et comparaison A/B sur les deux groupes d'adversaires.
+- [V33, 16 parties réelles / 16 fins naturelles](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38128781081).
+  Les parties ont divergé, mais **l'ancien audit V33 était défectueux** :
+  son parseur cherchait un nom de journal incorrect et des expressions
+  régulières mal échappées. La V34 corrige ces défauts ; le nombre réel
+  d'actions approuvées doit être recalculé depuis les artefacts du run.
+  Aucune amélioration stratégique n'est encore démontrée.
+- Les parties censurées ou en erreur ne sont **jamais** comptées
+  comme des victoires naturelles.
 
-> **REPRISE DU PROJET (10 octobre 2026 et après) :**
-> ouvrir d'abord [NEXT_CHAT_START_HERE.md](NEXT_CHAT_START_HERE.md) pour
-> retrouver la branche active, les PR et la **passation V16**.
-> Ce README de la branche main décrit encore surtout V1–V6 ; ne pas prendre
-> main pour le moteur IA courant.
+## Reprendre le développement
 
+Voir [la V33 et ses limites](docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md)
+et [l'organisation épurée](docs/REPOSITORY_STRUCTURE.md).
+La priorité est de **réauditer les journaux réels V33 avec le parseur corrigé**,
+puis d'évaluer les refus éventuels de Forge et d'améliorer la décision
+sans déformer les règles.
 
-Projet : simulation réelle de Magic: The Gathering Commander à **quatre IA Forge 2.0.15**, avec contrôle de légalité des 100 cartes, parallélisation GitHub Actions, audit des décisions IA et certification des parties.
+### Installation et exécution (Windows)
 
-## Point d'entrée pour reprendre le projet
+Prérequis : Python 3.10+, JDK 21 et `gh auth login`.
+Le programme récupère l'archive officielle Forge et vérifie son SHA256.
 
-**[Lire le rapport de transmission intégral du 9 octobre 2026](docs/RAPPORT_TRANSFERT_INTEGRAL_2026-10-09.md)** — **447 lignes**, contexte, architecture, scripts, données, chronologie chiffrée, limites, bugs corrigés, V1–V6, première victoire de Brimaz, liens vers les actions et étapes prioritaires.
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Paired -ReferencePolicy v17_strict -Policy v33_strategy -Pod both -GamesPerRotation 1 -Parallel 2 -Clock 420 -PreflightOnly
+```
 
-Documentation spécialisée :
-- [Postmortem des 32 parties et première victoire certifiée](docs/canonical-postmortem-and-first-win.md)
-- [Règles et critères de validité](docs/realism-protocol.md)
-- [Qualité de l'IA et parallélisme](docs/ai-quality-and-parallelism.md)
-- [Architecture du futur lookahead à quatre joueurs](docs/multiplayer-lookahead-roadmap.md)
+Pour lancer **16 véritables processus Forge** (2 pods × 4 positions ×
+2 politiques), enlever `-PreflightOnly`.
 
-## Résultat actuel à ne pas mal interpréter
+Sur Linux ou avec un JAR déjà installé :
+```bash
+python3 scripts/run_paired_four_ai.py \
+  --jar /chemin/forge-gui-desktop-2.0.15-jar-with-dependencies.jar \
+  --reference-policy v17_strict --experiment-policy v33_strategy \
+  --pod both --parallel 2 --games-per-rotation 1 --clock 420
+```
 
-- 32 parties canoniques avant correction moteur : 29 naturelles certifiées, 3 censurées ; Brimaz 0/29.
-- Correction ciblée du bug Forge `CharmEffect`, puis **une première victoire de Brimaz** sur graine de régression, tour 24, 356,476 secondes, trois adversaires éliminés : [certification](https://github.com/Toko177/brimaz-forge-lab/actions/runs/37969492744).
-- Cette victoire ne mesure pas encore le taux de victoire du deck ; la priorité reste la qualité du pilotage IA et l'audit des règles.
-- V5/V6 sont des pilotes d'amélioration de l'IA, sans gain de winrate démontré.
+[Guide de lancement détaillé](docs/RUN_LOCAL_4AI_COMMANDER.md).
+
+## Points d'entrée et tests
+
+| Objectif | Chemin |
+|---|---|
+| Expérience Forge réelle | `scripts/run_paired_four_ai.py` |
+| Exécuter une politique | `scripts/run_local_four_ai.py` |
+| Préparer un PC Windows | `scripts/setup_and_run_four_ai.ps1` |
+| Patch principal actuel | `scripts/patch_forge_brimaz_v13.py` |
+| Planificateur V33 | `patches/java/forge/ai/MultiplayerStrategicModel.java` et `MultiplayerStrategicSequencer.java` |
+| Audit des vraies décisions | `scripts/audit_v33_real_strategy.py` |
+| Résultats naturels / censures | `scripts/certify_commander_games.py` |
+| Référence canonique | `forge_decks/\*.dck` et `canonical/results/forge_normalization/report.json` |
+| Deckbuilding A/B | `docs/DECKBUILDING_QUICKSTART.md` |
+
+Les workflows conservés concernent la validation courante,
+le test réel Forge, la légalité et le deckbuilding.
+Les anciennes expérimentations restent récupérables dans
+l'historique Git, sans encombrer les nouveaux développements.

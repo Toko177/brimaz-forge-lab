@@ -1,0 +1,340 @@
+name: Commander multivariant tournament - shared 4-seat baseline
+on:
+  push:
+    paths: [decks/tournament-experiments.json]
+  workflow_dispatch:
+    inputs:
+      recipe:
+        description: "JSON list containing 2-8 card swap variants in repo"
+        required: true
+        default: "decks/tournament-experiments.json"
+        type: string
+      reference_file:
+        description: "Any 100-card Commander reference deck in this repository"
+        required: true
+        default: "decks/Brimaz_V3.txt"
+        type: string
+      commander:
+        description: "Exact single commander name; other commanders use stock Forge AI"
+        required: true
+        default: "Brimaz, Blight of Oreskos"
+        type: string
+      seed_base:
+        description: "Independent future confirmation batch uses a NEW seed base"
+        required: true
+        default: "21410000"
+        type: string
+      repeats:
+        description: "Matches per pod/seat (1, 2 or 4)"
+        default: "1"
+        required: true
+        type: choice
+        options: ["1", "2", "4"]
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      reference_run_id: ${{ steps.reference_lookup.outputs.reference_run_id }}
+      reference_run_source: ${{ steps.reference_lookup.outputs.reference_run_source }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm tournament safety and previous Commander regression
+        run: |
+          python3 -m unittest discover -s tests -p 'test_deckbuild_tournament.py' -v
+          python3 -m unittest discover -s tests -p 'test_deckbuild_pipeline.py' -v
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-seven-decks-canonical-verified
+          run-id: 37966009166
+          github-token: ${{ github.token }}
+          path: canonical/
+      - name: Verify and copy six real Scryfall-pinned opponent decks
+        run: |
+          mkdir -p opponents
+          cp canonical/forge_normalized/*.dck opponents/
+          python3 - <<'PY'
+          import pathlib,json,hashlib
+          report=json.loads(pathlib.Path("canonical/results/forge_normalization/report.json").read_text())
+          assert not report["errors"] and len(report["decks"])==7
+          for d in report["decks"]:
+              p=pathlib.Path("opponents")/(d["deck"]+".dck")
+              assert p.is_file() and hashlib.sha256(p.read_bytes()).hexdigest()==d["normalized_sha256"]
+          PY
+      - name: Build immutable reference and 2-8 distinct Commander candidate decks
+        env:
+          RECIPE: ${{ inputs.recipe || 'decks/tournament-experiments.json' }}
+          REFERENCE_FILE: ${{ inputs.reference_file || 'decks/Brimaz_V3.txt' }}
+          COMMANDER: ${{ inputs.commander || 'Brimaz, Blight of Oreskos' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ inputs.repeats || '1' }}
+        run: |
+          python3 scripts/deckbuild_tournament.py prepare \
+            --base "$REFERENCE_FILE" --commander "$COMMANDER" \
+            --recipe "$RECIPE" --opponents opponents/ \
+            --root tournament --repo-root . \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS"
+      - name: Scryfall Commander bracket audit of EVERY candidate and zero-simulation mana preflight
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,subprocess
+          plan=json.loads(pathlib.Path("tournament/tournament.json").read_text())
+          for slug in plan["variants"]:
+              root=pathlib.Path("tournament/variants")/slug/"forge_decks"
+              target=pathlib.Path("tournament/legality")/slug
+              subprocess.run(["python3","scripts/validate_commander_legality.py",
+                  "--deck",str(root/"Deck_Reference.dck"),
+                  "--deck",str(root/"Deck_Candidate.dck"),
+                  "--require-no-game-changers","--out",str(target)],check=True)
+              report=json.loads((target/"report.json").read_text())
+              assert len(report["reports"])==2
+              assert all(x["structurally_and_legality_valid"] for x in report["reports"])
+              subprocess.run(["python3","scripts/deckbuild_preflight.py","--decks",str(root),
+                  "--manifest",str(root/"candidate-manifest.json"),
+                  "--scryfall",str(target/"scryfall-snapshot.json"),
+                  "--output",str(target/"preflight.json")],check=True)
+              # Separate Magic legality from actual Forge AI support. Even
+              # a perfectly legal human card may be excluded by AI:RemoveDeck:All.
+              subprocess.run(["python3","scripts/audit_forge_ai_card_support.py",
+                  "--deck",str(pathlib.Path("tournament/input")/(slug+".txt")),
+                  "--output",str(target/"ai-support.json")],check=True)
+          print("ALL_TOURNAMENT_DECKS_LEGAL_LIVE_SCRYFALL",len(plan["variants"]))
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: previous-legality/
+      - name: Merge original Scryfall-pinned opponent legality per candidate
+        run: |
+          python3 - <<'PY'
+          import json,pathlib
+          p=json.loads(pathlib.Path("tournament/tournament.json").read_text())
+          old=json.loads(pathlib.Path("previous-legality/report.json").read_text())
+          needed={"Deck_Reference","Deck_Candidate","Kaal_9594008","Kaal_10347090",
+                  "Kaal_21930525","Kaal_23328062","Kaal_11485202","Kaal_22193355"}
+          for slug in p["variants"]:
+              folder=pathlib.Path("tournament/legality")/slug
+              new=json.loads((folder/"report.json").read_text())
+              items={pathlib.Path(x["file"]).stem:x for x in old["reports"]+new["reports"]}
+              assert needed.issubset(items),needed-set(items)
+              assert all(items[n]["structurally_and_legality_valid"] for n in needed)
+              (folder/"merged.json").write_text(json.dumps({"reports":[items[n] for n in sorted(needed)]})+"\n")
+          PY
+      - name: Discover previous successful tournament or A/B with the exact same reference history
+        id: reference_lookup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          found=""
+          source=""
+          slug="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["reference_variant"])')"
+          d="tournament/variants/$slug/forge_decks"
+          SEED="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["seed_base"])')"
+          REPEATS="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["repeats"])')"
+          for workflow in deckbuild-tournament.yml deckbuild-ab.yml; do
+            ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?per_page=30" --jq '.workflow_runs[] | select(.conclusion=="success") | .id')"
+            for id in $ids; do
+              folder="reference-search/$id"
+              mkdir -p "$folder"
+              if [[ "$workflow" == deckbuild-tournament.yml ]]; then
+                artifact=commander-tournament-immutable-inputs
+                mode=tournament
+              else
+                artifact=deckbuild-verified-inputs
+                mode=ab
+              fi
+              if ! gh run download "$id" --repo "$GITHUB_REPOSITORY" --name "$artifact" --dir "$folder" >/dev/null 2>&1; then
+                continue
+              fi
+              previous="$(find "$folder" -type f -name reference-cache-key.json | head -1)"
+              if [[ -z "$previous" ]]; then continue; fi
+              if python3 scripts/deckbuild_cache.py --mode verify --root .                  --decks "$d" --manifest "$d/candidate-manifest.json"                  --seed-base "$SEED" --repeats "$REPEATS" --previous "$previous"; then
+                found="$id"
+                source="$mode"
+                break 2
+              fi
+            done
+          done
+          echo "reference_run_id=$found" >> "$GITHUB_OUTPUT"
+          echo "reference_run_source=$source" >> "$GITHUB_OUTPUT"
+          if [[ -n "$found" ]]; then
+            echo "TOURNAMENT_REFERENCE_CACHE_HIT run=$found source=$source"
+          else
+            echo "TOURNAMENT_REFERENCE_CACHE_MISS"
+          fi
+      - name: "Plan only needed new JVM matches: eight per variant plus optional shared reference"
+        id: plan
+        env:
+          CACHE_RUN_ID: ${{ steps.reference_lookup.outputs.reference_run_id }}
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,os
+          d=json.loads(pathlib.Path("tournament/tournament.json").read_text())
+          jobs=[j for j in d["jobs"] if not
+                (os.environ.get("CACHE_RUN_ID") and j["arm"]=="reference")]
+          expected=8*(len(d["variants"])+(0 if os.environ.get("CACHE_RUN_ID") else 1))
+          assert len(jobs)==expected
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f:
+              f.write("matrix="+json.dumps({"include":jobs},separators=(",",":"))+"\n")
+          print("TOURNAMENT_NEW_JVM_SHARDS",len(jobs),"vs",len(d["jobs"]),"without an existing reference")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: commander-tournament-immutable-inputs
+          path: tournament/
+          if-no-files-found: error
+
+  four-ai-real-games:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    name: "${{ matrix.arm }} ${{ matrix.variant }} ${{ matrix.pod }} r${{ matrix.rotation }}"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: commander-tournament-immutable-inputs
+          path: tournament/
+      - uses: actions/cache/restore@v4
+        with:
+          path: forge-dist/
+          key: forge-2.0.15-linux-shared-20261009
+      - name: Retrieve official SHA256 verified Forge
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist && tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Equal four-AI Forge rules and V13 thinking policy for all decks
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+          python3 scripts/patch_forge_brimaz_v13.py --jar "$JAR"
+      - name: Play genuine independent four-player Commander simulation
+        env:
+          ARM: ${{ matrix.arm }}
+          VARIANT: ${{ matrix.variant }}
+          POD: ${{ matrix.pod }}
+          ROTATION: ${{ matrix.rotation }}
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          SEED_BASE="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["seed_base"])')"
+          REPEATS="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["repeats"])')"
+          if [[ "$POD" == artifact ]]; then SEED_BASE=$((SEED_BASE + 100000)); fi
+          python3 scripts/deckbuild_run.py --jar "$JAR" \
+            --decks "tournament/variants/$VARIANT/forge_decks" \
+            --manifest "tournament/variants/$VARIANT/forge_decks/candidate-manifest.json" \
+            --arm "$ARM" --pod "$POD" --rotation "$ROTATION" --seed-base "$SEED_BASE" \
+            --repeats "$REPEATS" --clock 360 --timeout 445 --profile Default \
+            --policy V13-incubate-adaptive --out "results/tournament/$ARM/$VARIANT/$POD/rot$ROTATION"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "tournament-real-${{ matrix.arm }}-${{ matrix.variant }}-${{ matrix.pod }}-r${{ matrix.rotation }}"
+          path: results/tournament/
+          if-no-files-found: ignore
+
+  report:
+    needs: [prepare,four-ai-real-games]
+    if: ${{ always() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: commander-tournament-immutable-inputs
+          path: tournament/
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: tournament-real-*
+          path: original-games/
+      - name: Reuse original eight games from earlier tournament when exact SHA256 matches
+        if: ${{ needs.prepare.outputs.reference_run_source == 'tournament' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tournament-real-reference-*
+          run-id: ${{ needs.prepare.outputs.reference_run_id }}
+          github-token: ${{ github.token }}
+          path: original-games/cached-reference/
+      - name: Reuse original eight games from historical A/B when exact SHA256 matches
+        if: ${{ needs.prepare.outputs.reference_run_source == 'ab' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: deckbuild-game-reference-*
+          run-id: ${{ needs.prepare.outputs.reference_run_id }}
+          github-token: ${{ github.token }}
+          path: original-games/cached-reference/
+      - name: Verify every reused original reference transcript SHA256 and unchanged 4-seat matrix
+        if: ${{ needs.prepare.outputs.reference_run_id != '' }}
+        run: |
+          slug="$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["reference_variant"])')"
+          python3 scripts/deckbuild_cache.py --mode audit-archive             --root . --decks "tournament/variants/$slug/forge_decks"             --manifest "tournament/variants/$slug/forge_decks/candidate-manifest.json"             --seed-base "$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["seed_base"])')"             --repeats "$(python3 -c 'import json;print(json.load(open("tournament/tournament.json"))["repeats"])')"             --previous tournament/reference-cache-key.json             --archive original-games/cached-reference/
+      - name: Require every actual reference and candidate artifact, seed and transcript SHA
+        run: |
+          python3 scripts/deckbuild_tournament.py assemble \
+            --plan tournament/tournament.json --game-root original-games \
+            --output staging
+      - name: Certify all real Magic outcomes per variant and compare to shared baseline
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          p=json.loads(pathlib.Path("tournament/tournament.json").read_text())
+          for slug in p["variants"]:
+              d=pathlib.Path("tournament/variants")/slug/"forge_decks"
+              out=pathlib.Path("results/tournament-report")/slug
+              out.mkdir(parents=True,exist_ok=True)
+              import shutil
+              shutil.copyfile(pathlib.Path("tournament/legality")/slug/"ai-support.json",
+                              out/"forge-ai-support.json")
+              shutil.copyfile(pathlib.Path("tournament/legality")/slug/"preflight.json",
+                              out/"preflight.json")
+              subprocess.run(["python3","scripts/deckbuild_certify.py",
+                  "--input",str(pathlib.Path("staging")/slug),
+                  "--legality",str(pathlib.Path("tournament/legality")/slug/"merged.json"),
+                  "--candidate-manifest",str(d/"candidate-manifest.json"),
+                  "--out",str(out/"certificate.json")],check=True)
+              subprocess.run(["python3","scripts/deckbuild_compare.py",
+                  "--certificate",str(out/"certificate.json"),
+                  "--manifest",str(d/"candidate-manifest.json"),
+                  "--cache-key","tournament/reference-cache-key.json",
+                  "--repeats",str(p["repeats"]),
+                  "--out",str(out/"comparison.json")],check=True)
+          PY
+      - name: Rank candidate decks ONLY with the same eight actual reference SHA256s
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,subprocess
+          p=json.loads(pathlib.Path("tournament/tournament.json").read_text())
+          f=[str(pathlib.Path("results/tournament-report")/s/"comparison.json") for s in p["variants"]]
+          subprocess.run(["python3","scripts/deckbuild_rank.py","--reports",*f,
+            "--output","results/tournament-report/ranking.json",
+            "--markdown","results/tournament-report/ranking.md"],check=True)
+          PY
+          cat results/tournament-report/ranking.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commander-multivariant-certified-ranking
+          path: results/tournament-report/
+          if-no-files-found: ignore

@@ -1,0 +1,379 @@
+name: Fast Commander deckbuilding A/B (real Forge)
+on:
+  push:
+    paths: [decks/Challenger.txt]
+  workflow_dispatch:
+    inputs:
+      swaps:
+        description: "Optional quick swaps: e.g. Card Out -> Card In; 2 Another Out -> 2 New In"
+        required: false
+        default: ""
+        type: string
+      reference_file:
+        description: "100-card reference deck file in repository"
+        required: true
+        default: "decks/Brimaz_V3.txt"
+        type: string
+      candidate_file:
+        description: "100-card challenger deck file committed to repository"
+        required: true
+        default: "decks/Challenger.txt"
+        type: string
+      reference_commander:
+        description: "Reference commander (semicolon for two commanders)"
+        required: true
+        default: "Brimaz, Blight of Oreskos"
+        type: string
+      candidate_commander:
+        description: "Challenger commander"
+        required: true
+        default: "Brimaz, Blight of Oreskos"
+        type: string
+      repeats:
+        description: "1=16 games, 2=32, 4=64, 6=96"
+        required: true
+        default: "1"
+        type: choice
+        options: ["1", "2", "4", "6"]
+      reference_run_id:
+        description: "Optional prior successful deckbuilding run ID; reuse its EXACT matching 8 reference games"
+        required: false
+        default: ""
+        type: string
+      seed_base:
+        description: "Predeclared paired Forge RNG cohort"
+        required: true
+        default: "21410000"
+        type: string
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  prepare:
+    outputs:
+      matrix: ${{ steps.plan_matrix.outputs.matrix }}
+      reference_reused: ${{ steps.plan_matrix.outputs.reference_reused }}
+      cache_run_id: ${{ steps.cache_lookup.outputs.run_id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fast deckbuilding evidence checks
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_pipeline.py' -v
+      - name: Test one-line swap quantities and commander protection
+        run: python3 -m unittest discover -s tests -p 'test_deckbuild_swaps.py' -v
+      - uses: actions/download-artifact@v4
+        with:
+          name: forge-seven-decks-canonical-verified
+          run-id: 37966009166
+          github-token: ${{ github.token }}
+          path: canonical/
+      - name: Copy and hash-check canonical opponents
+        run: |
+          set -euo pipefail
+          mkdir -p forge_decks
+          cp canonical/forge_normalized/*.dck forge_decks/
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          r=json.loads(pathlib.Path('canonical/results/forge_normalization/report.json').read_text())
+          assert not r['errors'] and len(r['decks'])==7
+          for item in r['decks']:
+              f=pathlib.Path('forge_decks')/(item['deck']+'.dck')
+              assert hashlib.sha256(f.read_bytes()).hexdigest()==item['normalized_sha256']
+          PY
+      - name: Materialize two immutable lists and explicit card swap diff
+        env:
+          REFERENCE_FILE: ${{ inputs.reference_file || 'decks/Brimaz_V3.txt' }}
+          CANDIDATE_FILE: ${{ inputs.candidate_file || 'decks/Challenger.txt' }}
+          REFERENCE_COMMANDER: ${{ inputs.reference_commander || 'Brimaz, Blight of Oreskos' }}
+          CANDIDATE_COMMANDER: ${{ inputs.candidate_commander || 'Brimaz, Blight of Oreskos' }}
+          SWAPS: ${{ inputs.swaps || '' }}
+        run: |
+          if [[ -n "$SWAPS" ]]; then
+            CANDIDATE_FILE="decks/generated_candidate.txt"
+            CANDIDATE_COMMANDER="$REFERENCE_COMMANDER"
+            python3 scripts/deckbuild_swaps.py --base "$REFERENCE_FILE" \
+              --commander "$REFERENCE_COMMANDER" --swaps "$SWAPS" --out "$CANDIDATE_FILE"
+          fi
+          python3 scripts/deckbuild_prepare.py --reference "$REFERENCE_FILE" \
+            --candidate "$CANDIDATE_FILE" --reference-commander "$REFERENCE_COMMANDER" \
+            --candidate-commander "$CANDIDATE_COMMANDER" --out forge_decks
+      - name: Validate BOTH deck candidates using live Scryfall and no Game Changers
+        run: |
+          python3 scripts/validate_commander_legality.py \
+            --deck forge_decks/Deck_Reference.dck --deck forge_decks/Deck_Candidate.dck \
+            --require-no-game-changers --out legality/candidates
+      - name: Instant factual land/MDFC/mana-curve comparison before running Forge
+        run: |
+          python3 scripts/deckbuild_preflight.py \
+            --decks forge_decks \
+            --manifest forge_decks/candidate-manifest.json \
+            --scryfall legality/candidates/scryfall-snapshot.json \
+            --output results/deckbuild-preflight.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: legality-audit-all-playgroup-pods
+          run-id: 37965067128
+          github-token: ${{ github.token }}
+          path: prior-legality/
+      - name: Join fresh candidate reports to pinned canonical opponent legality
+        run: |
+          mkdir -p legality
+          python3 - <<'PY'
+          import json,pathlib
+          old=json.loads(pathlib.Path('prior-legality/report.json').read_text())
+          new=json.loads(pathlib.Path('legality/candidates/report.json').read_text())
+          lookup={pathlib.Path(d['file']).stem:d for d in old['reports']+new['reports']}
+          names={'Deck_Reference','Deck_Candidate','Kaal_9594008','Kaal_10347090',
+                 'Kaal_21930525','Kaal_23328062','Kaal_11485202','Kaal_22193355'}
+          assert all(k in lookup and lookup[k]['structurally_and_legality_valid'] for k in names)
+          pathlib.Path('legality/merged.json').write_text(json.dumps(
+              {'reports':[lookup[k] for k in sorted(names)]},indent=2)+'\n')
+          m=json.loads(pathlib.Path('forge_decks/candidate-manifest.json').read_text())
+          if not m['delta']['added'] and not m['delta']['removed']:
+              print('CONTROL_IDENTICAL_DECKS - validate infrastructure only, not deck improvement')
+          PY
+      - name: Create fail-closed SHA256 reference match fingerprint
+        env:
+          REPEATS: ${{ inputs.repeats || '1' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+        run: |
+          python3 scripts/deckbuild_cache.py --mode create --root . \
+            --decks forge_decks --manifest forge_decks/candidate-manifest.json \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+            --output forge_decks/reference-cache-key.json
+      - name: Find reusable reference results from matching successful GitHub campaigns
+        id: cache_lookup
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_RUN_ID: ${{ inputs.reference_run_id || '' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ inputs.repeats || '1' }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$REQUESTED_RUN_ID" ]]; then
+            [[ "$REQUESTED_RUN_ID" =~ ^[0-9]+$ ]] || { echo "Invalid reference run ID"; exit 2; }
+            candidate_ids="$REQUESTED_RUN_ID"
+          else
+            candidate_ids="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deckbuild-ab.yml/runs?per_page=35" \
+              --jq '.workflow_runs[] | select(.conclusion=="success") | .id')"
+          fi
+          found=""
+          for run_id in $candidate_ids; do
+            mkdir -p "candidate-cache/$run_id"
+            if ! gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name deckbuild-verified-inputs --dir "candidate-cache/$run_id" >/dev/null 2>&1; then
+              if [[ -n "$REQUESTED_RUN_ID" ]]; then
+                echo "Requested run has no reusable verified-input artifact: $run_id"; exit 2
+              fi
+              continue
+            fi
+            if [[ ! -f "candidate-cache/$run_id/forge_decks/reference-cache-key.json" ]]; then
+              if [[ -n "$REQUESTED_RUN_ID" ]]; then
+                echo "Previous campaign has no provenance attestation; fail closed"; exit 2
+              fi
+              continue
+            fi
+            if python3 scripts/deckbuild_cache.py --mode verify --root . \
+              --decks forge_decks --manifest forge_decks/candidate-manifest.json \
+              --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+              --previous "candidate-cache/$run_id/forge_decks/reference-cache-key.json"; then
+              found="$run_id"
+              cp "candidate-cache/$run_id/forge_decks/reference-cache-key.json" \
+                forge_decks/verified-reference-key.json
+              echo "REFERENCE_CACHE_HIT from run $run_id"
+              break
+            fi
+            if [[ -n "$REQUESTED_RUN_ID" ]]; then
+              echo "Requested run is incompatible with current decks, engine, seeds or clock"; exit 2
+            fi
+          done
+          if [[ -n "$found" ]]; then
+            echo "run_id=$found" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_id=" >> "$GITHUB_OUTPUT"
+            echo "REFERENCE_CACHE_MISS - will simulate every reference matchup normally"
+          fi
+      - name: Plan actual required runners (eight after cache hit, sixteen otherwise)
+        id: plan_matrix
+        env:
+          REFERENCE_RUN_ID: ${{ steps.cache_lookup.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$REFERENCE_RUN_ID" ]]; then
+            echo "reference_reused=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "reference_reused=false" >> "$GITHUB_OUTPUT"
+          fi
+          python3 - <<'PY'
+          import json,os
+          reuse=bool(os.environ.get("REFERENCE_RUN_ID"))
+          arms=["candidate"] if reuse else ["reference","candidate"]
+          shards=[{"arm":arm,"pod":pod,"rotation":rot}
+                  for arm in arms for pod in ("aristo","artifact") for rot in range(4)]
+          assert len(shards)==(8 if reuse else 16)
+          with open(os.environ["GITHUB_OUTPUT"],"a") as fp:
+              fp.write("matrix="+json.dumps({"include":shards},separators=(",",":"))+"\n")
+          print("DECKBUILD_REQUIRED_REAL_JVMS",len(shards))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deckbuild-verified-inputs
+          path: |
+            forge_decks/
+            legality/merged.json
+            results/deckbuild-preflight.json
+          if-no-files-found: error
+
+  real-games:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    name: "${{ matrix.arm }} / ${{ matrix.pod }} / rotation ${{ matrix.rotation }}"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: deckbuild-verified-inputs
+          path: .
+      - uses: actions/cache/restore@v4
+        with:
+          path: forge-dist/
+          key: forge-2.0.15-linux-shared-20261009
+      - name: Restore SHA256 verified stock Forge 2.0.15
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Same disclosed Magic bugfix and V13 four-seat AI in both arms
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          python3 scripts/patch_forge_charm_context.py --jar "$JAR"
+          python3 scripts/patch_forge_brimaz_v13.py --jar "$JAR"
+      - name: Play actual four-player Commander games with pinned candidate input
+        env:
+          ARM: ${{ matrix.arm }}
+          POD: ${{ matrix.pod }}
+          ROTATION: ${{ matrix.rotation }}
+          REPEATS: ${{ inputs.repeats || '1' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
+          if [[ "$POD" == "artifact" ]]; then seed=$((SEED_BASE + 100000)); else seed="$SEED_BASE"; fi
+          python3 scripts/deckbuild_run.py --jar "$JAR" \
+            --decks forge_decks --manifest forge_decks/candidate-manifest.json \
+            --arm "$ARM" --pod "$POD" --rotation "$ROTATION" \
+            --seed-base "$seed" --repeats "$REPEATS" \
+            --clock 360 --timeout 445 --profile Default \
+            --policy V13-incubate-adaptive \
+            --out "results/deckbuild/$ARM/$POD/rot$ROTATION"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: "deckbuild-game-${{ matrix.arm }}-${{ matrix.pod }}-r${{ matrix.rotation }}"
+          path: results/deckbuild/
+          if-no-files-found: ignore
+
+  report:
+    needs: [prepare, real-games]
+    if: ${{ always() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: deckbuild-verified-inputs
+          path: .
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: deckbuild-game-*
+          path: match-artifacts/
+      - name: Fetch old reference transcripts ONLY when inputs are exactly compatible
+        if: ${{ needs.prepare.outputs.reference_reused == 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: deckbuild-game-reference-*
+          run-id: ${{ needs.prepare.outputs.cache_run_id }}
+          github-token: ${{ github.token }}
+          path: match-artifacts/cached-reference/
+      - name: Recheck every reused log SHA256, pod, seat, seed and AI policy
+        if: ${{ needs.prepare.outputs.reference_reused == 'true' }}
+        env:
+          REPEATS: ${{ inputs.repeats || '1' }}
+          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+        run: |
+          python3 scripts/deckbuild_cache.py --mode audit-archive --root . \
+            --decks forge_decks --manifest forge_decks/candidate-manifest.json \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+            --previous forge_decks/verified-reference-key.json \
+            --archive match-artifacts/cached-reference/
+      - name: Certify raw four-player game outcomes independently of launcher summary
+        run: |
+          python3 scripts/deckbuild_certify.py \
+            --input match-artifacts/ --legality legality/merged.json \
+            --candidate-manifest forge_decks/candidate-manifest.json \
+            --out results/deckbuild-report/certificate.json
+      - name: Compute seat-balanced A/B analysis with uncertainty and censures
+        env:
+          REPEATS: ${{ inputs.repeats || '1' }}
+        run: |
+          python3 scripts/deckbuild_compare.py \
+            --certificate results/deckbuild-report/certificate.json \
+            --manifest forge_decks/candidate-manifest.json \
+            --repeats "$REPEATS" --cache-key forge_decks/reference-cache-key.json \
+            --out results/deckbuild-report/comparison.json
+      - name: Preserve zero-simulation structural deck report in final certified artifact
+        run: |
+          mkdir -p results/deckbuild-report
+          cp results/deckbuild-preflight.json results/deckbuild-report/preflight.json
+      - name: Explain reference games reused from previous completed run
+        env:
+          CACHE_RUN_ID: ${{ needs.prepare.outputs.cache_run_id }}
+        run: |
+          if [[ -n "$CACHE_RUN_ID" ]]; then
+            echo "REFERENCE_CACHE_USED from GitHub Actions run $CACHE_RUN_ID; old games re-certified"
+          else
+            echo "REFERENCE_CACHE_BUILT: 16 real Forge games; original baseline reusable"
+          fi
+      - name: Human-readable GitHub Actions summary
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import pathlib,json
+          d=json.loads(pathlib.Path('results/deckbuild-report/comparison.json').read_text())
+          s=d['summary']
+          print('# Real Commander deck A/B, four Forge AIs')
+          print('| Metric | Reference | Candidate |')
+          print('|---|---:|---:|')
+          for key in ['scheduled','natural_certified','wins','certified_winrate',
+                      'wilson_95','rejected_or_censored','warning_free_wins','ai_timeouts']:
+              print(f"| {key} | {s['reference'][key]} | {s['candidate'][key]} |")
+          print()
+          print('Winrate delta (candidate minus reference):',s['delta_candidate_minus_reference_conditional_winrate'])
+          q=json.loads(pathlib.Path('results/deckbuild-report/preflight.json').read_text())
+          print('Mana-curve preflight (candidate minus reference):',q['candidate_minus_reference'])
+          print('Cards added:',d['candidate_deltas']['added'])
+          print('Cards removed:',d['candidate_deltas']['removed'])
+          print('Caveat: Same Forge seed does not ensure identical actions; censures are never assigned winners.')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commander-deckbuild-certified-comparison
+          path: results/deckbuild-report/
+          if-no-files-found: ignore
