@@ -43,6 +43,15 @@ initial sur 16 JVM a enregistré **230 choix approuvés** (15 fins
 naturelles, 1 censure), sans preuve de gain de victoire ; les modifications
 tactiques ultérieures nécessitent une nouvelle mesure.
 
+**Évaluation scientifique corrigée :** la campagne de référence `v17_strict`
+n'utilisait pas Forge d'origine. Le protocole vérifiable
+`forge_stock` conserve désormais le JAR originel byte-à-byte
+(aucun patch, aucune propriété spécifique). Le nouveau benchmark
+sépare résultats naturels et censures, victoires de Brimaz, taille de
+l'échantillon et incertitude. **Aucune supériorité IA face à Forge stock
+n'est revendiquée avant mesure suffisante.**
+[Limites méthodologiques](docs/V35_STRATEGIC_SEARCH.md).
+
 ## Ce qui fonctionne réellement
 
 - Compilation du patch V33 contre le véritable JAR Forge Java 21,

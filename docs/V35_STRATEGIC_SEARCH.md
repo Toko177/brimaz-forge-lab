@@ -191,3 +191,47 @@ Un prochain saut vers une IA de niveau humain nécessitera des **états
 réels Forge sauvegardés** et des contrefactuels exacts (combat, activation,
 interaction, table politique), puis une référence expert annotée et une
 évaluation multicampaigns, pas des coefficients inventés.
+
+## V35 vs **Forge originel non modifié** : nouvelle porte de vérité
+
+Les premiers A/B utilisaient `v17_strict` comme référence. Cette
+politique embarquait pourtant déjà nos adaptations V13/V17, de sorte
+qu'elle **n'était pas Forge original**. Les 230 interventions approuvées
+par l'IA démontrent la mise en service du planificateur, **pas sa
+supériorité** sur l'IA stock.
+
+Nouvelle politique `forge_stock` : zéro patch Java, **zéro flag
+`brimaz.*`**, copie byte-à-byte du JAR original Forge 2.0.15.
+L'audit rejette désormais une prétendue référence originale si la liste
+des patchs n'est pas vide, ou si les SHA256 ne coïncident pas. Les
+sept decks restent identiques et épinglés entre les deux campagnes.
+
+Le [workflow A/B](../.github/workflows/strategic-real-4ai-ab.yml)
+compare maintenant `forge_stock` à `v35_strategy`.
+Le rapport sépare les deux taux de fin naturelle, les victoires par
+deck, les résultats de Brimaz **sur paires où les deux manches se sont
+achevées naturellement**, et les inversions de victoire. Pour Brimaz,
+la statistique exacte sur les paires discordantes et les intervalles de
+Wilson à 95 % sont fournis comme diagnostics d'incertitude, **pas comme
+une validation automatique**.
+
+**Limite méthodologique majeure** : les quatre sièges d'une partie
+emploient toujours tous la même politique. Un Brimaz V35 qui gagne
+plus souvent contre trois autres V35 qu'un Brimaz original contre
+trois autres Forge originaux n'est pas une mesure de duel direct
+`V35 contre Forge` : les trois adversaires évoluent aussi.
+Même si les résultats favorisent V35, la phrase « IA bien meilleure
+que Forge » reste **non démontrée** sans des matchs avec politiques
+mixtes (par siège), des réplications nombreuses, des contrôles de
+règles et un test statistique robuste.
+
+### Sécurité de Living Death et du cimetière
+
+La couche tactique examine désormais non seulement les créatures de
+**son propre** cimetière, mais aussi celles des **trois cimetières
+adverses, publics**. Elle ne propose plus prioritairement une
+réanimation de masse si le gain potentiel de créatures ennemies est
+comparable ou supérieur. Il s'agit encore d'une approximation
+conservatrice ; `AiController` et les résolutions Oracle restent
+seules sources de vérité pour les cas d'exil, remplacement ou
+réanimation modifiée.

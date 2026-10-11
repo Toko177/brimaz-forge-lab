@@ -36,12 +36,21 @@ public final class MultiplayerTacticalPlannerV35 {
                         boolean commanderOnBoard,
                         int enemyCreatures, int enemyPower,
                         int greatestOpponentPower, int secondOpponentPower,
-                        int greatestOpponentCreatures) {
+                        int greatestOpponentCreatures, int enemyGraveCreatures) {
+        // Backward-compatible synthetic fixtures default to empty public graveyards.
+        public Board(int life,int ownCreatures,int ownCreaturePower,int ownTokens,
+                     int ownGraveCreatures,boolean commanderOnBoard,
+                     int enemyCreatures,int enemyPower,int greatestOpponentPower,
+                     int secondOpponentPower,int greatestOpponentCreatures) {
+            this(life,ownCreatures,ownCreaturePower,ownTokens,ownGraveCreatures,
+                 commanderOnBoard,enemyCreatures,enemyPower,greatestOpponentPower,
+                 secondOpponentPower,greatestOpponentCreatures,0);
+        }
         public Board {
             if(ownCreatures<0 || ownCreaturePower<0 || ownTokens<0
                 || ownGraveCreatures<0 || enemyCreatures<0 || enemyPower<0
                 || greatestOpponentPower<0 || secondOpponentPower<0
-                || greatestOpponentCreatures<0)
+                || greatestOpponentCreatures<0 || enemyGraveCreatures<0)
                 throw new IllegalArgumentException("invalid public combat snapshot");
         }
     }
@@ -79,6 +88,7 @@ public final class MultiplayerTacticalPlannerV35 {
                 && !desperation)) {
             if(s.ownGraveCreatures()>=4 &&
                s.ownGraveCreatures() >= s.ownCreatures()+2 &&
+               s.ownGraveCreatures() >= s.enemyGraveCreatures()+2 &&
                s.enemyCreatures()>=4) {
                 return Intervention.GRAVEYARD_SWEEP;
             }
@@ -108,10 +118,14 @@ public final class MultiplayerTacticalPlannerV35 {
             if(c.isCreature())ownGrave++;
         }
         int enemyCreatures=0,enemyPower=0,maxPower=0,secondPower=0,maxCount=0;
+        int enemyGrave=0;
         for(Player enemy:ai.getOpponents()) {
             int count=0,attack=0;
             for(Card c:enemy.getCardsIn(ZoneType.Battlefield)) {
                 if(c.isCreature()){count++;attack+=power(c);}
+            }
+            for(Card c:enemy.getCardsIn(ZoneType.Graveyard)) {
+                if(c.isCreature())enemyGrave++;
             }
             enemyCreatures+=count;
             enemyPower+=attack;
@@ -120,7 +134,7 @@ public final class MultiplayerTacticalPlannerV35 {
             else if(attack>secondPower)secondPower=attack;
         }
         return new Board(ai.getLife(),ours,ownPower,tokens,ownGrave,
-                    commander,enemyCreatures,enemyPower,maxPower,secondPower,maxCount);
+                    commander,enemyCreatures,enemyPower,maxPower,secondPower,maxCount,enemyGrave);
     }
 
     /**

@@ -45,6 +45,11 @@ with tempfile.TemporaryDirectory() as td:
     assert x["reference_is_byte_identical_to_stock_forge"] is False
     assert x["arm_natural_finishes"]=={"reference":1,"experiment":1}
     assert x["paired_natural_brimaz_wins"]["both_natural_pairs"]==1
+    assert x["paired_brimaz_evidence"]["brimaz_wins_stock_reference"]==1
+    assert x["paired_brimaz_evidence"]["brimaz_wins_v35"]==0
+    assert x["paired_brimaz_evidence"]["stock_only_brimaz_wins"]==1
+    assert x["paired_brimaz_evidence"]["two_sided_p_value_on_discordant_pairs"]==1.0
+    assert x["paired_brimaz_evidence"]["insufficient_to_claim_general_ai_superiority"]
     stock=report()
     stock["reference_provenance"].update({
         "policy":"forge_stock","upstream_forge_unmodified":True,

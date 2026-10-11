@@ -7,6 +7,7 @@ may be supplied; parser assertions with fixtures are synthetic unit tests.
 import argparse
 from collections import Counter
 import json
+from math import comb, sqrt
 from pathlib import Path
 import re
 
@@ -41,6 +42,39 @@ TACTICAL_REJECTED=re.compile(
     r"^FOUR_AI_V35_TACTICAL_STOCK_REJECTED player=Ai\((?P<seat>[1-4])\)-"
     r"(?P<deck>.*?) turn=(?P<turn>\d+) rejected=(?P<count>\d+) "
     r"stockFallback=true$",re.M)
+
+def paired_brimaz_evidence(rows):
+    """Exact two-sided discordant-pair sign test; descriptive, never a Magic skill proof."""
+    n=len(rows)
+    experimental_only=sum(1 for r in rows
+                           if r["improved_brimaz_win"] and not r["stock_brimaz_win"])
+    original_only=sum(1 for r in rows
+                      if r["stock_brimaz_win"] and not r["improved_brimaz_win"])
+    discordant=experimental_only+original_only
+    pvalue=min(1.0, 2*sum(comb(discordant,i) for i in range(min(
+        experimental_only,original_only)+1))/2**discordant) if discordant else 1.0
+    ref=sum(r["stock_brimaz_win"] for r in rows)
+    exp=sum(r["improved_brimaz_win"] for r in rows)
+    def wilson(wins):
+        if not n:return None
+        z=1.959963984540054
+        den=1+z*z/n
+        center=(wins/n+z*z/(2*n))/den
+        radius=z*sqrt((wins/n)*(1-wins/n)/n+z*z/(4*n*n))/den
+        return [round(max(0,center-radius),4),round(min(1,center+radius),4)]
+    return {
+      "both_natural_pairs":n,
+      "brimaz_wins_stock_reference":ref,
+      "brimaz_wins_v35":exp,
+      "v35_only_brimaz_wins":experimental_only,
+      "stock_only_brimaz_wins":original_only,
+      "two_sided_p_value_on_discordant_pairs":round(pvalue,6),
+      "stock_win_fraction_wilson95":wilson(ref),
+      "v35_win_fraction_wilson95":wilson(exp),
+      "insufficient_to_claim_general_ai_superiority":True,
+      "requires_direct_mixed_policy_matchups_and_many_more_games":True,
+    }
+
 
 def audit(report):
     if report.get("type")!="Actual Forge 2.0.15 four-AI Commander controlled real-game campaign A/B":
@@ -154,6 +188,7 @@ def audit(report):
       },
       "note_on_evidence":"All four AIs have the same policy within each match; comparing Brimaz win rates is NOT direct AI-vs-AI head-to-head, and cannot by itself certify stronger general AI.",
       "brimaz_comparisons":brimaz_comparisons,
+      "paired_brimaz_evidence":paired_brimaz_evidence(brimaz_comparisons),
       "approved_examples":samples,
       "limits":[
         "V35_WINDOW is only a bounded abstract search proposal",
@@ -182,7 +217,7 @@ def main():
            "actual_stock_forge_approved_strategic_actions_not_cast_proof",
            "approved_actions_by_seat","different_game_event_sequences",
            "public_board_tactical_windows_logged","tactical_stock_forge_approved_not_cast_proof",
-           "tactical_approved_by_card")
+           "tactical_approved_by_card","paired_brimaz_evidence")
         }),flush=True)
     if r["actual_stock_forge_approved_strategic_actions_not_cast_proof"]<args.min_approved:
         raise SystemExit("V35_FAIL_NO_DEMONSTRATED_STOCK_FORGE_APPROVED_INTERVENTIONS")

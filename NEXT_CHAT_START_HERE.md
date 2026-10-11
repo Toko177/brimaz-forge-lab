@@ -9,6 +9,17 @@ Forge ; lire d'abord [la note V35](docs/V35_STRATEGIC_SEARCH.md).
 Résultat de qualité IA non démontré tant que les véritables A/B
 et journaux d'interventions ne sont pas inspectés.
 
+## Vérification « mieux que Forge original »
+
+`v17_strict` est une IA déjà modifiée par nos scripts,
+**pas l'original**. `forge_stock` est désormais le seul comparateur
+strictement byte-identique au JAR officiel. Les A/B de politiques
+uniformes par quatre sièges ne constituent pas un duel direct. La
+validation d'une IA meilleure doit inclure des parties avec politiques
+mixtes, des nombres de parties suffisants et des résultats naturels
+non censurés. Le benchmark stock-vs-V35 actuel n'a aucune conclusion
+de qualité tant qu'il n'est pas complet.
+
 ## Statut empirique réel de la V35
 
 Le pilote original ([16 parties Forge](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38133124128))

@@ -30,6 +30,16 @@ public final class MultiplayerTacticalPlannerV35Checks {
         yes(MultiplayerTacticalPlannerV35.choosePublicAction(rebuilding)
             == MultiplayerTacticalPlannerV35.Intervention.GRAVEYARD_SWEEP,
             "large own graveyard changes correct proposed emergency line");
+        var enemyGraveFull=new MultiplayerTacticalPlannerV35.Board(
+            9,1,2,0,7,false,12,55,25,18,6,13);
+        yes(MultiplayerTacticalPlannerV35.choosePublicAction(enemyGraveFull)
+            == MultiplayerTacticalPlannerV35.Intervention.EXILE_SWEEP,
+            "Living Death must not mass-reanimate more enemy creatures than our own");
+        var advantageGrave=new MultiplayerTacticalPlannerV35.Board(
+            9,1,2,0,7,false,12,55,25,18,6,2);
+        yes(MultiplayerTacticalPlannerV35.choosePublicAction(advantageGrave)
+            == MultiplayerTacticalPlannerV35.Intervention.GRAVEYARD_SWEEP,
+            "Public opponent graveyards and own graveyard both considered");
         var single=board(11,0,0,0,0,false,1,12,12,0,1);
         yes(MultiplayerTacticalPlannerV35.choosePublicAction(single)
             == MultiplayerTacticalPlannerV35.Intervention.PREEMPTIVE_REMOVAL,
