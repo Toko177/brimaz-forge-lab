@@ -81,7 +81,7 @@ with tempfile.TemporaryDirectory() as td:
     assert newhash==oldhash==sha(out), "Stock comparator JAR was patched or modified"
     assert patches==[], "Stock Forge comparator must have ZERO patches"
 for policy in POLICIES:
-    if policy in ("forge_stock","forge_stock_compat","v37_stock_control","v37_brimaz_challenger"):
+    if policy in ("forge_stock","forge_stock_compat","v37_stock_control","v37_brimaz_challenger","v38_brimaz_challenger"):
         continue
     flags=policy_flags(policy)
     assert "fourSeatCombatTarget=true" in flags
