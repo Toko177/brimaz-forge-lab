@@ -54,6 +54,11 @@ def make_mirror_decks(canonical,target,pod):
         if sha(dst)!=sha(canonical/(name+".dck")):raise AssertionError("Opponent changed")
     return (*MIRRORS,*PODS[pod])
 
+def expected_display_name(deck_id):
+    if deck_id.startswith("Brimaz_Challenger") or deck_id.startswith("Brimaz_Reference"):
+        return deck_id.replace("_"," ")
+    return None  # Original Kaal decks may have unrelated display titles.
+
 def classify(raw,stderr,returncode,timed_out,clock,seats):
     wins=WIN.findall(raw)
     alltext=raw+"\n"+stderr
@@ -71,6 +76,12 @@ def classify(raw,stderr,returncode,timed_out,clock,seats):
         seat=int(wins[0][1])
         if not 1<=seat<=4:raise ValueError("Not a four-player result")
         winner=seats[seat-1]
+        expected=expected_display_name(winner)
+        if expected is not None and wins[0][2].strip()!=expected:
+            # Never attribute a win to a supposed controller when Forge
+            # does not confirm the same seat's actual player display name.
+            status="name_mismatch"
+            winner=None
     return status,winner
 
 def binomial_two_sided(a,b):
@@ -156,6 +167,8 @@ def main():
     ap.add_argument("--seed-base",type=int,default=20270503)
     ap.add_argument("--mode",choices=("kaal-mirror","all-brimaz"),
                     default="kaal-mirror")
+    ap.add_argument("--pod",choices=("both","aristo","artifact"),
+                    default="both")
     a=ap.parse_args()
     if not 1<=a.repeats<=5 or not 1<=a.parallel<=2:ap.error("repeat 1..5 parallel 1..2")
     pinned=validate_decks(ROOT/"forge_decks",ROOT/"canonical/results/forge_normalization/report.json")
@@ -167,8 +180,9 @@ def main():
         scratch=Path(folder)
         prepared=scratch/"v37-patched.jar"
         digest,patches=patch_jar(a.jar.resolve(),prepared,"v37_brimaz_challenger")
-        dirs={pod:scratch/("mirror_"+pod) for pod in PODS}
-        for pod in PODS:
+        selected=PODS if a.pod=="both" else {a.pod:PODS[a.pod]}
+        dirs={pod:scratch/("mirror_"+pod) for pod in selected}
+        for pod in selected:
             if a.mode=="all-brimaz":
                 make_four_mirror_decks(ROOT/"forge_decks",dirs[pod])
             else:
@@ -178,9 +192,11 @@ def main():
             "canonical_seven_source_hashes":pinned,
             "two_brimaz_card_lists_identical_except_metadata":True,
             "seed_base":a.seed_base,"clock_seconds":a.clock,
-            "mode":a.mode,"all_four_same_deck":a.mode=="all-brimaz"}
+            "mode":a.mode,"pod":a.pod,
+            "all_four_same_deck":a.mode=="all-brimaz"}
         (dest/"provenance.json").write_text(json.dumps(provenance,indent=2)+"\n")
-        tasks=[(pod,r,k) for pod in PODS for r in range(4) for k in range(a.repeats)]
+        tasks=[(pod,r,k) for pod in selected for r in range(4)
+               for k in range(a.repeats)]
         records=[]
         with ThreadPoolExecutor(max_workers=a.parallel) as pool:
             futures=[pool.submit(game,t,prepared,a.jar.resolve().parent,dirs,
@@ -191,6 +207,8 @@ def main():
                     json.dumps(summarize(records),indent=2,ensure_ascii=False)+"\n")
         records.sort(key=lambda x:(x["pod"],x["rotation"],x["repeat"]))
         result=summarize(records)
+        if a.mode=="all-brimaz" and not result["same_deck_2vs2_required_winner_integrity"]:
+            raise AssertionError("A natural all-Brimaz game had a non-Brimaz winner")
         (dest/"summary.json").write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n")
         print("V37_TRUE_MIRROR_SUMMARY",json.dumps({k:v for k,v in result.items()
            if k in ("real_jvm_games","natural_finishes","censored_or_faulted",

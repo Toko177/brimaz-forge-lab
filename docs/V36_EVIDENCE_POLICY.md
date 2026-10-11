@@ -137,3 +137,18 @@ validation externe. Les deux expériences sont exécutées dans le
 workflow existant (aucune nouvelle automation ni deck canonique
 modifié). Le verdict d'efficacité reste conditionné aux nombres
 réels de victoires, pas aux nombres de propositions IA.
+
+#### Contrôle de reproductibilité et durée CI
+
+Les jobs du miroir sont répartis en quatre lots indépendants de huit
+parties : `all-brimaz / aristo`, `all-brimaz / artifact`,
+`kaal-mirror / aristo` et `kaal-mirror / artifact`. Le protocole
+préserve les mêmes sièges et les mêmes graines, tout en évitant qu'un
+job unique de seize parties dépasse le timeout GitHub.
+
+L'extracteur refuse désormais une victoire supposée du Challenger
+ou de la Référence quand **le nom du gagnant annoncé dans le journal
+Forge** n'est pas exactement celui du joueur attendu à ce siège.
+Dans ce cas la partie est marquée `name_mismatch` : **ni victoire
+ni défaite artificielle**. En mode quatre Brimaz, il vérifie que
+chaque victoire naturelle est bien obtenue par une politique Brimaz.

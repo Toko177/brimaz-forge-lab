@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
 from run_v37_mirror import (
     make_mirror_decks,make_four_mirror_decks,classify,binomial_two_sided,
-    summarize,category,PODS,FOUR_MIRRORS)
+    summarize,category,expected_display_name,PODS,FOUR_MIRRORS)
 from run_local_four_ai import sha,ROOT
 with tempfile.TemporaryDirectory() as td:
     for pod in PODS:
@@ -33,6 +33,9 @@ with tempfile.TemporaryDirectory() as td:
 s="Game Result: Game 1 ended in 100000 ms. Ai(1)-Brimaz Challenger has won!"
 assert classify(s,"",0,False,420,["Brimaz_Challenger","Brimaz_Reference","X","Y"])==("complete","Brimaz_Challenger")
 assert classify(s,"Exception in thread main",0,False,420,["Brimaz_Challenger","Brimaz_Reference","X","Y"])[0]=="engine_fault"
+assert expected_display_name("Brimaz_Reference_B")=="Brimaz Reference B"
+mismatch=s.replace("Brimaz Challenger has won","Brimaz Reference has won")
+assert classify(mismatch,"",0,False,420,["Brimaz_Challenger","Brimaz_Reference","X","Y"])==("name_mismatch",None)
 assert binomial_two_sided(0,0)==1.0 and binomial_two_sided(6,0)==0.03125
 assert binomial_two_sided(5,1)==0.21875
 r=summarize([{"status":"complete","winner":"Brimaz_Challenger"}]*6+

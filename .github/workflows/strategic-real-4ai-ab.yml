@@ -20,7 +20,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: strategic-real-four-ai-v38-balanced-mirror
+  group: strategic-real-four-ai-v39-sharded-correct-name
   cancel-in-progress: true
 jobs:
   real-commanders:
@@ -101,7 +101,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [kaal-mirror, all-brimaz]
+        include:
+          - {mode: kaal-mirror, pod: aristo}
+          - {mode: kaal-mirror, pod: artifact}
+          - {mode: all-brimaz, pod: aristo}
+          - {mode: all-brimaz, pod: artifact}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -131,12 +135,13 @@ jobs:
           JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
           test -s "$JAR"
           python3 scripts/run_v37_mirror.py --jar "$JAR" \
-            --out "results/v37_mirror_${{ matrix.mode }}_20270503" --repeats 2 \
-            --parallel 2 --clock 420 --seed-base 20270503 --mode "${{ matrix.mode }}"
+            --out "results/v37_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20270503" --repeats 2 \
+            --parallel 2 --clock 420 --seed-base 20270503 \
+            --mode "${{ matrix.mode }}" --pod "${{ matrix.pod }}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v37-real-forge-mirror-${{ matrix.mode }}
-          path: results/v37_mirror_${{ matrix.mode }}_20270503/
+          name: v37-real-forge-mirror-${{ matrix.mode }}-${{ matrix.pod }}
+          path: results/v37_mirror_${{ matrix.mode }}_${{ matrix.pod }}_20270503/
           retention-days: 30
           if-no-files-found: ignore
