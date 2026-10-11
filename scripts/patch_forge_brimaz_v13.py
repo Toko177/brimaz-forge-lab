@@ -824,7 +824,7 @@ with tempfile.TemporaryDirectory() as d:
     (target/"BrimazTurnPlanner.java").write_text(planner,encoding="utf-8")
     for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java",
                   "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java",
-                  "MultiplayerTacticalPlannerV35.java"):
+                  "MultiplayerTacticalPlannerV35.java", "MultiplayerEvidenceGateV36.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -836,12 +836,14 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"MultiplayerStrategicSequencer.java"),
              str(target/"MultiplayerStrategicSearchV35.java"),
              str(target/"MultiplayerStrategicSequencerV35.java"),
-             str(target/"MultiplayerTacticalPlannerV35.java")]
+             str(target/"MultiplayerTacticalPlannerV35.java"),
+             str(target/"MultiplayerEvidenceGateV36.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
     for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
                  "MultiplayerStrategicSearchV35.class", "MultiplayerStrategicSequencerV35.class",
-                 "MultiplayerTacticalPlannerV35.class"):
+                 "MultiplayerTacticalPlannerV35.class",
+                 "MultiplayerEvidenceGateV36.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
@@ -858,6 +860,8 @@ with tempfile.TemporaryDirectory() as d:
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerStrategic*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerTacticalPlannerV35*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerEvidenceGateV36*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)

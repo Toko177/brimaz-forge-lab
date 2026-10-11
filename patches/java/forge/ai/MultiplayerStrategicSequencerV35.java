@@ -100,6 +100,12 @@ public final class MultiplayerStrategicSequencerV35 {
         return v;
     }
 
+    /** Shared real Forge CardType facts used by evidence challenger. */
+    static MultiplayerStrategicSearchV35.CardPlan describeCard(Card c,boolean timed) {
+        return new MultiplayerStrategicSearchV35.CardPlan(
+            c.getName(),Math.max(0,c.getCMC()),role(c),
+            c.isCreature()?Math.max(0,c.getNetPower()):0,features(c),timed);
+    }
     public static MultiplayerStrategicSearchV35.Table observe(Player ai) {
         int lands=0,handLands=0, creatures=0,tokens=0,artifacts=0;
         int outlets=0,payoffs=0,doublers=0,engines=0;
@@ -107,7 +113,7 @@ public final class MultiplayerStrategicSequencerV35 {
         for(Card c: ai.getCardsIn(ZoneType.Battlefield)) {
             if(c.isLand())lands++;
             if(c.isCreature())creatures++;
-            if(c.isToken())tokens++;
+            if(c.isToken() && c.isCreature())tokens++; // No untransformed Incubators
             if(c.isArtifact())artifacts++;
             String n=c.getName();
             if(OUTLETS.contains(n))outlets++;
@@ -142,6 +148,8 @@ public final class MultiplayerStrategicSequencerV35 {
      * cost choice, replacement effects and stack timing afterwards.
      */
     public static List<SpellAbility> rank(Player ai,List<SpellAbility> available) {
+        if(Boolean.getBoolean("brimaz.v36EvidenceGate"))
+            return MultiplayerEvidenceGateV36.rank(ai,available);
         if(!enabledFor(ai) || available==null || available.isEmpty()
                 || ai.getGame()==null)return List.of();
         var game=ai.getGame();
@@ -171,9 +179,7 @@ public final class MultiplayerStrategicSequencerV35 {
             eligible++;
             sa.setActivatingPlayer(ai);
             boolean timed=sa.canPlay() && sa.canCastTiming(ai);
-            var c=new MultiplayerStrategicSearchV35.CardPlan(
-                card.getName(),Math.max(0,card.getCMC()),role(card),
-                card.isCreature()?Math.max(0,card.getNetPower()):0,features(card),timed);
+            var c=describeCard(card,timed);
             choices.add(c);
             spells.put(c,sa);
             if(choices.size()==20)break;
