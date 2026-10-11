@@ -18,6 +18,16 @@ CHOICE = re.compile(
     r"margin=(?P<margin>\d+) .*realForgeLegalAndPayable=true$", re.M)
 
 
+ACTION = re.compile(
+    r"^FOUR_AI_V33_STRATEGIC_ACTION player=Ai\\((?P<seat>[1-4])\\)-"
+    r"(?P<deck>.*?) turn=(?P<turn>\\d+) first=(?P<first>.*?) "
+    r"acceptedByStockForgeAI=true$", re.M)
+
+
+def key(d):
+    return d["seat"], d["turn"], d["first"]
+
+
 def audit(report):
     if report.get("type") != "Actual Forge 2.0.15 four-AI Commander controlled real-game campaign A/B":
         raise ValueError("Expected real Forge paired four-AI log comparison")
@@ -41,11 +51,16 @@ def audit(report):
         raw_exp = Path(exp["log"]).read_text(encoding="utf-8", errors="replace")
         if "Ai(1)-" not in raw_ref or "Ai(4)-" not in raw_exp or "Turn: " not in raw_exp:
             raise ValueError("Real four-seat Forge game logs missing")
-        if CHOICE.search(raw_ref):
+        if CHOICE.search(raw_ref) or ACTION.search(raw_ref):
             raise ValueError("Disabled reference engine produced V33 strategic selection")
         rows = list(CHOICE.finditer(raw_exp))
-        for m in rows:
-            d = m.groupdict()
+        accepted = list(ACTION.finditer(raw_exp))
+        proposed = {key(m.groupdict()): m.groupdict() for m in rows}
+        for act in accepted:
+            if key(act.groupdict()) not in proposed:
+                raise ValueError("Real Forge-approved action has no preceding strategy proposal")
+        for m in accepted:
+            d = proposed[key(m.groupdict())]
             index = int(d["seat"])
             if index not in (1, 2, 3, 4) or int(d["turn"]) < 1:
                 raise ValueError("Invalid 4-AI decision identifier")
@@ -63,6 +78,9 @@ def audit(report):
         "actual_forge_jvm_processes":report["real_forge_jvm_processes"],
         "genuine_full_game_pairs":len(pairs),
         "strategy_evaluations_accepted_not_proven_resolved":sum(by_seat.values()),
+        "strategy_proposals_before_original_forge_ai_approval":sum(
+            len(CHOICE.findall(Path(pair["experiment"]["log"]).read_text(encoding="utf-8",errors="replace")))
+            for pair in pairs),
         "seat_counts":dict(sorted(by_seat.items())),
         "role_counts":dict(by_role),
         "pod_counts":dict(by_pod),
