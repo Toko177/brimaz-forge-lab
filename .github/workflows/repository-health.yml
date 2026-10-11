@@ -33,3 +33,4 @@ jobs:
           python tests/test_compare_local_four_ai_campaigns.py
           python tests/test_verify_real_paired_gate.py
           python tests/test_audit_v33_real_strategy.py
+          python tests/test_audit_v35_real_search.py

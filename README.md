@@ -17,6 +17,22 @@ permet les campagnes de vraies parties, seules ou appariées A/B, en utilisant
 les decks canoniques versionnés. [Guide de reprise](NEXT_CHAT_START_HERE.md)
 et [historique du nettoyage](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
 
+## Recherche stratégique expérimentale V35 (en développement)
+
+[PR #29](https://github.com/Toko177/brimaz-forge-lab/pull/29) — branche unique
+`feature/v35-strategic-search-20261011`, basée sur `main`.
+Recherche bornée d'un plan de **trois sorts sur deux tours**,
+synergies Brimaz jetons/sacrifice/mort, ressources, sécurité et
+menaces visibles des trois adversaires. Toute vraie action doit rester
+validée par `AiController.canPlayAndPayFor` de Forge ; la proposition ne
+constitue pas un sort joué. La **qualité stratégique V35 n'est pas encore
+démontrée par des parties réelles**.
+
+[Architecture, hypothèses, tests et limites](docs/V35_STRATEGIC_SEARCH.md).
+Ne pas fusionner sans vérifier la compilation Java 21 réelle,
+les journaux de décisions approuvées et les parties A/B, sans toucher
+aux sept decks épinglés par SHA256.
+
 ## Ce qui fonctionne réellement
 
 - Compilation du patch V33 contre le véritable JAR Forge Java 21,

@@ -1,4 +1,15 @@
-# REPRENDRE ICI — Brimaz Forge Lab / main
+# REPRENDRE ICI — Brimaz Forge Lab / branche expérimentale V35
+
+**PR #29** : https://github.com/Toko177/brimaz-forge-lab/pull/29
+Brancher les travaux sur `feature/v35-strategic-search-20261011`,
+depuis `main` consolidée. Les autres anciennes branches expérimentales
+ne doivent pas être rouvertes. V35 introduit un planificateur borné de
+séquences de 3 sorts sur 2 tours avec maintien de la validation légale
+Forge ; lire d'abord [la note V35](docs/V35_STRATEGIC_SEARCH.md).
+Résultat de qualité IA non démontré tant que les véritables A/B
+et journaux d'interventions ne sont pas inspectés.
+
+## Socle intégré sur main
 
 **11 octobre 2026 — dépôt consolidé et nettoyage global achevé.**
 

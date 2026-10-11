@@ -12,16 +12,20 @@ expected = {
     "README.md", "NEXT_CHAT_START_HERE.md",
     "docs/REPOSITORY_STRUCTURE.md", "docs/RUN_LOCAL_4AI_COMMANDER.md",
     "docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md",
+    "docs/V35_STRATEGIC_SEARCH.md",
     "scripts/run_local_four_ai.py", "scripts/run_paired_four_ai.py",
     "scripts/batch.py", "scripts/compare_local_four_ai_campaigns.py",
     "scripts/patch_forge_brimaz_v13.py", "scripts/setup_and_run_four_ai.ps1",
     "scripts/certify_commander_games.py", "scripts/validate_commander_legality.py",
     "scripts/audit_v33_real_strategy.py",
+    "scripts/audit_v35_real_search.py",
     "patches/java/forge/ai/MultiplayerStrategicModel.java",
     "patches/java/forge/ai/MultiplayerStrategicSequencer.java",
+    "patches/java/forge/ai/MultiplayerStrategicSearchV35.java",
+    "patches/java/forge/ai/MultiplayerStrategicSequencerV35.java",
     "canonical/results/forge_normalization/report.json",
-    ".github/workflows/v33-strategic-compile.yml",
-    ".github/workflows/v33-real-strategy-ab.yml",
+    ".github/workflows/strategic-java21-gate.yml",
+    ".github/workflows/strategic-real-4ai-ab.yml",
     ".github/workflows/v31-operator-validation.yml",
     ".github/workflows/repository-health.yml",
     ".github/workflows/commander-four-ai-simulator.yml",
@@ -40,9 +44,11 @@ for version in ("", *(f"_v{i}" for i in range(2, 13))):
     assert not (ROOT / ("scripts/patch_forge_brimaz" + version + ".py")).exists(), "Legacy patch not pruned"
 
 required_code = {
-    "scripts/run_local_four_ai.py": ("v33_strategy", "patch_forge_brimaz_v13.py"),
+    "scripts/run_local_four_ai.py": ("v33_strategy", "v35_strategy", "patch_forge_brimaz_v13.py"),
     "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSequencer", "MultiplayerStrategicModel"),
     "scripts/audit_v33_real_strategy.py": ("FOUR_AI_V33_STRATEGIC_ACTION", "require-intervention"),
+    "scripts/audit_v35_real_search.py": ("FOUR_AI_V35_STOCK_APPROVED", "min-approved"),
+    "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSearchV35", "MultiplayerStrategicSequencerV35"),
 }
 for path, markers in required_code.items():
     s = (ROOT / path).read_text(encoding="utf-8")
