@@ -103,7 +103,9 @@ def policy_flags(policy):
                             "-Dbrimaz.cardPropertyFastTrace=true",
                             "-Dbrimaz.cardPropertyShadowVerify=true"],
       "v33_strategy":["-Dbrimaz.v33MultiplayerStrategicPlanner=true"],
-      "v35_strategy":["-Dbrimaz.v35StrategicSearch=true"],
+      "v35_strategy":["-Dbrimaz.v35StrategicSearch=true",
+                      "-Dbrimaz.fourSeatRemovalUrgency=true",
+                      "-Dbrimaz.fourSeatCounterCritical=true"],
     }
     if policy not in opts:raise ValueError("Unsupported AI policy "+policy)
     # Last Java property wins; reset flag overrides in one location.
@@ -115,9 +117,9 @@ def patch_jar(original,output,policy):
     shutil.copy2(original,output)
     scripts=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py",
              "patch_forge_four_ai_targets.py"]
-    if policy in ("v19_removal","v20_shadow"):
+    if policy in ("v19_removal","v20_shadow","v35_strategy"):
         scripts+=["patch_forge_multiplayer_removal.py"]
-    if policy=="critical_counter":
+    if policy in ("critical_counter","v35_strategy"):
         scripts+=["patch_forge_counter_critical.py"]
     if policy=="v24_trigger_prune":
         scripts+=["patch_forge_combat_trigger_prune.py"]
