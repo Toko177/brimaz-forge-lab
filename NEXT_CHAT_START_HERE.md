@@ -6,6 +6,12 @@ parent `feature/v33-multiplayer-strategic-planner-20261011` (PR #26).
 `main` est encore ancien et les PR #24–#26 sont empilées et non
 fusionnées : ne pas repartir de `main` pour le prochain correctif.
 
+## Périmètre du dépôt GitHub
+
+[Inventaire global des 29 branches et 27 PR](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md). 29 branches, 27 PR dont 26 ouvertes, 7 branches avec des commits propres
+non ancêtres de V34 (dont 48 propres à `main`). Ne pas forcer la fusion ou
+supprimer les références sans réconciliation.
+
 ## Vérités constatées
 
 - Le vrai Forge 2.0.15 Java 21 exécute des Commander 4 IA avec 7 listes
