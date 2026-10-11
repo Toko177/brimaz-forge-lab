@@ -1,0 +1,91 @@
+name: V35 actual Forge four-AI Commander strategic search A/B
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/patch_forge_brimaz_v13.py
+      - scripts/audit_v35_real_search.py
+      - scripts/run_local_four_ai.py
+      - patches/java/forge/ai/MultiplayerStrategicModel.java
+      - patches/java/forge/ai/MultiplayerStrategicSequencer.java
+      - patches/java/forge/ai/MultiplayerStrategicSearchV35.java
+      - patches/java/forge/ai/MultiplayerStrategicSequencerV35.java
+      - tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
+      - scripts/audit_v35_real_search.py
+      - .github/workflows/strategic-real-4ai-ab.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: strategic-real-four-ai-v35
+  cancel-in-progress: true
+jobs:
+  real-commanders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 49
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        pod: [artifact, aristo]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache/restore@v4
+        with:
+          key: forge-2.0.15-linux-shared-20261009
+          path: forge-dist/
+      - name: Get pinned official Forge 2.0.15 when cache is absent
+        run: |
+          set -euo pipefail
+          if ! find forge-dist -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit | grep -q .; then
+            curl -fL --retry 3 --max-time 480 -o forge.tar.bz2 'https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2'
+            echo '4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600  forge.tar.bz2' | sha256sum -c -
+            mkdir -p forge-dist
+            tar -xjf forge.tar.bz2 -C forge-dist
+          fi
+      - name: Verify original canonical decks remain byte-for-byte pinned
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,"scripts")
+          from run_local_four_ai import validate_decks,ROOT
+          hashes=validate_decks(ROOT/"forge_decks",ROOT/"canonical/results/forge_normalization/report.json")
+          assert len(hashes)==7
+          print("FOUR_AI_V33_CANONICAL_DECKS_UNCHANGED",hashes)
+          PY
+      - name: Run EIGHT GENUINE Forge four-player JVM games per pod
+        run: |
+          set -euo pipefail
+          JAR="$(find "$PWD/forge-dist" -name 'forge-gui-desktop-*-jar-with-dependencies.jar' -print -quit)"
+          test -s "$JAR"
+          python3 scripts/run_paired_four_ai.py \
+            --jar "$JAR" --pod "${{ matrix.pod }}" \
+            --reference-policy v17_strict --experiment-policy v35_strategy \
+            --profile Default --games-per-rotation 1 --parallel 2 \
+            --clock 420 --seed-base 20261221 \
+            --out results/v35_strategic_pairs
+      - name: Audit real changed four-seat decisions and censoring
+        run: |
+          set -euo pipefail
+          REPORT="$(find results/v35_strategic_pairs -name comparison.json -print -quit)"
+          test -s "$REPORT"
+          python3 scripts/audit_v35_real_search.py \
+            --input "$REPORT" --output results/v35_strategic_audit.json \
+            --min-approved 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v35-real-four-ai-strategy-${{ matrix.pod }}
+          path: |
+            results/v35_strategic_pairs/
+            results/v35_strategic_audit.json
+          retention-days: 30
+          if-no-files-found: ignore
