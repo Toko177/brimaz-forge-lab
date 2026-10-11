@@ -16,6 +16,10 @@ param(
   [ValidateRange(1,4)][int]$Parallel=2,
   [ValidateSet(360,420,480)][int]$Clock=420,
   [int]$SeedBase=20261027,
+  [switch]$Paired,
+  [ValidateSet("v17_strict","v19_removal","v20_shadow",
+               "critical_counter","v23_cooldown","v24_trigger_prune",
+               "v30_exact_rules","v30_shadow_verify")][string]$ReferencePolicy="v17_strict",
   [switch]$PreflightOnly,
   [switch]$CompileOnly,
   [switch]$Jfr,
@@ -109,10 +113,20 @@ foreach($deck in @($report.decks)) {
 }
 Write-Host "ALL_SEVEN_COMMANDER_DECKS_SHA256_VERIFIED"
 
-$params=@("scripts/run_local_four_ai.py","--jar",$jarFile.FullName,
+$entrypoint=if($Paired){"scripts/run_paired_four_ai.py"}else{"scripts/run_local_four_ai.py"}
+$params=@($entrypoint,"--jar",$jarFile.FullName,
           "--pod",$Pod,"--policy",$Policy,"--profile",$AiProfile,
           "--games-per-rotation","$GamesPerRotation","--parallel","$Parallel",
           "--clock","$Clock","--seed-base","$SeedBase")
+if ($Paired) {
+  $params = @($params | Where-Object {$_ -ne "--policy"})
+  # Rebuild using the paired runner's distinct policy argument names.
+  $params=@($entrypoint,"--jar",$jarFile.FullName,
+            "--pod",$Pod,"--reference-policy",$ReferencePolicy,
+            "--experiment-policy",$Policy,"--profile",$AiProfile,
+            "--games-per-rotation","$GamesPerRotation","--parallel","$Parallel",
+            "--clock","$Clock","--seed-base","$SeedBase")
+}
 if ($PreflightOnly) {$params+="--preflight-only"}
 if ($Jfr) {$params+="--jfr"}
 Write-Host "USING_OFFICIAL_FORGE_RUNTIME $($jarFile.DirectoryName)"
