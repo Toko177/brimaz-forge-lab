@@ -1,3 +1,5 @@
+**V38 — changement concret de gameplay :** les Incubateurs ne sont pas des créatures tant qu'ils ne sont pas transformés. Le challenger peut maintenant activer sélectivement une transformation légale en phase principale 2, par les vrais coûts Forge, pour créer de véritables bloqueurs/attaquants et alimenter les synergies Phyrexian. Le contrôle original ne reçoit pas cette politique. [Code et protocole](docs/V36_EVIDENCE_POLICY.md).
+
 **Nouvelle validation directe V37 :** deux decks Brimaz strictement identiques
 (à l'exception de leur nom) jouent dans **une même partie Forge** :
 l'IA V37 affronte la référence sur les mêmes cartes, règles, tirages globaux

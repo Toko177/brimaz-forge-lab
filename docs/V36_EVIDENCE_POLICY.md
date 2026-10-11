@@ -152,3 +152,46 @@ Forge** n'est pas exactement celui du joueur attendu à ce siège.
 Dans ce cas la partie est marquée `name_mismatch` : **ni victoire
 ni défaite artificielle**. En mode quatre Brimaz, il vérifie que
 chaque victoire naturelle est bien obtenue par une politique Brimaz.
+
+## V38 — anomalie de ressources physiques diagnostiquée
+
+Le premier véritable miroir `V37` avec deux Brimaz et deux
+adversaires Kaal a terminé **14 parties naturellement sur 16** :
+**0 victoire challenger, 2 victoires référence, 12 victoires Kaal**,
+2 parties censurées/défectueuses. La mesure binomiale bilatérale
+conditionnelle vaut `p=0.5` : ce n'est pas une preuve de régression.
+En revanche **aucune action V37 de sacrifice n'a été approuvée**.
+
+Une cause structurelle plausible est que la V37 attend une
+créature Phyrexian sacrifiable, tandis que les permanents `Incubator
+Token` créés par la capacité du commandant sont **des artefacts
+non-créatures** tant qu'ils ne sont pas transformés. L'ancienne
+transformation automatique V17 était explicitement désactivée
+pour conserver le duel expérimental propre. Le challenger V38
+ajoute un convertisseur endogène et prudent :
+
+- `MultiplayerIncubatorTempoV38.choose` examine seulement les
+  capacités `SetState/Transform` **réellement présentes** dans le
+  moteur Forge sur des jetons `Incubator Token` contrôlés par le
+  challenger et encore non-créatures ;
+- le seuil `shouldTransform` dépend de la taille X, de la vie,
+  des bloqueurs prêts et de la force agrégée du plus dangereux
+  adversaire, en phase `MAIN2` et pile vide ;
+- les coûts et contraintes de timing sont vérifiés avec
+  `ComputerUtilCost.canPayCost`, `canPlay`,
+  `canCastTiming`, puis **`AiController.canPlayAndPayFor`** ;
+- chaque activation proposée et approuvée est journalisée sous
+  `FOUR_AI_V38_TRANSFORM_PROPOSAL` et
+  `FOUR_AI_V38_TRANSFORM_STOCK_APPROVED` ; **une seule**
+  transformation proposée par tour ;
+- aucune carte adverse cachée n'est consultée, et le bras de contrôle
+  garde exactement les mêmes patches, sans le flag
+  `v38IncubatorTempo`.
+
+Le protocole Forge 2.0.15 + Java 21 avec **nouvelles graines
+`20270903`**, quatre sièges, deux pods, quatre decks identiques
+en 2v2 et un format de validation contre Kaal distingue maintenant
+les transformations effectivement approuvées des victoires
+naturelles. Cette hypothèse reste à confirmer par les parties ;
+une classe Java compilable et des tests synthétiques ne démontrent
+jamais à eux seuls une meilleure qualité stratégique.

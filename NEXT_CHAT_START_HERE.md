@@ -127,3 +127,15 @@ voir `docs/V35_STRATEGIC_SEARCH.md`. Une compilation réussie ne
 constitue pas une preuve de victoire ou d'amélioration.
 
 - V36: voir `docs/V36_EVIDENCE_POLICY.md` ; défaut majeur détecté : le planificateur V17 forçait déjà Brimaz sans évaluer les dégâts cumulés des créatures ennemies. V36 supprime cette priorité automatique sous forte pression, sans inventer de résultat de combat. L'abstention revient à la base V17, **pas** à un Forge pur.
+
+## V38 — activation réelle des Incubateurs
+
+La V37 ne produit AUCUN sacrifice approuvé sur les 16 parties du
+premier miroir réel (#38149374175). L'une des raisons possibles
+identifiées dans la logique : une unité Incubator non transformée n'est
+pas une créature ; nos anciens automatismes de transformation
+étaient désactivés pour l'A/B. V38 (`MultiplayerIncubatorTempoV38`)
+sélectionne uniquement une vraie capacité Forge de transformation
+payable en phase principale 2, sous condition d'effectif / taille /
+menace. Les miracles et moteurs adversaires ne sont pas imaginés.
+Un nouveau protocole direct est lancé avec graines 20270903.
