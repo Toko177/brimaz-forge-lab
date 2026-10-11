@@ -300,3 +300,83 @@ les mêmes 7 decks originaux vérifiés SHA256, les 4 sièges,
 les deux formats miroir, et les campagnes appariées. Ce correctif
 résout un biais dans le logiciel ; son **gain de victoires n'est
 pas encore démontré**.
+
+## V41 — bug de portée du pilote et nouveaux moteurs de sacrifice
+
+### Résultats réels V40 — conservés, même lorsqu'ils sont négatifs
+
+[Campagne réelle V40 — 64 JVM](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38166387534),
+six groupes terminés avec succès :
+
+| Configuration | Parties naturelles | Challenger V40 | Référence | Kaal |
+|---|---:|---:|---:|---:|
+| Quatre Brimaz identiques — famille de graines artifact | 9/12 | 4 | 5 | — |
+| Quatre Brimaz identiques — famille de graines aristo | 12/12 | 7 | 5 | — |
+| Deux Brimaz et deux Kaal — aristo | 11/12 | 0 | 0 | 11 |
+| Deux Brimaz et deux Kaal — artifact | 9/12 | 0 | 1 | 8 |
+
+Les 16 autres JVM appariées donnent 7/8 paires naturelles :
+Brimaz V40 0 victoire, référence 1. Total miroir 2v2 :
+**11 victoires V40 contre 10 référence**, bilan quasi neutre.
+Les transformations sont effectivement approuvées (44 approbations
+dans les miroirs tout-Brimaz), mais aucun sacrifice positif n'est
+approuvé dans les 48 parties miroir. Ce signal ne démontre pas
+une IA plus forte.
+
+### Cause technique identifiée dans le code V38–V40
+
+`MultiplayerIncubatorTempoV38.choose` rejetait toute IA dont le
+nom ne contenait pas **« Brimaz Challenger »**. Cette condition
+fonctionnait dans les miroirs où les deux decks sont renommés,
+mais bloquait toutes les transformations du **véritable siège
+canonique `Brimaz_V3`** pendant les parties contre Kaal.
+La politique V40 n'était donc pas appliquée uniformément dans
+les deux modes d'évaluation. Cette erreur rendait les résultats
+externes de V38/V39/V40 encore moins interprétables.
+
+### Correction et amélioration de gameplay V41
+
+Une classe Java limitée et auditable,
+`MultiplayerSacrificeAccessV41.java`, introduit :
+
+1. Une **autorisation exacte de siège** : `Brimaz_V3` pour les
+   campagnes appariées ou `Brimaz Challenger [A/B]` pour les
+   miroirs. Les références et les Kaal ne sont jamais autorisés
+   par correspondance de sous-chaîne. Le flag explicite
+   `v41SacrificeAccess=true` garantit la compatibilité des
+   expériences V40 historiques.
+2. Une reconnaissance stricte des vraies capacités de sacrifice :
+   Arcbound Ravager, Bartolomé, Spawning Pit, Throne of Geth,
+   Krark-Clan Ironworks, **Ashnod's Altar et Phyrexian Altar**.
+   L'IA exige réellement un coût `CostSacrifice` et une signature
+   précise d'API, avec `CostTap` pour Throne of Geth.
+   Les capacités ciblées de Yawgmoth et les cartes de tutorat
+   restent exclues : leur résolution n'est pas évaluée correctement.
+3. Une sélection de ressource sacrifiable **uniquement si le
+   permanent est déjà une créature Phyrexian jeton valide** ;
+   aucun Incubateur non transformé n'est compté. Le moteur garde
+   le plafond de puissance 4, la sélection stricte positive
+   et vérifie `canBeSacrificedBy` et les coûts réels Forge.
+4. Une télémétrie `FOUR_AI_V41_SAC_WINDOW` par pilote et par tour :
+   présence du commandant, mort Phyrexian déjà constatée,
+   créatures jetons réelles, exutoires sur table et capacités
+   réellement proposées dans le contrôleur.
+
+Les « plans » ne constituent ni un cast confirmé, ni un sacrifice
+résolu. Les approbations par `AiController.canPlayAndPayFor`
+sont journalisées séparément. Cette version ne change ni les
+règles de Magic, ni les decks canoniques, ni les sièges adverses.
+
+### Vérification
+
+Tests adversariaux V41 : autorisation des deux modes, rejet des
+références et faux positifs, présence du coût de sacrifice,
+signatures d'autels, exclusion de Yawgmoth et des jetons non
+transformés. Compilation contre **Forge 2.0.15 / Java 21**,
+et scripts Python sous 3.10 et 3.12.
+
+[Workflow de parties V41](../.github/workflows/strategic-real-4ai-ab.yml) :
+16 JVM appariées et 48 JVM de miroir (4 Brimaz, 2 Brimaz+2 Kaal)
+sur les graines inédites `20280409`, rotation des sièges et
+deux familles de graines. Résultat à analyser seulement après
+la fin des vraies parties. Aucune supériorité revendiquée.

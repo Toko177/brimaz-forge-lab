@@ -171,3 +171,19 @@ l'activation à la proposition, même rejetée. Log d'approbation
 `FOUR_AI_V40_TRANSFORM_APPROVED_BY_SEAT`. Le compteur diagnostic
 de sacrifice devient aussi par joueur. Conserver la PR en draft,
 sans modifier les decks.
+
+## V41 — contrôle de l'identité des pilotes et des sacrifices
+
+Dernier verdict V40 : [campagne #38166387534](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38166387534)
+— 11–10 en vingt-et-un miroirs naturels à quatre Brimaz,
+0–1 en vingt parties naturelles contre Kaal, et 0–1 dans les
+sept paires naturelles des campagnes appariées. Pas de gain prouvé.
+
+V41 corrige une vraie erreur : la transformation des Incubateurs
+reconnaissait seulement `Brimaz Challenger`, pas `Brimaz_V3`.
+Elle active aussi une liste strictement contrôlée de sacrifices
+sur Ashnod's Altar et Phyrexian Altar, et sépare nettement les
+jetons phyrexians créatures des Incubateurs non transformés.
+Les nouveaux tests sont dans
+`tests/java/forge/ai/MultiplayerSacrificeAccessV41Checks.java`.
+Prochain benchmark sur graines `20280409`, non fusionné.

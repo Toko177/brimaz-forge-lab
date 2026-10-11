@@ -1,3 +1,11 @@
+**V41 — correction du vrai pilote Brimaz et accès contrôlé aux sacrifices.**
+Le module précédent ne transformait les Incubateurs que dans les miroirs :
+`Brimaz_V3`, le siège canonique contre Kaal, était exclu.
+V41 répare cette isolation et prend en charge les véritables capacités
+d'Ashnod's Altar et de Phyrexian Altar, avec validation de Forge,
+sans débrider les capacités ciblées ou celles des adversaires.
+[Résultats historiques et méthode](docs/V36_EVIDENCE_POLICY.md).
+
 **V40 : défaut critique d'isolation entre joueurs corrigé.**
 V38/V39 partageaient un verrou de transformation entre les deux
 joueurs challengers d'une même partie, et consommaient ce verrou
