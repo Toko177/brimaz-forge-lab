@@ -42,6 +42,23 @@ with tempfile.TemporaryDirectory() as td:
                                   "pod":"artifact","rotation":2}}]}
     x=audit(report())
     assert x["real_forge_jvms"]==2
+    assert x["reference_is_byte_identical_to_stock_forge"] is False
+    assert x["arm_natural_finishes"]=={"reference":1,"experiment":1}
+    assert x["paired_natural_brimaz_wins"]["both_natural_pairs"]==1
+    stock=report()
+    stock["reference_provenance"].update({
+        "policy":"forge_stock","upstream_forge_unmodified":True,
+        "upstream_byte_identical":True,"patches":[],
+        "original_forge_sha256":"original",
+        "patched_forge_sha256":"original",
+    })
+    assert audit(stock)["reference_is_byte_identical_to_stock_forge"] is True
+    stock["reference_provenance"]["patches"]=["patch_forge_brimaz_v13.py"]
+    try:
+        audit(stock)
+        raise AssertionError("Patched Forge was passed as unmodified stock")
+    except ValueError:
+        pass
     assert x["actual_stock_forge_approved_strategic_actions_not_cast_proof"]==1
     assert x["approved_actions_by_seat"]=={2:1}
     assert x["candidate_slots_ranked"]==3

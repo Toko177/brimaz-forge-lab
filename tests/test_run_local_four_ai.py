@@ -8,7 +8,7 @@ import sys
 import tempfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
-from run_local_four_ai import (validate_decks,policy_flags,PODS,POLICIES,
+from run_local_four_ai import (validate_decks,policy_flags,patch_jar,sha,PODS,POLICIES,
                                CANONICAL_DECK_SHA256)
 
 DECKS=("Brimaz_V3","Kaal_9594008","Kaal_10347090","Kaal_21930525",
@@ -52,7 +52,19 @@ with tempfile.TemporaryDirectory() as temp:
         raise AssertionError("Missing opponent passed")
     except FileNotFoundError:
         pass
+assert "forge_stock" in POLICIES
+assert policy_flags("forge_stock") == ""
+with tempfile.TemporaryDirectory() as td:
+    original=Path(td)/"upstream_original.jar"
+    out=Path(td)/"stock_copy.jar"
+    original.write_bytes(b"Fake upstream JAR bytes - synthetic byte equality ONLY")
+    oldhash=sha(original)
+    newhash,patches=patch_jar(original,out,"forge_stock")
+    assert newhash==oldhash==sha(out), "Stock comparator JAR was patched or modified"
+    assert patches==[], "Stock Forge comparator must have ZERO patches"
 for policy in POLICIES:
+    if policy == "forge_stock":
+        continue
     flags=policy_flags(policy)
     assert "fourSeatCombatTarget=true" in flags
     assert "deterministicForcedAttacks=true" in flags

@@ -47,14 +47,23 @@ def audit(report):
         raise ValueError("Not the genuine Forge A/B format")
     ref=report.get("reference_provenance",{})
     exp=report.get("experiment_provenance",{})
-    if ref.get("policy")!="v17_strict" or exp.get("policy")!="v35_strategy":
-        raise ValueError("V35 audit requires unchanged v17_strict vs v35_strategy")
+    if ref.get("policy") not in ("v17_strict","forge_stock") or exp.get("policy")!="v35_strategy":
+        raise ValueError("V35 audit requires v17_strict/forge_stock vs v35_strategy")
+    if ref.get("policy")=="forge_stock":
+        if (ref.get("upstream_forge_unmodified") is not True
+            or ref.get("upstream_byte_identical") is not True
+            or ref.get("patches") != []
+            or ref.get("patched_forge_sha256") != ref.get("original_forge_sha256")):
+            raise ValueError("Claimed genuine stock Forge control is not original byte-for-byte")
     if ref.get("canonical_seven_deck_sha256")!=exp.get("canonical_seven_deck_sha256"):
         raise ValueError("Deck identities changed between campaigns")
     pairs=report.get("pairs",[])
     if len(pairs)!=report.get("real_process_pairs") or not pairs:
         raise ValueError("Missing genuine matched JVMs")
-    seat=Counter(); role=Counter(); by_pod=Counter(); per_arm=Counter()
+    seat=Counter(); by_pod=Counter()
+    wins_reference=Counter();wins_experiment=Counter()
+    natural_reference=0;natural_experiment=0;completed_pairs=0
+    brimaz_comparisons=[]
     statuses=Counter(); changes=0; windows=0; proposed=0; fallback=0
     tactical_windows=0; tactical_approved=Counter(); tactical_rejected=0
     tactical_by_card=Counter()
@@ -96,6 +105,20 @@ def audit(report):
             if len(samples)<25:samples.append({
                 **m.groupdict(),"pod":b["pod"],"rotation":b["rotation"]})
         statuses[(a["status"],b["status"])]+=1
+        if a["status"]=="complete":
+            natural_reference+=1
+            wins_reference[a["winner"]]+=1
+        if b["status"]=="complete":
+            natural_experiment+=1
+            wins_experiment[b["winner"]]+=1
+        if a["status"]==b["status"]=="complete":
+            completed_pairs+=1
+            brimaz_comparisons.append({
+                "pod":b["pod"],"rotation":b["rotation"],
+                "stock_brimaz_win":a["winner"]=="Brimaz_V3",
+                "improved_brimaz_win":b["winner"]=="Brimaz_V3",
+                "seed_identifies_pair_not_identical_rng":True
+            })
         changes+=int(a["event_sha256"]!=b["event_sha256"])
     if proposed==0 and seat:
         raise ValueError("Approved action without any ranked proposal")
@@ -118,11 +141,25 @@ def audit(report):
       "tactical_approved_by_card":dict(tactical_by_card),
       "tactical_candidates_rejected_by_forge":tactical_rejected,
       "statuses":{str(k):v for k,v in statuses.items()},
+      "reference_policy":ref["policy"],
+      "experimental_policy":exp["policy"],
+      "reference_is_byte_identical_to_stock_forge":ref["policy"]=="forge_stock",
+      "arm_natural_finishes":{"reference":natural_reference,"experiment":natural_experiment},
+      "wins_by_deck_all_natural_reference":dict(wins_reference),
+      "wins_by_deck_all_natural_experiment":dict(wins_experiment),
+      "paired_natural_brimaz_wins":{
+          "reference":sum(x["stock_brimaz_win"] for x in brimaz_comparisons),
+          "experiment":sum(x["improved_brimaz_win"] for x in brimaz_comparisons),
+          "both_natural_pairs":completed_pairs,
+      },
+      "note_on_evidence":"All four AIs have the same policy within each match; comparing Brimaz win rates is NOT direct AI-vs-AI head-to-head, and cannot by itself certify stronger general AI.",
+      "brimaz_comparisons":brimaz_comparisons,
       "approved_examples":samples,
       "limits":[
         "V35_WINDOW is only a bounded abstract search proposal",
         "V35_TACTICAL_WINDOW is a potential emergency, not proof the card was usable or cast",
         "V35_STOCK_APPROVED means original Forge AI agreed to play; it does not independently prove actual spell resolution",
+        "All four seats use the same policy per game: NOT a mixed seat head-to-head match",
         "Natural wins do not prove better strategy or statistically significant win rate",
         "Same-seed games are not guaranteed deterministic; censures are not losses",
       ],

@@ -1,4 +1,4 @@
-name: V35 actual Forge four-AI Commander strategic search A/B
+name: V35 genuine upstream Forge 2.0.15 stock-vs-improved 4AI A/B
 on:
   pull_request:
     branches: [main]
@@ -11,7 +11,8 @@ on:
       - patches/java/forge/ai/MultiplayerStrategicSearchV35.java
       - patches/java/forge/ai/MultiplayerStrategicSequencerV35.java
       - tests/java/forge/ai/MultiplayerStrategicSearchV35Checks.java
-      - scripts/audit_v35_real_search.py
+      - patches/java/forge/ai/MultiplayerTacticalPlannerV35.java
+      - scripts/run_paired_four_ai.py
       - .github/workflows/strategic-real-4ai-ab.yml
   workflow_dispatch:
 permissions:
@@ -68,7 +69,7 @@ jobs:
           test -s "$JAR"
           python3 scripts/run_paired_four_ai.py \
             --jar "$JAR" --pod "${{ matrix.pod }}" \
-            --reference-policy v17_strict --experiment-policy v35_strategy \
+            --reference-policy forge_stock --experiment-policy v35_strategy \
             --profile Default --games-per-rotation 1 --parallel 2 \
             --clock 420 --seed-base 20261221 \
             --out results/v35_strategic_pairs
@@ -83,7 +84,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: v35-real-four-ai-strategy-${{ matrix.pod }}
+          name: v35-stock-forge-reference-${{ matrix.pod }}
           path: |
             results/v35_strategic_pairs/
             results/v35_strategic_audit.json

@@ -32,7 +32,7 @@ CANONICAL_DECK_SHA256={
     "Kaal_11485202":"d713d2ad927524c5d98540a2e80aee9a1985be6c9a1711e93ffd26f722f1187f",
     "Kaal_22193355":"b47a726cdc1a4353d6008c2b3a6ac77b6d4c7870c4b197c9405bdd926cbe938e",
 }
-POLICIES=("v17_strict","v19_removal","v20_shadow","critical_counter",
+POLICIES=("forge_stock","v17_strict","v19_removal","v20_shadow","critical_counter",
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
           "v33_strategy","v35_strategy")
 
@@ -73,6 +73,8 @@ def java_version():
     return raw.splitlines()[0]
 
 def policy_flags(policy):
+    if policy == "forge_stock":
+        return ""  # Do not inject ANY brimaz.* property into unmodified stock Forge.
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",
@@ -115,6 +117,11 @@ def patch_jar(original,output,policy):
     if not original.is_file():raise FileNotFoundError(str(original))
     if output.exists():raise FileExistsError("Will not overwrite "+str(output))
     shutil.copy2(original,output)
+    if policy == "forge_stock":
+        # Essential distinction: the comparator JAR must be BYTE-FOR-BYTE
+        # the exact upstream original; not even the historical Charm hotfix.
+        assert sha(output) == sha(original), "Upstream Forge comparator mutated"
+        return sha(output), []
     scripts=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py",
              "patch_forge_four_ai_targets.py"]
     if policy in ("v19_removal","v20_shadow","v35_strategy"):
@@ -211,6 +218,8 @@ def main():
     jar_sha,patches=patch_jar(args.jar.resolve(),output_jar,args.policy)
     runtime_dir=args.jar.resolve().parent
     flags=policy_flags(args.policy)
+    if args.policy == "forge_stock" and (patches or jar_sha != sha(args.jar.resolve())):
+        raise RuntimeError("Stock Forge comparator is not byte-for-byte original")
     meta={
         "title":"Genuine independent Forge 2.0.15 four-AI Commander games",
         "policy":args.policy,"profile_applied_identically_to_all_four_seats":args.profile,
@@ -221,6 +230,8 @@ def main():
         "java":java,"original_forge_sha256":sha(args.jar.resolve()),
         "original_forge_runtime_directory":str(runtime_dir),
         "patched_forge_sha256":jar_sha,"patches":patches,
+        "upstream_forge_unmodified": args.policy == "forge_stock",
+        "upstream_byte_identical": jar_sha == sha(args.jar.resolve()),
         "canonical_seven_deck_sha256":deck_hashes,
         "scryfall_legality_report_file":str(args.scryfall_legality_report.resolve()) if args.scryfall_legality_report else None,
         "java_tool_options":flags,
