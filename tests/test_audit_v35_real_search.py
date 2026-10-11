@@ -93,6 +93,22 @@ with tempfile.TemporaryDirectory() as td:
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
+    v38=report()
+    v38["reference_provenance"].update({
+        "policy":"v37_stock_control","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true"})
+    v38["experiment_provenance"].update({
+        "policy":"v38_brimaz_challenger","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true -Dbrimaz.v37Challenger=true -Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true -Dbrimaz.v36EvidenceGate=true -Dbrimaz.v38IncubatorTempo=true"})
+    v38["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    v38["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    assert audit(v38)["v38_incubator_challenger"] is True
+    v38["experiment_provenance"]["java_tool_options"]="-Dbrimaz.v37ControlledDuel=true -Dbrimaz.v37Challenger=true -Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true -Dbrimaz.v36EvidenceGate=true"
+    try:
+        audit(v38)
+        raise AssertionError("V38 policy was accepted without its Incubator gate")
+    except ValueError:
+        pass
     mixed37=report()
     mixed37["reference_provenance"].update({
         "policy":"v37_stock_control","patches":["shared_ai_patch"],

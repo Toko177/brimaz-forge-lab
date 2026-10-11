@@ -99,6 +99,9 @@ assert "v35StrategicSearch=true" in policy_flags("v35_strategy")
 assert "fourSeatRemovalUrgency=true" in policy_flags("v35_strategy")
 assert "fourSeatCounterCritical=true" in policy_flags("v35_strategy")
 assert "v37_stock_control" in POLICIES
+assert "v38_brimaz_challenger" in POLICIES
+assert "v38IncubatorTempo=true" in policy_flags("v38_brimaz_challenger")
+assert "v38IncubatorTempo=true" not in policy_flags("v37_stock_control")
 assert "v37_brimaz_challenger" in POLICIES
 assert "v37ControlledDuel=true" in policy_flags("v37_stock_control")
 assert "v35StrategicSearch=true" not in policy_flags("v37_stock_control")

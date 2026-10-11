@@ -312,6 +312,13 @@ insert1=(
 "                    +player.getName()+\" card=\"+v37Sac.getHostCard().getName());\n"
 "                return v37Sac;\n"
 "            }\n"
+"            SpellAbility v38Transform = MultiplayerIncubatorTempoV38.choose(player, saList);\n"
+"            if (v38Transform != null\n"
+"                    && canPlayAndPayFor(v38Transform) == AiPlayDecision.WillPlay) {\n"
+"                System.out.println(\"FOUR_AI_V38_TRANSFORM_STOCK_APPROVED player=\"\n"
+"                    +player.getName()+\" card=\"+v38Transform.getHostCard().getName());\n"
+"                return v38Transform;\n"
+"            }\n"
 "        }\n\n"
 )
 if controller.count(anchor1)!=1: raise ValueError("AiController original selection anchor mismatch")
@@ -866,7 +873,8 @@ with tempfile.TemporaryDirectory() as d:
     (target/"BrimazTurnPlanner.java").write_text(planner,encoding="utf-8")
     for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java",
                   "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java",
-                  "MultiplayerTacticalPlannerV35.java", "MultiplayerEvidenceGateV36.java"):
+                  "MultiplayerTacticalPlannerV35.java", "MultiplayerEvidenceGateV36.java",
+                  "MultiplayerIncubatorTempoV38.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -879,13 +887,15 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"MultiplayerStrategicSearchV35.java"),
              str(target/"MultiplayerStrategicSequencerV35.java"),
              str(target/"MultiplayerTacticalPlannerV35.java"),
-             str(target/"MultiplayerEvidenceGateV36.java")]
+             str(target/"MultiplayerEvidenceGateV36.java"),
+             str(target/"MultiplayerIncubatorTempoV38.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
     for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
                  "MultiplayerStrategicSearchV35.class", "MultiplayerStrategicSequencerV35.class",
                  "MultiplayerTacticalPlannerV35.class",
-                 "MultiplayerEvidenceGateV36.class"):
+                 "MultiplayerEvidenceGateV36.class",
+                 "MultiplayerIncubatorTempoV38.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
@@ -904,6 +914,8 @@ with tempfile.TemporaryDirectory() as d:
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerTacticalPlannerV35*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerEvidenceGateV36*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerIncubatorTempoV38*.class")):
         archive += ["-C",str(classes),"forge/ai/"+clazz.name]
     subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)
