@@ -10,6 +10,9 @@ certification et comparaisons de politiques.
 `main` contient encore l'ancien socle ; les PR empilées ne sont
 pas fusionnées. [Lire la passation active](NEXT_CHAT_START_HERE.md).
 
+**Attention : V34 ne nettoie pas encore les références distantes ni `main`.**
+[Inventaire global des 29 branches et 27 PR](docs/GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
+
 ## Ce qui fonctionne réellement
 
 - Compilation du patch V33 contre le véritable JAR Forge Java 21,
