@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 
 CHOICE = re.compile(
-    r"^FOUR_AI_V33_STRATEGIC_CHOICE player=Ai\((?P<seat>[1-4])\)-"
+    r"^FOUR_AI_V33_STRATEGIC_PROPOSAL player=Ai\((?P<seat>[1-4])\)-"
     r"(?P<deck>.*?) turn=(?P<turn>\d+) first=(?P<first>.*?) role="
     r"(?P<role>\w+) second=(?P<second>.*?) alternative=(?P<alternative>.*?) "
     r"immediate=(?P<immediate>-?\d+) future=(?P<future>-?\d+) "
@@ -19,8 +19,8 @@ CHOICE = re.compile(
 
 
 ACTION = re.compile(
-    r"^FOUR_AI_V33_STRATEGIC_ACTION player=Ai\\((?P<seat>[1-4])\\)-"
-    r"(?P<deck>.*?) turn=(?P<turn>\\d+) first=(?P<first>.*?) "
+    r"^FOUR_AI_V33_STRATEGIC_ACTION player=Ai\((?P<seat>[1-4])\)-"
+    r"(?P<deck>.*?) turn=(?P<turn>\d+) first=(?P<first>.*?) "
     r"acceptedByStockForgeAI=true$", re.M)
 
 
