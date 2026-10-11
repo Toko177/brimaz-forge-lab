@@ -31,7 +31,7 @@ param(
 $ErrorActionPreference="Stop"
 $repoRoot=(Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $repoRoot
-foreach ($cmd in @("gh","python","java","javac","jar","tar")) {
+foreach ($cmd in @("python","java","javac","jar","tar")) {
   if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
     throw "Missing executable $cmd on PATH. Install prerequisites first."
   }
@@ -43,11 +43,6 @@ if ($javaText -notmatch 'version "21(\.|"|\+)') {
 if ($Clock -eq 480 -and $GamesPerRotation -gt 3) {
   throw "480s clock is limited to <=3 games per rotation"
 }
-& gh auth status *> $null
-if ($LASTEXITCODE -ne 0) {
-  throw "Private repo GitHub CLI authentication required: run gh auth login manually."
-}
-
 $archiveUrl="https://github.com/Card-Forge/forge/releases/download/forge-2.0.15/forge-installer-2.0.15.tar.bz2"
 $expectedForgeSha="4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600"
 $runtime=if($ForgeRuntimeDir){$ForgeRuntimeDir}else{Join-Path $repoRoot ".forge-v2.0.15"}
@@ -78,13 +73,21 @@ if ($CompileOnly) {
 }
 
 $artifactPath=Join-Path $repoRoot "canonical"
-$sourceDecks=Join-Path $artifactPath "forge_normalized"
+$sourceDecks=Join-Path $repoRoot "forge_decks"
 $reportPath=Join-Path $artifactPath "results/forge_normalization/report.json"
 if (-not (Test-Path $reportPath) -or -not (Test-Path $sourceDecks)) {
+  # Legacy V31 clones may still need the original artifact. V32+ clones
+  # carry ALL seven SHA256-pinned decks and report directly in the repo.
+  if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+    throw "Canonical files missing. Update to V32 or install gh for the legacy artifact fallback."
+  }
+  & gh auth status *> $null
+  if ($LASTEXITCODE -ne 0) {throw "For legacy deck retrieval only, run gh auth login"}
   New-Item -ItemType Directory -Force -Path $artifactPath | Out-Null
-  Write-Host "Retrieving SHA-pinned original seven Commander decks..."
+  Write-Host "Legacy recovery: retrieving original seven SHA256-pinned Commander decks..."
   & gh run download 37966009166 --repo Toko177/brimaz-forge-lab --name forge-seven-decks-canonical-verified --dir $artifactPath
-  if ($LASTEXITCODE -ne 0) {throw "Canonical deck artifact unavailable; check gh auth and artifact retention"}
+  if ($LASTEXITCODE -ne 0) {throw "Original artifact unavailable; use the V32 branch with tracked canonical decks"}
+  $sourceDecks=Join-Path $artifactPath "forge_normalized"
 }
 if (-not (Test-Path $reportPath)) {throw "Canonical normalization report missing"}
 $report=Get-Content -Raw -LiteralPath $reportPath | ConvertFrom-Json
