@@ -1,94 +1,33 @@
-**Deckbuilding avec une seule IA V43 à chaque rotation (opt-in).**
-Le pipeline de decklists accepte `V43-single-seat-generic` à côté de
-la référence V13. Le pilote ciblé suit le siège de la liste évaluée
-et les trois adversaires conservent Forge. Le cache de référence refuse
-tout mélange de politiques et identifie les sources Java compilées.
-[Guide utilisateur](docs/DECKBUILDING_QUICKSTART.md).
-
-**V43 — comparaison directe contre Forge.**
-Le mode `v43_commander_single_seat` active l'IA générique pour
-un unique joueur par partie et maintient trois adversaires contrôlés
-par la politique Forge de référence. Les rotations couvrent plusieurs
-decks et un audit vérifie chaque identité `Ai(n)-Name=`.
-L'ancien mode V42 sur les quatre joueurs mesure seulement l'intégration
-multideck. [Protocole et limites](docs/V42_GENERAL_COMMANDER_AI.md).
-
-**V43 — fiabilisation des traces de vraies parties (sans nouveau workflow).**
-Les premiers benchmarks génériques ont révélé le format des identifiants
-réels `Ai(n)-Name=` dans Forge, différent des fichiers de decks.
-L'audit confirme maintenant strictement le siège et le label du deck,
-et les politiques historiques distinguent cette erreur d'un échec
-stratégique. Le planificateur ne confond plus valeur de mana imprimée
-et coût réellement payable. [Constats et retests](docs/V42_GENERAL_COMMANDER_AI.md).
-
-## V42 — vers une IA Commander générique (expérimental)
-
-Le nouveau mode `v42_commander_general` utilise un évaluateur fondé sur
-le plateau public, les ressources et les capacités Forge réelles : **pas de
-liste de cartes ou d'identité Brimaz dans ses règles de décision**.
-Il peut s'activer pour les quatre joueurs, quel que soit leur commandant.
-Le comparateur `v37_stock_control` partage le même Forge patché mais
-n'active pas V42. Tests et benchmark A/B avec sièges Kaal + Brimaz :
-[architecture, commandes et limites](docs/V42_GENERAL_COMMANDER_AI.md).
-
-**Important :** c'est une première base générique pour les permanents
-non ciblés, pas encore une IA complète de combat, interaction sur la pile,
-combos ou évaluation probabiliste de decklists. Les statistiques de victoire
-ne valent rien avant les vrais journaux et les audits d'actions approuvées.
-
-**Audit du moteur de sacrifice V41 :** chaque partie réelle produit
-désormais un diagnostic automatique des raisons pour lesquelles
-Brimaz ne transforme pas ou ne sacrifie pas ses jetons.
-Ce diagnostic distingue la présence du commandant, des jetons
-Phyrexian *déjà créatures*, les exutoires activables et les décisions
-réellement approuvées par Forge. Il évite de transformer une simple
-proposition en victoire supposée.
-[Documentation et limites](docs/V36_EVIDENCE_POLICY.md).
-
-**V41 — correction du vrai pilote Brimaz et accès contrôlé aux sacrifices.**
-Le module précédent ne transformait les Incubateurs que dans les miroirs :
-`Brimaz_V3`, le siège canonique contre Kaal, était exclu.
-V41 répare cette isolation et prend en charge les véritables capacités
-d'Ashnod's Altar et de Phyrexian Altar, avec validation de Forge,
-sans débrider les capacités ciblées ou celles des adversaires.
-[Résultats historiques et méthode](docs/V36_EVIDENCE_POLICY.md).
-
-**V40 : défaut critique d'isolation entre joueurs corrigé.**
-V38/V39 partageaient un verrou de transformation entre les deux
-joueurs challengers d'une même partie, et consommaient ce verrou
-dès la proposition plutôt qu'après approbation par Forge.
-V40 suit l'approbation par identité de joueur/numéro de tour,
-et expose les diagnostics de sacrifice pour chacun.
-[Analyse empirique et protocole](docs/V36_EVIDENCE_POLICY.md).
-
-**V39 (expérimental) :** gestion contextuelle des Incubateurs. Un petit jeton n'est transformé pour préparer un sacrifice que si Brimaz et un vrai moteur de sacrifice sont présents et que la prolifération des compteurs visibles compense sa perte. Le planificateur évite également de consommer le mana d'un accélérateur immédiatement payable, sauf urgence défensive. Toujours contrôlé par les règles et les coûts de Forge. [Protocole et mesures](docs/V36_EVIDENCE_POLICY.md).
-
-**V38 — changement concret de gameplay :** les Incubateurs ne sont pas des créatures tant qu'ils ne sont pas transformés. Le challenger peut maintenant activer sélectivement une transformation légale en phase principale 2, par les vrais coûts Forge, pour créer de véritables bloqueurs/attaquants et alimenter les synergies Phyrexian. Le contrôle original ne reçoit pas cette politique. [Code et protocole](docs/V36_EVIDENCE_POLICY.md).
-
-**Nouvelle validation directe V37 :** deux decks Brimaz strictement identiques
-(à l'exception de leur nom) jouent dans **une même partie Forge** :
-l'IA V37 affronte la référence sur les mêmes cartes, règles, tirages globaux
-et adversaires. Les copies sont temporaires et les 7 decks canoniques
-ne sont jamais modifiés. Le test ne certifie une amélioration qu'avec
-des résultats naturels répétés sur plusieurs graines.
-[Protocole](docs/V36_EVIDENCE_POLICY.md).
-
-[V36 policy and exact inherited V17 vs Forge distinction](docs/V36_EVIDENCE_POLICY.md).
-
-**V36 — challenger à décision conditionnelle :** désormais un moteur
-expérimental réel, branché sur Forge 2.0.15, n'intervient que pour des
-ordonnancements Brimaz/Phyrexian ou un déverrouillage de mana démontrable
-sur les cartes connues, et vérifie le paiement par le moteur Forge.
-Sans avantage local suffisant, elle laisse décider Forge.
-La qualité compétitive reste à mesurer, séparément de la compilation.
-[Documentation V36](docs/V35_STRATEGIC_SEARCH.md).
-
 # Brimaz Forge Lab
 
 Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 [Forge 2.0.15](https://github.com/Card-Forge/forge), Java 21, parties
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
+
+## Politique active et parcours utilisateur
+
+Le moteur Commander **V43 expérimental** propose des décisions de
+développement non ciblées à partir du plateau public et des capacités Forge
+réelles, sans règles spécifiques à Brimaz. Les sorts, paiements, combats et
+résolutions restent régis par Forge 2.0.15. **Ce moteur n'est pas encore
+une IA Commander de niveau humain.**
+
+- **Tester une liste** : la comparaison A/B de decklists conserve V13 par
+  défaut ; elle propose `V43-single-seat-generic` en option. Le pilote suit
+  le siège du deck évalué lors des quatre rotations, avec trois adversaires
+  Forge inchangés. [Guide deckbuilding](docs/DECKBUILDING_QUICKSTART.md).
+- **Comparer une IA à Forge** : `v43_commander_single_seat` active
+  exactement un challenger par partie, contre trois références, pour
+  évaluer le logiciel indépendamment des changements de cartes.
+  [Protocole et limites](docs/V42_GENERAL_COMMANDER_AI.md).
+- **Traçabilité** : les noms réels `Ai(n)-Name=` sont rapprochés
+  strictement des fichiers DCK, les actions approuvées sont séparées
+  des résolutions, les censures ne deviennent jamais des victoires.
+  Le cache SHA256 interdit le mélange V13/V43 ou de sources Java.
+- **Historique V35 à V41** : conservé dans
+  [les preuves expérimentales](docs/V36_EVIDENCE_POLICY.md) et dans Git,
+  sans accumulation d'annonces de versions dans cette page.
 
 **Branche stable : `main`.** Une seule expérimentation active :
 `feature/v35-strategic-search-20261011` ([PR #29](https://github.com/Toko177/brimaz-forge-lab/pull/29)),
