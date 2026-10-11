@@ -81,7 +81,7 @@ with tempfile.TemporaryDirectory() as td:
     assert newhash==oldhash==sha(out), "Stock comparator JAR was patched or modified"
     assert patches==[], "Stock Forge comparator must have ZERO patches"
 for policy in POLICIES:
-    if policy in ("forge_stock","forge_stock_compat"):
+    if policy in ("forge_stock","forge_stock_compat","v37_stock_control","v37_brimaz_challenger"):
         continue
     flags=policy_flags(policy)
     assert "fourSeatCombatTarget=true" in flags
@@ -98,6 +98,13 @@ assert "v35_strategy" in POLICIES
 assert "v35StrategicSearch=true" in policy_flags("v35_strategy")
 assert "fourSeatRemovalUrgency=true" in policy_flags("v35_strategy")
 assert "fourSeatCounterCritical=true" in policy_flags("v35_strategy")
+assert "v37_stock_control" in POLICIES
+assert "v37_brimaz_challenger" in POLICIES
+assert "v37ControlledDuel=true" in policy_flags("v37_stock_control")
+assert "v35StrategicSearch=true" not in policy_flags("v37_stock_control")
+assert "v37Challenger=true" not in policy_flags("v37_stock_control")
+assert "v37Challenger=true" in policy_flags("v37_brimaz_challenger")
+assert "fourSeatCombatTarget=true" not in policy_flags("v37_brimaz_challenger")
 assert "v36_brimaz_challenger" in POLICIES
 assert "v36EvidenceGate=true" in policy_flags("v36_brimaz_challenger")
 assert "v35BrimazOnly=true" in policy_flags("v36_brimaz_challenger")

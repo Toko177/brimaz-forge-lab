@@ -64,3 +64,27 @@ déclaration d'amélioration.
 des configurations indépendantes un avantage significatif et
 reproductible, pas une hausse des propositions, ni un simple
 changement de vainqueur. La PR reste DRAFT.
+
+## V37 — test contrôlé face à l'IA Forge, et non la V17 héritée
+
+La précédente politique V36 se repliait sur **V17** et l'effet réel
+pouvait provenir des patches historiques Brimaz. Deux nouveaux bras
+`v37_stock_control` et `v37_brimaz_challenger` utilisent donc
+**les mêmes classes compilées et le même correctif moteur commun**.
+Ils désactivent, de façon symétrique, les mulligans personnalisés,
+les priorités automatiques de cast, la transformation forcée des
+Incubateurs et les choix de sacrifice historiques. Les quatre sièges
+partagent une même base Forge avec prise en charge commune des
+incubations (ceci reste **une base compatible modifiée**, pas le JAR
+strictement inchangé).
+
+Seul le challenger autorise son siège Brimaz à proposer les lignes
+connues de V36 et à utiliser un sacrifice de jeton Phyrexian de valeur
+locale strictement positive avant l'étape de fin, vérifié par
+`AiController.canPlayAndPayFor`. Les trois adversaires ne reçoivent
+aucune politique nouvelle. L'auditeur vérifie SHA des decks,
+égalité des patches, absence de flags globaux et siège unique.
+
+Les nouvelles graines de la campagne sont `20270319`, différentes
+des anciennes. Sans statistiques favorables sur un échantillon large,
+la supériorité n'est toujours pas une conclusion autorisée.

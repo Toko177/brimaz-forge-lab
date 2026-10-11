@@ -34,7 +34,7 @@ CANONICAL_DECK_SHA256={
 }
 POLICIES=("forge_stock","forge_stock_compat","v17_strict","v19_removal","v20_shadow","critical_counter",
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
-          "v33_strategy","v35_strategy","v35_brimaz_duel","v36_brimaz_challenger")
+          "v33_strategy","v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_stock_control","v37_brimaz_challenger")
 
 def sha(path):
     d=hashlib.sha256()
@@ -75,6 +75,14 @@ def java_version():
 def policy_flags(policy):
     if policy in ("forge_stock","forge_stock_compat"):
         return ""  # Neither baseline injects an AI-specific Java property.
+    if policy == "v37_stock_control":
+        return "-Dbrimaz.v37ControlledDuel=true"
+    if policy == "v37_brimaz_challenger":
+        return ("-Dbrimaz.v37ControlledDuel=true "
+                "-Dbrimaz.v37Challenger=true "
+                "-Dbrimaz.v35StrategicSearch=true "
+                "-Dbrimaz.v35BrimazOnly=true "
+                "-Dbrimaz.v36EvidenceGate=true")
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",

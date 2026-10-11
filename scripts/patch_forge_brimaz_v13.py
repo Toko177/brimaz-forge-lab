@@ -283,6 +283,7 @@ insert1=(
 "        // OPT-IN Brimaz test policy: one affordable free Phyrexian-token sacrifice\n"
 "        // during the second main phase, strictly before that end step.\n"
 "        // Only explicitly audited sacrifice outlets with counter/proliferate payoff are eligible.\n"
+"        if (!Boolean.getBoolean(\"brimaz.v37ControlledDuel\")) {\n"
 "        BrimazTurnPlanner.diagnoseDecisionWindow(player, saList);\n"
 "        SpellAbility develop = BrimazTurnPlanner.planDevelopment(player, saList);\n"
 "        if (develop != null) {\n"
@@ -295,6 +296,20 @@ insert1=(
 "        SpellAbility brimazPlanned = BrimazTurnPlanner.plan(player, saList);\n"
 "        if (brimazPlanned != null) {\n"
 "            return brimazPlanned;\n"
+"        }\n"
+"        }\n"
+"        // True controlled duel: keep legacy Brimaz changes disabled in both\n"
+"        // arms; only the challenger may activate a positive-score end-step\n"
+"        // Phyrexian creature token sacrifice through actual Forge costs.\n"
+"        if (Boolean.getBoolean(\"brimaz.v37ControlledDuel\")\n"
+"                && Boolean.getBoolean(\"brimaz.v37Challenger\")\n"
+"                && player.getName().contains(\"Brimaz\")) {\n"
+"            SpellAbility v37Sac = BrimazTurnPlanner.plan(player, saList);\n"
+"            if (v37Sac != null && canPlayAndPayFor(v37Sac) == AiPlayDecision.WillPlay) {\n"
+"                System.out.println(\"FOUR_AI_V37_POSITIVE_SAC_FORGE_APPROVED player=\"\n"
+"                    +player.getName()+\" card=\"+v37Sac.getHostCard().getName());\n"
+"                return v37Sac;\n"
+"            }\n"
 "        }\n\n"
 )
 if controller.count(anchor1)!=1: raise ValueError("AiController original selection anchor mismatch")
@@ -306,7 +321,11 @@ anchor2=(
 )
 replacement2=(
 "    public CardCollectionView chooseSacrificeType(String type, SpellAbility ability, boolean effect, int amount, final CardCollectionView exclude) {\n"
-"        CardCollectionView plannedSacrifice = BrimazTurnPlanner.chooseSacrifice(player, type, ability, amount);\n"
+"        CardCollectionView plannedSacrifice =\n"
+"            (!Boolean.getBoolean(\"brimaz.v37ControlledDuel\")\n"
+"                || Boolean.getBoolean(\"brimaz.v37Challenger\"))\n"
+"            ? BrimazTurnPlanner.chooseSacrifice(player, type, ability, amount)\n"
+"            : null;\n"
 "        if (plannedSacrifice != null) {\n"
 "            return plannedSacrifice;\n"
 "        }\n"
@@ -320,7 +339,9 @@ remove_anchor=("return spellAbility.isLandAbility() || "
     "(spellAbility.getHostCard() != null && ComputerUtilCard.isCardRemAIDeck(spellAbility.getHostCard()));")
 remove_replacement=("return spellAbility.isLandAbility() || "
     "(spellAbility.getHostCard() != null && ComputerUtilCard.isCardRemAIDeck(spellAbility.getHostCard()) "
-    "&& !BrimazTurnPlanner.allowNormallyExcludedAbility(player, spellAbility));")
+    "&& (Boolean.getBoolean(\"brimaz.v37ControlledDuel\")\n"
+     "    && !Boolean.getBoolean(\"brimaz.v37Challenger\")\n"
+     "    || !BrimazTurnPlanner.allowNormallyExcludedAbility(player, spellAbility)));")
 if controller.count(remove_anchor)!=1: raise ValueError("AiController anti-AI card filter mismatch")
 controller=controller.replace(remove_anchor,remove_replacement,1)
 
@@ -765,6 +786,9 @@ public final class BrimazMulliganPolicy {
 
     public static Boolean overrideKeep(Player player, int cardsToReturn, boolean stockKeep) {
         if (player == null || player.getGame() == null) return null;
+        // A real challenger-control test must not inherit custom free
+        // mulligan decisions that are absent from original Forge AI.
+        if (Boolean.getBoolean("brimaz.v37ControlledDuel")) return null;
         boolean isBrimaz = false;
         for (Card c : player.getCardsIn(ZoneType.Command)) {
             if (c.getName().equals("Brimaz, Blight of Oreskos")) {

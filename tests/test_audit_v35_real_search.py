@@ -93,6 +93,22 @@ with tempfile.TemporaryDirectory() as td:
     duel["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
     b.write_text(banner+window+approved+rejected,encoding="utf-8")
     assert audit(duel)["mixed_seat_brimaz_vs_v17_opponents"] is True
+    mixed37=report()
+    mixed37["reference_provenance"].update({
+        "policy":"v37_stock_control","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true"})
+    mixed37["experiment_provenance"].update({
+        "policy":"v37_brimaz_challenger","patches":["shared_ai_patch"],
+        "java_tool_options":"-Dbrimaz.v37ControlledDuel=true -Dbrimaz.v37Challenger=true -Dbrimaz.v35StrategicSearch=true -Dbrimaz.v35BrimazOnly=true -Dbrimaz.v36EvidenceGate=true"})
+    mixed37["pairs"][0]["experiment"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    mixed37["pairs"][0]["reference"]["seats"]=["Kaal_1","Brimaz_V3","Kaal_2","Kaal_3"]
+    assert audit(mixed37)["v37_stock_ai_mixed_seat_challenger"]
+    mixed37["reference_provenance"]["patches"]=["other"]
+    try:
+        audit(mixed37)
+        raise AssertionError("Unequal patched JAR used as controlled stock")
+    except ValueError:
+        pass
     challenger=report()
     challenger["experiment_provenance"]["policy"]="v36_brimaz_challenger"
     challenger["reference_provenance"]["patches"]=["common"]
