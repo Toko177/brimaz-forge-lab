@@ -15,8 +15,9 @@ import pathlib
 import re
 import urllib.request
 
-SOURCE = "https://api.scryfall.com/bulk-data/oracle-cards"
+SOURCE = "https://api.scryfall.com/bulk-data"
 USER_AGENT = "BrimazForgeLab/1.0 (noncommercial complete Commander pool research)"
+HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json;q=0.9,*/*;q=0.8"}
 COLORS = {"W", "B"}
 EXCLUDE_THEMES = re.compile(r"\b(?:infect|toxic|poison counter|poisoned|poisonous)\b", re.I)
 GENERIC_POWER = {
@@ -104,15 +105,20 @@ def classify(card):
     }
 
 def fetch_metadata():
-    req = urllib.request.Request(SOURCE, headers={"User-Agent": USER_AGENT})
+    req = urllib.request.Request(SOURCE, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=70) as response:
-        return json.load(response)
+        listing = json.load(response)
+    objects = listing.get("data", [])
+    matches = [o for o in objects if o.get("type") == "oracle_cards"]
+    if len(matches) != 1:
+        raise RuntimeError("Bulk-data list must expose exactly one oracle_cards dataset")
+    return matches[0]
 
 def all_oracle_cards(meta):
     address = meta.get("jsonl_download_uri") or meta.get("download_uri")
     if not address:
         raise RuntimeError("Scryfall bulk oracle_cards has no recognized download URI")
-    req = urllib.request.Request(address, headers={"User-Agent": USER_AGENT})
+    req = urllib.request.Request(address, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=180) as response:
         if ".jsonl" in address:
             stream = gzip.GzipFile(fileobj=response) if address.endswith(".gz") else response
