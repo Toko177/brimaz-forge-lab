@@ -5,6 +5,23 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
+## Brimaz V4 B3 — liste de jeu, pas une IA V44
+
+**Nouvelle liste Commander de 100 cartes destinée au playgroup Bracket 3.**
+Huit échanges V3→V4 renforcent la pioche, la conversion des sacrifices
+d'Incubateurs en drain et les réponses aux permanents.
+**Aucune supériorité sur V3 n'est encore établie** par de vraies parties.
+La V3 et les sept decks Forge canoniques sont inchangés.
+
+- [V4 Moxfield / Archidekt (texte)](decks/Brimaz_V4_B3.txt) ;
+  [V4 Forge DCK](deck_candidates/Brimaz_V4_B3.dck).
+- [Huit décisions et protocole](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
+  [justification des 100 cartes](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
+- `python3 tests/test_audit_brimaz_v4.py` vérifie les 100 cartes,
+  les huit échanges et les seules probabilités **de voir** des cartes.
+  Aucun match Magic simulé ni victoire fictive.
+- Revalider la légalité Oracle/Game Changers avant la table.
+
 ## Groupes de parties — mise à jour du 12 octobre 2026
 
 **Amalia est remplacée dans le groupe artifact par Dungeon Party Time**,

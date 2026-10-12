@@ -32,6 +32,9 @@ expected = {
     ".github/workflows/repository-health.yml",
     ".github/workflows/commander-four-ai-simulator.yml",
     "docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md",
+    "scripts/audit_brimaz_v4.py", "tests/test_audit_brimaz_v4.py",
+    "decks/Brimaz_V4_B3.txt", "deck_candidates/Brimaz_V4_B3.dck",
+    "docs/BRIMAZ_V4_B3_DECISIONS.md", "docs/BRIMAZ_V4_B3_CARD_BY_CARD.md",
 }
 assert all((ROOT / p).is_file() for p in expected), "Active source or documentation was removed"
 hashes = validate_decks(

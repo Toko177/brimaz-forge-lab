@@ -1,0 +1,108 @@
+# Brimaz V4 B3 — audit des 100 cartes, une par une
+
+**Date** : 12 octobre 2026. **Statut** : proposition à valider à la table, et non V4 supérieure démontrée par Forge.
+
+**Commande** : Brimaz, Blight of Oreskos ; noir/blanc, aucun poison comme condition de victoire voulue, zéro Game Changer voulu, aucun combo infini précoce intentionnel. Exactement 100 cartes, original V3 et 7 adversaires originaux conservés.
+
+Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, **transformation en créature** et **mort d'un Phyrexian**. Un Incubateur non transformé ne satisfait pas les coûts de sacrifice d'une créature et sa destruction seule ne prolifère pas avec Brimaz. La plupart des moteurs décrits exigent une vraie présence en jeu, de quoi payer leurs coûts et des fenêtres de priorité.
+
+| Qté | Carte | Justification dans la V4 |
+|---:|---|---|
+| 1 | Activated Sleeper | Flash après la mort d'une créature : clone polyvalent ; lancer ce Phyrexian pendant un tour adverse produit un Incubateur si Brimaz est présent. |
+| 1 | Arcbound Ravager | Sacrifice gratuitement des artefacts, y compris des Incubateurs non transformés ; transforme leur perte en marqueurs pour un autre artefact via la modularité. |
+| 1 | Bartolomé del Presidio | Sacrifice gratuit d'artefact ou de créature à vitesse éphémère ; gros avantage en table à quatre pour organiser les morts. |
+| 1 | Bloated Processor | Recycle les permanents via sacrifice pour produire des Incubateurs et une source de corps ; utile sans attendre la résolution d'un gros sort. |
+| 1 | Priest of Gix | Phyrexian de coût trois avec trois manas noirs rendus à l'arrivée ; excellent à relancer depuis la main pour redéclencher Brimaz. |
+| 1 | Myr Sire | **V4** : créature-artefact à deux manas qui déclenche Brimaz ; à la mort crée un second corps à sacrifier ou équiper de Skullclamp. |
+| 1 | Compleated Huntmaster | Sacrifie artefact ou créature pour générer de nouveaux Incubateurs ; outlet répétable sous réserve de son coût et de l'engagement. |
+| 1 | Nadier's Nightblade | **V4** : chaque jeton qui quitte le champ (même un Incubateur non transformé) draine les trois adversaires ; transforme les sacrifices en clôture de partie. |
+| 1 | Elas il-Kor, Sadistic Pilgrim | Gagne des points de vie sur les arrivées de créatures et fait perdre des points de vie à chaque adversaire lorsque tes créatures meurent ; excellent avec jetons transformés. |
+| 1 | Elesh Norn | Phyrexian à lancer ; sa transformation en saga génère puis transforme plusieurs Incubateurs et menace les plateaux opposés. |
+| 1 | Essence of Orthodoxy | Incubateur sur ses propres déclenchements et soutien des Phyrexians ; renforce les ressources produites après Brimaz. |
+| 1 | Filigree Vector | Créature-artefact phyrexiane génératrice de marqueurs et capable de sacrifier un artefact pour proliférer ; relie tous les sous-moteurs. |
+| 1 | Grafted Butcher | Phyrexian bon marché, bonus de combat aux Phyrexians ; peut revenir du cimetière en sacrifiant artefact/créature à vitesse rituel. |
+| 1 | Lurrus of the Dream-Den | Recaste chaque tour un permanent de coût deux ou moins depuis le cimetière ; rejouer Myr Sire ou Myr Retriever produit des déclenchements de Brimaz. |
+| 1 | Marionette Apprentice | Fait perdre 1 point de vie à chacun des trois adversaires quand tes artefacts ou créatures passent au cimetière ; paie directement le sacrifice des Incubateurs. |
+| 1 | Marionette Master | Finisher à forte amplitude sur les artefacts allant au cimetière ; dégâts ciblés plus explosifs si sa force augmente. |
+| 1 | Metastatic Evangel | Phyrexian de coût deux ; prolifère aux arrivées des créatures non-jetons, utile même quand l'Incubation a déjà créé des marqueurs. |
+| 1 | Mirkwood Bats | Draine chaque adversaire quand tu crées ou perds un jeton ; l'Incubation déclenche à la création et la sortie du champ donne une deuxième fenêtre. |
+| 1 | Mondrak, Glory Dominus | Phyrexian générateur de doublage des jetons ; peut devenir indestructible grâce à ses sacrifices en payant le coût approprié. |
+| 1 | Myr Retriever | Créature-artefact à deux manas qui ramène un artefact du cimetière à la main lorsqu'elle meurt ; recastable avec Lurrus. |
+| 1 | Norn's Inquisitor | Phyrexian peu coûteux qui produit et exploite l'Incubation ; plusieurs triggers utiles pour le plan marqueurs. |
+| 1 | Ornithopter of Paradise | Créature-artefact mana-fixer, déclenche Brimaz lorsqu'elle est lancée ; accélère le tour du commandant. |
+| 1 | Morbid Opportunist | **V4** : pioche dès qu'une ou plusieurs autres créatures meurent, une fois **par tour** ; profite des sacrifices pendant les tours adverses. |
+| 1 | Phyrexian Fleshgorger | Créature-artefact phyrexiane avec prototype ; déclenche Brimaz en version rapide et reste menaçante en haut de courbe. |
+| 1 | Phyrexian Missionary | Phyrexian peu cher ; son kicker peut récupérer une créature en main, donc permettre une nouvelle incubation lors de sa relance. |
+| 1 | Progenitor Exarch | Phyrexian qui incube selon le mana X investi ; excellent moteur de jetons et de marqueurs avant une prolifération. |
+| 1 | Roaming Throne | Choisit Phyrexian, amplifie les déclenchements de Brimaz et des autres Phyrexians ; créature-artefact qui déclenche elle-même Brimaz. |
+| 1 | Scheming Aspirant | Fait perdre 2 points de vie à chaque adversaire lorsqu'on prolifère ; une des meilleures conditions de victoire propres au commandant. |
+| 1 | Gold Myr | Caillou de mana blanc sur une créature-artefact : déclenche Brimaz au lancement et soutient les coûts blancs. |
+| 1 | Vraan, Executioner Thane | Drain de masse sur la première mort d'une créature alliée dans **chaque tour** ; Phyrexian peu cher, parfait avec sacrifices échelonnés. |
+| 1 | Vulpine Harvester | Phyrexian qui remonte un artefact du cimetière directement en jeu après une attaque de Phyrexians ; préservé comme vraie récursion répétable. |
+| 1 | Yawgmoth, Thran Physician | Sacrifice à vitesse éphémère contre pioche et marqueurs -1/-1 ; pilier du moteur, même s'il n'est pas lui-même Phyrexian. |
+| 1 | Sol Ring | Accélérateur neutre à un mana ; aide à lancer Brimaz puis à payer les transformations d'Incubateurs. |
+| 1 | Arcane Signet | Fixeur blanc/noir pour lancer Brimaz et conserver des coûts colorés sur les réponses. |
+| 1 | Talisman of Hierarchy | Rampe à deux manas et produit les deux couleurs nécessaires, au prix de quelques PV selon le mode. |
+| 1 | Orzhov Signet | Rampe/fixing à deux manas ; transforme du mana générique en blanc/noir. |
+| 1 | Ashnod's Altar | Sacrifie gratuitement **des créatures**, fournit du mana incolore ; transformer d'abord les Incubateurs avant de les sacrifier. |
+| 1 | Krark-Clan Ironworks | Sacrifie même les Incubateurs artefacts non transformés pour produire du mana incolore ; moteur de tempo après une incubation. |
+| 1 | Phyrexian Altar | Sacrifice gratuit **des créatures** vers le mana coloré ; meilleur que l'autel incolore pour les relances Phyrexians. |
+| 1 | Throne of Geth | Engagement + sacrifice d'un artefact pour proliférer ; accepte les Incubateurs non transformés et rend les marqueurs menaçants. |
+| 1 | Skullclamp | Pioche explosive avec de petites créatures sacrifiables ; nécessite une cible créature (jeton incubateur transformé, Myr, etc.). |
+| 1 | Ichor Wellspring | **V4** : pioche en arrivant, puis à la mort ; cible parfaite pour Krark-Clan Ironworks, Ravager, Bartolomé ou Braids. |
+| 1 | Idol of Oblivion | **V4** : pioche une carte par tour où un jeton a été créé, très souvent après une incubation ; exige de s'engager. |
+| 1 | Urza's Incubator | Réduit les coûts génériques des créatures du type choisi (Phyrexian) ; soutient les relances des vrais Phyrexians depuis la main. |
+| 1 | Spawning Pit | Outlet gratuit d'une **créature** pour prendre des marqueurs ; les marqueurs se prolifèrent et peuvent se convertir en jetons. |
+| 1 | Athreos, God of Passage | La mort d'un Phyrexian non-jeton peut le ramener en main si l'adversaire ne paie pas 3 PV ; donne des relances plutôt que de simples ETB. |
+| 1 | Anointed Procession | Double les jetons d'Incubation et multiplie les déclenchements de Mirkwood Bats à la création. |
+| 1 | Caretaker's Talent | Pioche conditionnelle sur création de jetons ; offre plus tard un avantage de taille aux jetons ; moteur à pérenniser. |
+| 1 | Rite of Oblivion | **V4** : exil ciblé de permanent non-terrain en sacrifiant même un Incubateur non transformé ; flashback offre une seconde interaction. |
+| 1 | Phyrexian Reclamation | Récupération en main pour deux manas et 2 PV ; relancer la créature fait proc Brimaz à nouveau. |
+| 1 | Braids, Arisen Nightmare | **V4** : à sa propre étape de fin, sacrifie un Incubateur ou autre permanent pour forcer le choix de chaque adversaire et piocher jusqu'à trois cartes. |
+| 1 | The Meathook Massacre | Effet de réduction des créatures et payoff sur les morts ; souple pour nettoyer les petites tables et convertir les sacrifices. |
+| 1 | Anguished Unmaking | Exil de presque n'importe quel permanent non-terrain à vitesse éphémère ; essentiel contre moteurs ou combos. |
+| 1 | Clever Concealment | Phase out les permanents choisis pour préserver le plateau contre un retrait massif, sans déclencher leur mort. |
+| 1 | Diabolic Intent | Sacrifie une créature pour chercher l'outil de moteur manquant ; à utiliser pour la cohérence, pas une chaîne de victoire infinie. |
+| 1 | Flare of Fortitude | Protection globale à vitesse éphémère avec coût alternatif ; permet de garder des permanents moteurs face aux wraths. |
+| 1 | Living Death | Reset de créatures et retour du cimetière ; puissant finisher de valeur mais ne déclenche **pas** l'incubation par cast. |
+| 1 | Sunfall | Exile les créatures et crée un Incubateur ; solide contre stratégies cimetière, sans déclenchements de mort sur les exils. |
+| 1 | Restoration Magic | Protection à un mana donnant hexproof et indestructible à un permanent ; mode large plus coûteux pour sauver la table. |
+| 1 | Swords to Plowshares | Exile presque toute créature problématique pour un mana et un coût de vie offert à l'adversaire. |
+| 1 | Deadly Dispute | Sacrifie artefact ou créature à vitesse éphémère, pioche deux et crée un Trésor ; déclenche les payoffs quand la condition est remplie. |
+| 1 | Agadeem's Awakening | MDFC : source noire comme terrain ou récupération de plusieurs créatures avec X, bon en partie longue. |
+| 1 | Malakir Rebirth | MDFC : source de mana noire ou protection mono-créature / déclenchement de mort suivi de retour. |
+| 1 | Witch Enchanter | MDFC : peut servir de plaine ou de créature pour retirer un artefact ou enchantement ; à jouer selon les besoins de couleurs. |
+| 1 | Bleachbone Verge | Terrain bicolore, améliore les sorties blanc/noir sans sacrifier un slot actif. |
+| 1 | Bojuka Bog | Terrain noir engagé qui exile un cimetière ciblé ; réponse compacte contre la récursion adverse. |
+| 1 | Brightclimb Pathway | Terrain modal blanc ou noir, choix de couleur effectué à l'entrée. |
+| 1 | Caves of Koilos | Bicolore dégagé, peut occasionner un dégât pour du mana blanc ou noir. |
+| 1 | Castle Locthwain | Pioche répétable depuis une case de terrain, contre un coût de mana, d'engagement et de PV selon la main. |
+| 1 | Command Tower | Fixeur bicolore dégagé sans coût supplémentaire. |
+| 1 | Concealed Courtyard | Terrain bicolore fréquemment dégagé au début de partie ; facilite Brimaz tour quatre. |
+| 1 | Eiganjo, Seat of the Empire | Source blanche avec canalisation de removal, peu de coût de slot. |
+| 1 | Exotic Orchard | Souvent blanc/noir en multijoueur ; sa fiabilité dépend toutefois des terrains adverses. |
+| 1 | Fetid Heath | Filtreur de mana blanc/noir : efficace avec une source déjà colorée, mais ne crée pas seul le premier mana coloré. |
+| 1 | Godless Shrine | Double-terrain typé Plains/Swamp, cible de Marsh Flats ; terrain dégagé possible contre deux PV. |
+| 1 | High Market | Outlet de sacrifice d'une créature depuis un terrain ; ne peut sacrifier un Incubateur non transformé. |
+| 1 | Isolated Chapel | Double source généralement dégagée avec Plains ou Swamp. |
+| 1 | Karn's Bastion | Prolifération répétable en payant quatre manas ; transforme les marqueurs en ressources de late game. |
+| 1 | Marsh Flats | Fetch de terrains typés Plains/Swamp pour régler une couleur ; aide indirectement la base de mana. |
+| 1 | Path of Ancestry | Fixeur coloré engagé ; scry après le lancement d'un Phyrexian partageant le type du commandant. |
+| 1 | Phyrexian Tower | Sacrifice créature en source de mana noir ; déclenche Brimaz à l'étape de fin si un Phyrexian est mort. |
+| 1 | Shattered Sanctum | Double-terrain bicolore généralement dégagé à partir du troisième terrain. |
+| 1 | Silent Clearing | Source blanche/noire au coût d'un PV, puis cyclage sacrificiel en fin de partie. |
+| 1 | Tainted Field | Produit blanc/noir si un marais est contrôlé, sinon incolore ; vérifier la qualité du fixing précoce. |
+| 1 | Takenuma, Abandoned Mire | Source noire avec capacité channel pour remonter une créature ou planeswalker du cimetière. |
+| 1 | The Mycosynth Gardens | Terrain de mana incolore pouvant copier un artefact non-jeton contrôlé ; utile pour dupliquer un moteur. |
+| 1 | The Seedcore | Terrain incolore ou fixe les Phyrexians ; ne répare pas les sorts non-Phyrexians. |
+| 1 | Urborg, Tomb of Yawgmoth | Toutes les terres deviennent aussi des marais ; corrige les multiples terrains utilitaires incolores. |
+| 1 | Urza's Saga | Saga-terrain qui fabrique des constructs puis cherche un artefact de coût 0 ou 1, notamment Sol Ring ou Skullclamp. |
+| 1 | Vault of Champions | Bicolore généralement dégagé dans une table de quatre joueurs. |
+| 1 | War Room | **V4** : pioche répétable depuis un terrain pour trois manas, engagement et PV selon l'identité de couleur ; remplace un terrain de combat coûteux. |
+| 4 | Plains | Quatre basiques blancs ; sûrs face à Blood Moon et recherchables via Marsh Flats. |
+| 4 | Swamp | Quatre basiques noirs ; activent Tainted Field et supportent les symboles noirs fréquents. |
+| 1 | Brimaz, Blight of Oreskos | Commandant. Les sorts phyrexians et créatures-artefacts incubent au lancement ; la mort d'un Phyrexian autorise une prolifération au début de chaque étape de fin, si Brimaz est présent. |
+
+**Lecture** : les huit entrées V4 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
+
+Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les huit remplacements, alternatives écartées, mise à niveau du test statistique et limites de Forge.
