@@ -31,6 +31,7 @@ et **Phyrexian Scriptures**.
   [V4 Forge DCK](deck_candidates/Brimaz_V4_B3.dck).
 - [Les 19 changements et le plan de jeu](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
   [les 100 cartes individuellement](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
+- [Benchmark de six decks budget du playgroup (KaalDeagle)](docs/BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md) : budgets, ramp, interaction, protection, moteurs et pistes de tests.
 - [Politique playgroup / auto-includes / prix sourcés](docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md) ;
   [les 78 cartes considering](docs/BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md) ;
   [recherche exhaustive du pool Oracle actuel](docs/BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md).

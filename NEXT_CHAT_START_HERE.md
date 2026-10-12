@@ -289,3 +289,9 @@ conservateur), **3 outils de nettoyage de table**,
 terrains** (3 MDFC). Scanner tous les noms ne prouve pas que
 la V4 est mathématiquement la meilleure : validation de règles
 et parties humaines restent nécessaires.
+
+## 12 octobre 2026 — benchmark réel des listes Archidekt de KaalDeagle
+
+L'utilisateur indique que KaalDeagle est le **meilleur joueur de son playgroup**, avec des decks budget très bien construits. Six decks publics vérifiés : Quintorius ~115,90 €, Zimone/Dina ~139,41 €, Dungeon Party Time ~77,48 €, Felothar ~148,60 € (page affiche 101 cartes), Queen Marchesa ~144,46 €, Xyris buffs **~35,39 €** (estimation Archidekt du jour). Catégories déclarées : Xyris 22 buffs/16 moteurs/12 removals/12 ramp ; Dungeon 20 ramp/7 protection/6 removal/3 wrath ; Quintorius 14 ramp/9 interaction/8 draw ; Felothar 20 ramp/7 removal/7 protection/4 wrath.
+
+**Lire** `docs/BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md` pour liens, chiffres complets, limites et propositions de tests. Leçons : cartes à synergie **contextuelle** plutôt que staples chers, grande redondance de moteurs + interaction, accès au mana et reprise après wrath. **Aucune modification à la V4 dans ce benchmark** : mesurer d'abord le coût réel des transformations {2} par Incubateur et les points faibles du deck. Éviter d'assimiler estimation Archidekt Core (2) à force réelle du playgroup.
