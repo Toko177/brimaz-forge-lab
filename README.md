@@ -18,25 +18,26 @@ remplacés par des outils qui dépendent du plan Brimaz :
 Phyrexian Awakening, Vault of the Archangel**.
 **Mondrak et Yawgmoth** restent des exceptions chères mais
 fortement synergiques, sans plafond de prix rigide.
-La V4 comporte **19 différences nettes** par rapport à V3 ;
+La V4 comporte **21 différences nettes** par rapport à V3 ;
 la V3 et les sept DCK originaux ne changent pas.
 La V4 bénéficie désormais aussi d'un **inventaire de l'ensemble des
 12 763 cartes Commander légales Orzhov/incolores sans Game Changer**
 sur 38 751 Oracle examinées. Trois corrections défensives issues
 de cette recherche : **Sunder the Gateway**, **Stroke of Midnight**
 et **Phyrexian Scriptures**.
+Après le benchmark réel du playgroup, trois ajustements supplémentaires corrigent le **goulet de mana pour payer {2} par Incubateur** et les pertes de valeur après wrath : **Everflowing Chalice, Steel Overseer, Scrap Trawler** remplacent Anointed Procession, Aron, Benalia's Ruin et Activated Sleeper. Les autres cartes de combat, de protection et d'interaction sont conservées. Mondrak reste le multiplicateur de jetons Phyrexian.
 **La V4 n'est pas démontrée supérieure en partie.**
 
 - [V4 importable Moxfield / Archidekt](decks/Brimaz_V4_B3.txt) ;
   [V4 Forge DCK](deck_candidates/Brimaz_V4_B3.dck).
-- [Les 19 changements et le plan de jeu](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
+- [Les 21 changements et le plan de jeu](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
   [les 100 cartes individuellement](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
 - [Benchmark de six decks budget du playgroup (KaalDeagle)](docs/BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md) : budgets, ramp, interaction, protection, moteurs et pistes de tests.
 - [Politique playgroup / auto-includes / prix sourcés](docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md) ;
   [les 78 cartes considering](docs/BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md) ;
   [recherche exhaustive du pool Oracle actuel](docs/BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md).
 - `python3 tests/test_audit_brimaz_v4.py` vérifie les 100 cartes
-  et les 19 changements. Les probabilités de cartes vues ne sont
+  et les 21 changements. Les probabilités de cartes vues ne sont
   **pas** des simulations de parties ni une preuve de winrate.
 - Vérifier Oracle / Game Changers en direct avec
   `.github/workflows/commander-legality.yml` avant achat.

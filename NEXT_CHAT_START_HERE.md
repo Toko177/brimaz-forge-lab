@@ -295,3 +295,14 @@ et parties humaines restent nécessaires.
 L'utilisateur indique que KaalDeagle est le **meilleur joueur de son playgroup**, avec des decks budget très bien construits. Six decks publics vérifiés : Quintorius ~115,90 €, Zimone/Dina ~139,41 €, Dungeon Party Time ~77,48 €, Felothar ~148,60 € (page affiche 101 cartes), Queen Marchesa ~144,46 €, Xyris buffs **~35,39 €** (estimation Archidekt du jour). Catégories déclarées : Xyris 22 buffs/16 moteurs/12 removals/12 ramp ; Dungeon 20 ramp/7 protection/6 removal/3 wrath ; Quintorius 14 ramp/9 interaction/8 draw ; Felothar 20 ramp/7 removal/7 protection/4 wrath.
 
 **Lire** `docs/BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md` pour liens, chiffres complets, limites et propositions de tests. Leçons : cartes à synergie **contextuelle** plutôt que staples chers, grande redondance de moteurs + interaction, accès au mana et reprise après wrath. **Aucune modification à la V4 dans ce benchmark** : mesurer d'abord le coût réel des transformations {2} par Incubateur et les points faibles du deck. Éviter d'assimiler estimation Archidekt Core (2) à force réelle du playgroup.
+
+## Dernier état Brimaz V4 — audit contre KaalDeagle / jouer B3 efficacement
+
+L'utilisateur a précisé que KaalDeagle (meilleur joueur de son groupe) **bat des decks B3** avec des listes budget parfois classées B2 par Archidekt. Il demande de poursuivre l'optimisation avec cette efficacité réelle comme référence, sans cartes génériques chères et écrasantes ; victoire principale par combat avec Incubateurs transformés.
+
+Trois dernières modifications V4 :
+- **Anointed Procession -> Everflowing Chalice** : producteur {C} amplifiable en proliférant les marqueurs charge, paye des activations de transformation, moins cher que la doubleuse générique ~33 € ; Mondrak reste.
+- **Aron, Benalia's Ruin -> Steel Overseer** : artefact créature MV2 qui déclenche Brimaz, {T} booste les **créatures-artefacts déjà transformées** sans coût de mana supplémentaire.
+- **Activated Sleeper -> Scrap Trawler** : déclenche Brimaz au lancement MV3, récupère des **cartes d'artefact moins chères** après morts d'artefacts ; **ne remonte pas les jetons Incubateur** et leur MV0 ne peut cibler aucune carte moins chère.
+
+Total **21 changements nets V3 -> V4**, V3 et 7 DCK canoniques intacts. Mana précoce repéré 6->7, sources de terrain possibles 38 dont trois MDFC. Ne pas annoncer des résultats de match inexistants. Lire `docs/BRIMAZ_V4_B3_DECISIONS.md`, la liste actuelle `decks/Brimaz_V4_B3.txt` et le script `scripts/audit_brimaz_v4.py`.

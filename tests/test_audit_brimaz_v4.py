@@ -19,14 +19,15 @@ from audit_brimaz_v4 import (SWAPS,BRIMAZ_CASTS,REPEATABLE_DRAW,
 from run_local_four_ai import CANONICAL_DECK_SHA256
 assert hashlib.sha256(FORGE_V3.read_bytes()).hexdigest()==CANONICAL_DECK_SHA256["Brimaz_V3"]
 assert len(CANONICAL_DECK_SHA256)==7
-assert len(SWAPS)==19 and len({a for a,b in SWAPS})==19 and len({b for a,b in SWAPS})==19
+assert len(SWAPS)==21 and len({a for a,b in SWAPS})==21 and len({b for a,b in SWAPS})==21
 a,b=validate()
 assert len(a)==len(b)==94 and len(b)!=100 # Plains / Swamp quantities >1.
 assert a!=b
-assert all(b[name]==0 for name in ("Krark-Clan Ironworks","Spawning Pit","Living Death"))
+assert all(b[name]==0 for name in ("Krark-Clan Ironworks","Spawning Pit","Living Death","Activated Sleeper","Anointed Procession","Aron, Benalia's Ruin"))
+assert all(b[name]==1 for name in ("Everflowing Chalice","Scrap Trawler"))
 assert all(b[name]==1 for name in ("Sunder the Gateway","Stroke of Midnight","Phyrexian Scriptures"))
 assert all(b[name]==0 for name in ("Esper Sentinel","Urza's Saga","Phyrexian Altar","Diabolic Intent","The Meathook Massacre"))
-assert all(b[name]==1 for name in ("Gixian Infiltrator","Aron, Benalia's Ruin","Resourceful Defense","Phyrexian Awakening","Vault of the Archangel"))
+assert all(b[name]==1 for name in ("Gixian Infiltrator","Steel Overseer","Resourceful Defense","Phyrexian Awakening","Vault of the Archangel"))
 assert all(b[name]==1 for name in ("Mondrak, Glory Dominus","Yawgmoth, Thran Physician"))
 data=report()
 assert data["method"].startswith("EXACT HYPERGEOMETRIC")
@@ -38,6 +39,9 @@ assert data["v4"]["combat_support_or_finisher_cards"]>data["v3"]["combat_support
 assert data["v4"]["explicit_drain_engine_cards"]<data["v3"]["explicit_drain_engine_cards"]
 assert data["v4"]["combat_support_or_finisher_cards"]>=7
 assert data["v4"]["targeted_interaction_names"]>=6
+assert data["v4"]["early_mana_accelerator_cards"]==data["v3"]["early_mana_accelerator_cards"]+1
+assert data["v4"]["p_1plus_early_mana_accelerator_seen_in_10"]>data["v3"]["p_1plus_early_mana_accelerator_seen_in_10"]
+assert data["v4"]["ramp_sources_that_can_help_pay_transforms"]>data["v3"]["ramp_sources_that_can_help_pay_transforms"]
 assert data["v4"]["targeted_interaction_names"]>data["v3"]["targeted_interaction_names"]
 assert data["v4"]["board_sweeper_names"]>=2
 assert data["v4"]["board_protection_names"]>=4

@@ -24,7 +24,7 @@ pour la justification des cinq nouvelles exclusions.
    présent à cette étape. Détruire un Incubateur non transformé ne
    compte pas comme la mort d'une créature Phyrexian.
 3. Faire grossir les marqueurs sur les Incubateurs et les créatures
-   (Aron, Norn's Choirmaster, Gixian Infiltrator, Filigree Vector,
+   (Steel Overseer, Norn's Choirmaster, Gixian Infiltrator, Filigree Vector,
    Throne of Geth, Karn's Bastion, Brimaz).
 4. Payer {2} pour transformer **les bons** Incubateurs ; ils restent
    sur le champ et deviennent des créatures-artefacts Phyrexian.
@@ -43,7 +43,7 @@ pour la justification des cinq nouvelles exclusions.
 | Retrait V4 | Ajout V4 | Motif |
 |---|---|---|
 | Esper Sentinel | **Gixian Infiltrator** | Carte très chère/générique contre Phyrexian à {1}{B} qui gagne un +1/+1 pour chaque **autre permanent sacrifié** ; déclenche Brimaz au lancement et vole avec Abzan Falconer. |
-| Phyrexian Altar | **Aron, Benalia's Ruin** | Sacrifice de créature avec **{W}{B}, engagement**, marqueur +1/+1 sur **chaque créature** ; Phyrexian à {W}{W}{B} qui incube 3. Moins de mana et de boucles, davantage de combat. |
+| Phyrexian Altar | **Aron, Benalia's Ruin** *(entrée d'une ébauche remplacée depuis par Steel Overseer)* | Sacrifice de créature avec **{W}{B}, engagement**, marqueur +1/+1 sur **chaque créature** ; Phyrexian à {W}{W}{B} qui incube 3. Moins de mana et de boucles, davantage de combat. |
 | Diabolic Intent | **Resourceful Defense** | Retire le tuteur générique pour une sauvegarde et redistribution de marqueurs lors du départ de **n'importe quel permanent**, y compris un Incubateur non transformé. |
 | The Meathook Massacre | **Phyrexian Awakening** | Remplace une wrath avec drain par **Incubation 4** et **vigilance pour nos Phyrexians**. Le retrait de masse principal reste Sunfall. |
 | Urza's Saga | **Vault of the Archangel** | Terrain de tutelle d'artefact cher/générique contre terrain de board donnant contact mortel/lien de vie à l'armée pour {2}{W}{B} et engagement. |
@@ -53,11 +53,11 @@ figurait déjà dans **V3**. Elle avait été retirée dans une première
 ébauche V4 pour War Room. Ce dernier reste dans V4.
 Par rapport à **V3**, le changement net des terrains est donc
 **Urza's Saga → War Room**, avec Vault conservée. On compte
-**19 cartes retirées et 19 ajoutées** relativement à V3, et non
+**21 cartes retirées et 21 ajoutées** relativement à V3, et non
 17 : la liste « cinq échanges V4 précédente » mesure un autre
 point de référence. Les tests comparent les ensembles finaux.
 
-## 19 modifications nettes par rapport à V3 immuable
+## 21 modifications nettes par rapport à V3 immuable
 
 | Retirée de V3 | Ajoutée dans V4 | Axe |
 |---|---|---|
@@ -74,12 +74,14 @@ point de référence. Les tests comparent les ensembles finaux.
 | Vraan, Executioner Thane | Norn's Choirmaster | Vol + prolifération |
 | Marionette Apprentice | Gixian Infiltrator | Croissance en marqueurs via sacrifices |
 | Scheming Aspirant | Banner of Kinship | Anthems proliférable à la place de drain |
-| Phyrexian Altar | Aron, Benalia's Ruin | Sacrifice/boost de board plutôt que mana |
+| Phyrexian Altar | Steel Overseer | Boost de créatures-artefacts sans coût de mana après la pose, et incubation sur le lancement |
 | Diabolic Intent | Resourceful Defense | Conservation des marqueurs |
 | The Meathook Massacre | Phyrexian Awakening | Vigilance/incubation plutôt que drain/wipe |
 | Krark-Clan Ironworks | Sunder the Gateway | Retirer artefact/enchantement adverse + Incubation 2, plutôt que convertir toute l'armée en mana |
 | Spawning Pit | Stroke of Midnight | Réponse éphémère universelle contre permanent non-terrain, plutôt qu'un outlet redondant |
 | Living Death | Phyrexian Scriptures | Wrath asymétrique qui épargne nos créatures-artefacts, cimetière adverse exilé ; perte de réanimation massive |
+| Anointed Procession | Everflowing Chalice | Mana pour payer les transformations, exploitable avec prolifération ; perte du doublement de jetons |
+| Activated Sleeper | Scrap Trawler | Artefact-créature à lancer pour incuber 3, récupération des artefacts après pertes ; abandon du clone à flash conditionnel |
 
 ## Exceptions « chères mais thématiques » et compromis
 
@@ -90,9 +92,7 @@ ces deux cartes sont les premières à discuter si le playgroup
 les juge trop puissantes. Les staples comme **Sol Ring, Arcane
 Signet, Swords to Plowshares** restent comme fondation de
 jouabilité ; ils ne sont pas notre méthode principale de victoire.
-**Roaming Throne** et **Anointed Procession** sont très puissants
-mais leur intérêt dépend des déclenchements/jetons du thème :
-à surveiller à la table.
+**Roaming Throne** reste très puissant mais son intérêt dépend des déclenchements du thème. **Anointed Procession** a été sortie pour limiter le coût financier et le mana de transformation requis par trop de jetons. Mondrak est conservé comme doublonneur Phyrexian.
 
 Compromis conscients : suppression d'un autel de mana coloré
 très efficace, d'un tuteur générique, de plusieurs moteurs de
@@ -108,7 +108,7 @@ probabilité de gagner une vraie partie multijoueur.
 - [Les 100 cartes commentées](BRIMAZ_V4_B3_CARD_BY_CARD.md) /
   [les 78 cartes de la liste considering](BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
 - `python3 tests/test_audit_brimaz_v4.py` : les **100 cartes
-  physiques**, la correspondance Moxfield/Forge, les **19
+  physiques**, la correspondance Moxfield/Forge, les **21
   différences nettes** et les SHA256 canoniques. L'audit
   hypergéométrique mesure des **cartes vues**, pas la résolution
   des sorts ni des combats.
@@ -132,3 +132,24 @@ les sept decks Forge canoniques **inchangés**.
 La V4 ajoute Sunder the Gateway, Stroke of Midnight et Phyrexian Scriptures pour corriger une carence en gestion. Le scan lexical est une aide à la découverte, pas une preuve de liste optimale.
 
 Avec Phyrexian Scriptures, il faut idéalement transformer Brimaz en artefact au chapitre I pour qu'il survive au chapitre II. Sunfall reste la réponse aux boards d'artefacts ou lorsque l'exil immédiat est nécessaire.
+
+## 12 octobre 2026 — audit contre les decks Bracket 3 pilotés par KaalDeagle
+
+L'utilisateur signale que le meilleur joueur du playgroup gagne effectivement avec des listes **budget parfois estimées Bracket 2 contre des decks Bracket 3**. La référence n'est donc **pas la note Archidekt**, mais l'efficacité des séquences, de la pioche, des réponses et des cartes qui fonctionnent ensemble. Les six decks et leurs catégories sont détaillés dans [le benchmark KaalDeagle](BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md).
+
+Diagnostic pour notre plan de victoire : **incuber sans payer les {2} des transformations ne convertit pas les marqueurs en blessures de combat**. La V4 avait six sources de mana initiales repérées à coût un ou deux (Sol Ring, Arcane Signet, Orzhov Signet, Talisman of Hierarchy, Gold Myr, Ornithopter of Paradise), une doubleuse générique à quatre manas et deux créatures plus conditionnelles que nécessaires.
+
+| Retrait V4 précédente | Carte retenue | Justification, coût d'opportunité réel |
+|---|---|---|
+| **Anointed Procession** (tendance Cardmarket ~33 €) | **Everflowing Chalice** (référence à bas prix) | L'artefact à {0} peut être lancé pour **{2} via un multikicker**, ce qui lui donne un marqueur charge et lui permet de produire {C}. Les proliferations de Brimaz, Karn's Bastion ou Throne of Geth peuvent augmenter sa production de mana **incolore**, utilisable pour les transformations. Coût : perte du doublement de jetons (Mondrak est conservé). À zéro kick, la Chalice ne produit aucun mana. |
+| **Aron, Benalia's Ruin** | **Steel Overseer** (~0,39 € tendance Cardmarket) | Coût {2} au lieu de {W}{W}{B}, lance une **créature-artefact** qui incube 2. Une fois l'Overseer disponible pour s'engager, distribue un marqueur à **toutes nos créatures-artefacts**, y compris les Incubateurs transformés, **sans dépense de mana supplémentaire et sans sacrifice**. Perte : ne grossit pas les Phyrexians non-artefacts ; lui-même ne peut pas activer immédiatement s'il vient d'être lancé. |
+| **Activated Sleeper** | **Scrap Trawler** (~1 € selon édition) | Artefact-créature coût {3} qui incube 3 et recycle en main des artefacts de valeur de mana plus petite lorsqu'un artefact allié meurt. Réduit le risque de s'essouffler après perte de mana rocks ou de créatures-artefacts. Perte : le clone à flash flexible ; surtout, **la mort d'un Incubateur MV 0 ne récupère pas de carte grâce à Trawler**, car il faudrait une carte d'artefact à MV inférieur à zéro. |
+
+### Vérification structurelle attendue (pas une preuve de victoire)
+
+- **21 différences nettes** depuis la V3 figée, pas 24 : remplacer Aron (lui-même entré dans une ébauche précédente) par Steel Overseer modifie une correspondance, alors que les deux autres nouvelles sorties ajoutent chacune une différence.
+- Sept sources de mana précoces repérées, contre six dans la V3 et la V4 antérieure ; en tirage **aveugle** de 10 cartes : **47,77 % → 53,33 %** d'en voir au moins une, sans supposer de main gardable, de source colorée ni de carte réellement jouée. Les gains sont **modestes** ; il n'y a ni probabilité garantie de Brimaz au T3/T4, ni analyse de pilotage.
+- Les Incubateurs non transformés restent des artefacts non-créatures : **Steel Overseer ne les renforce pas** tant qu'ils ne sont pas transformés. Les marqueurs charge de Chalice sont indépendants des marqueurs +1/+1 des Incubateurs. Scrap Trawler est une récupération d'artefacts en main, **pas** un sort de réanimation de jetons.
+- La V4 garde 38 cartes **jouables comme terrains** (dont trois MDFC) et la gestion/protection déjà réintroduites. La table réelle et les catégories de decks adverses devront décider si la mana base blanche/noire, la pioche et les transformations sont assez régulières.
+
+**Priorité de validation** : comparer des parties humaines à quatre joueurs en relevant, dans cet ordre, mana disponible pour transformations aux tours 5–8, créatures réellement transformées et capables d'attaquer, blessures de combat, protections disponibles face aux wipes, puis résultat de partie. Les parties Forge de tests d'IA ne sont **pas** un remplacement de cette validation.

@@ -39,18 +39,20 @@ SWAPS=(
     ("Vraan, Executioner Thane", "Norn's Choirmaster"),
     ("Marionette Apprentice", "Gixian Infiltrator"),
     ("Scheming Aspirant", "Banner of Kinship"),
-    ("Phyrexian Altar", "Aron, Benalia's Ruin"),
+    ("Phyrexian Altar", "Steel Overseer"),
     ("Diabolic Intent", "Resourceful Defense"),
     ("The Meathook Massacre", "Phyrexian Awakening"),
     ("Urza's Saga", "War Room"),
     ("Krark-Clan Ironworks", "Sunder the Gateway"),
     ("Spawning Pit", "Stroke of Midnight"),
     ("Living Death", "Phyrexian Scriptures"),
+    ("Anointed Procession", "Everflowing Chalice"),
+    ("Activated Sleeper", "Scrap Trawler"),
 )
 # Explicit conservative tags: a card listed is capable of the role under
 # some conditions, not necessarily at that turn or without mana/other cards.
 BRIMAZ_CASTS={
-    "Activated Sleeper", "Arcbound Ravager", "Bloated Processor",
+    "Scrap Trawler", "Arcbound Ravager", "Bloated Processor",
     "Priest of Gix", "Chronomancer", "Compleated Huntmaster",
     "Darksteel Splicer", "Elas il-Kor, Sadistic Pilgrim",
     "Elesh Norn", "Essence of Orthodoxy", "Filigree Vector",
@@ -61,7 +63,7 @@ BRIMAZ_CASTS={
     "Gold Myr", "Vraan, Executioner Thane", "Vulpine Harvester",
     "Myr Sire", "Mirror Entity", "Norn's Choirmaster",
     "Solemn Simulacrum", "Gix, Yawgmoth Praetor",
-    "Gixian Infiltrator", "Aron, Benalia's Ruin",
+    "Gixian Infiltrator", "Steel Overseer",
 }
 # Deliberately exclude one-shot draw (Deadly Dispute/Ichor) and the
 # uncertain triggers on cards that require other resources to function.
@@ -76,7 +78,7 @@ SACRIFICE_ACCESS={
     "Compleated Huntmaster", "Ashnod's Altar", "Krark-Clan Ironworks",
     "Phyrexian Altar", "Throne of Geth", "Spawning Pit",
     "Yawgmoth, Thran Physician", "High Market", "Phyrexian Tower",
-    "Rite of Oblivion", "Aron, Benalia's Ruin",
+    "Rite of Oblivion",
 }
 SACRIFICE_PAYOFF={
     "Marionette Apprentice", "Marionette Master", "Mirkwood Bats",
@@ -89,7 +91,7 @@ SACRIFICE_PAYOFF={
 BOARD_PRESSURE={
     "Darksteel Splicer","Grafted Butcher","Vault of the Archangel",
     "Abzan Falconer","Mirror Entity","Akroma's Will",
-    "Banner of Kinship", "Aron, Benalia's Ruin",
+    "Banner of Kinship", "Steel Overseer",
     "Gixian Infiltrator", "Phyrexian Awakening",
     "Norn's Choirmaster","Patchwork Banner",
 }
@@ -113,6 +115,19 @@ BOARD_SWEEPS={
 BOARD_PROTECTIONS={
     "Clever Concealment","Flare of Fortitude","Restoration Magic",
     "Akroma's Will","Malakir Rebirth",
+}
+# Physically present affordable early mana sources. Sol Ring is a 1-drop,
+# the others typically cost 2, and Everflowing Chalice MUST be kicked once.
+# Seeing these cards is NOT proof of colored mana or of casting Brimaz T3.
+EARLY_MANA_ACCEL={
+    "Sol Ring","Arcane Signet","Talisman of Hierarchy",
+    "Orzhov Signet","Gold Myr","Ornithopter of Paradise",
+    "Everflowing Chalice",
+}
+TRANSFORM_MANA={
+    "Sol Ring","Arcane Signet","Talisman of Hierarchy",
+    "Orzhov Signet","Gold Myr","Ornithopter of Paradise",
+    "Everflowing Chalice","Patchwork Banner","Solemn Simulacrum",
 }
 LAND_SOURCES={
     "Bleachbone Verge","Bojuka Bog","Brightclimb Pathway","Caves of Koilos",
@@ -188,8 +203,13 @@ def rows(deck):
     protections=subset(BOARD_PROTECTIONS)
     board=subset(BOARD_PRESSURE)
     drain=subset(DRAIN_ENGINES)
+    early_ramp=subset(EARLY_MANA_ACCEL)
+    transform_ramp=subset(TRANSFORM_MANA)
     return {
         "possible_land_cards":len(land),
+        "early_mana_accelerator_cards":len(early_ramp),
+        "ramp_sources_that_can_help_pay_transforms":len(transform_ramp),
+        "p_1plus_early_mana_accelerator_seen_in_10":round(hypergeom_at_least(100,len(early_ramp),seen10),6),
         "brimaz_eligible_cast_names":len(casts),
         "repeatable_draw_source_names":len(draw),
         "sacrifice_access_names":len(outlet),

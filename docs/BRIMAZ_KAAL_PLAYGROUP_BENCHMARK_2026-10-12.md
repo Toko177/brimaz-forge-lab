@@ -80,3 +80,9 @@ Le Xyris à ~35 € fournit un exemple remarquable de construction bon marché o
 - [Xyris](https://archidekt.com/decks/9214476/edh_xyris_buuuuuffs)
 
 **Statut** : comparaison de conception à partir des pages Archidekt publiques + V4 et snapshots GitHub. Aucun taux de victoire, aucune preuve que Kaal n'a pas modifié ses listes après consultation. **La V4 n'est pas modifiée dans cette étude** ; la priorité est de tester le manque éventuel de mana et la reconstruction après wrath avant de faire des échanges arbitraires.
+
+## Mise en application à Brimaz — nouvelle V4
+
+KaalDeagle a été décrit par l'utilisateur comme **gagnant contre des decks Bracket 3** même avec ses constructions budget jugées plus modestes par Archidekt. Ne pas confondre l'étiquette de bracket avec les performances du joueur. Face à ce niveau, Brimaz doit avoir de quoi **payer ses transformations {2}, conserver des ressources après une wrath, et gagner par combat sans une multiplication inutile d'Incubateurs inertes**.
+
+Trois ajustements de deck (V4 actuelle, 21 différences nettes avec V3) : Anointed Procession -> Everflowing Chalice ; Aron, Benalia's Ruin -> Steel Overseer ; Activated Sleeper -> Scrap Trawler. Détails, coûts et timing dans [la stratégie à jour](BRIMAZ_V4_B3_DECISIONS.md). Il s'agit d'un choix de conception et de tirages calculés, **pas d'un résultat de partie ou de winrate prouvé**.
