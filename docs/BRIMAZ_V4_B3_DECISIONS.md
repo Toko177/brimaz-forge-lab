@@ -156,3 +156,41 @@ pour satisfaire la condition de déclenchement de Brimaz.
 Sacrifier un Phyrexian **avant le passage en étape de fin**
 avec Ravager, Bartolomé, Yawgmoth ou un autel si on veut
 proliférer pendant notre tour.
+
+## Vérifications réellement exécutées — 12 octobre 2026
+
+- **[GitHub Actions, légalité Commander live Scryfall](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38304134315)** :
+  terminé **success** ; exactement **100 cartes**, **94 noms**
+  (dont quatre Plains et quatre Swamp), commandant unique Brimaz,
+  identité `B,W`, `errors=[]`, `warnings=[]` et
+  `structurally_and_legality_valid=true` avec l'option
+  `--require-no-game-changers`. Aucun Game Changer n'a été signalé
+  par les objets renvoyés par Scryfall lors de cet audit.
+- **[GitHub Actions, contrôle des sources Python 3.10/3.12](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38304135640)** :
+  réussite des tests structurels ; conservation des sept SHA256 des DCK
+  originaux, synchronisation des deux variantes V4 et huit échanges exacts.
+- **[Audit de visibilité combinatoire local](../scripts/audit_brimaz_v4.py)** :
+  absence de mulligans et d'étapes de jeu intentionnelle.
+  Toutes les valeurs désignent des **cartes vues** dans 10 ou 13 cartes,
+  et ne reflètent ni mana coloré, ni qualité des décisions, ni gain de partie.
+
+| Mesure exacte de cartes vues, modèle uniforme | V3 | V4 |
+|---|---:|---:|
+| Sources potentielles de terrains (y compris trois MDFC) | 38 | 38 |
+| Sorts créature/artefact susceptibles de déclencher Brimaz au lancement | 26 | 24 |
+| Sources *potentielles* de pioche répétable | 5 | 8 |
+| Outlets ponctuels/répétables donnant accès au sacrifice | 12 | 14 |
+| Payoffs de sacrifice ou de mort | 7 | 8 |
+| ≥1 source de pioche répétable vue parmi 10 cartes | 41,62 % | 58,34 % |
+| ≥1 outlet et ≥1 payoff vus parmi 13 cartes | 51,89 % | 59,46 % |
+| ≥2 sorts compatibles avec Brimaz vus parmi 13 cartes | 90,50 % | 87,38 % |
+| ≥3 terrains/MDFC vus parmi 10 cartes | 81,19 % | 81,19 % |
+
+Les **déclencheurs perdus** sont une faiblesse explicite de la V4.
+Même si les taux d'accès aux pièces de moteur progressent sur le papier,
+la liste ne doit pas être déclarée meilleure tant que les parties
+humaines n'ont pas confirmé que la pioche et l'interaction compensent
+ces déclenchements en moins.
+
+**Aucune campagne V3/V4 de parties Forge certifiées ni partie
+humaine n'a été réalisée pour ce commit.**
