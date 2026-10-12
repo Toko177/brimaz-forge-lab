@@ -6,7 +6,7 @@
 1 Priest of Gix
 1 Myr Sire
 1 Compleated Huntmaster
-1 Nadier's Nightblade
+1 Abzan Falconer
 1 Elas il-Kor, Sadistic Pilgrim
 1 Elesh Norn
 1 Essence of Orthodoxy
@@ -14,9 +14,9 @@
 1 Grafted Butcher
 1 Lurrus of the Dream-Den
 1 Marionette Apprentice
-1 Marionette Master
+1 Mirror Entity
 1 Metastatic Evangel
-1 Mirkwood Bats
+1 Akroma's Will
 1 Mondrak, Glory Dominus
 1 Myr Retriever
 1 Norn's Inquisitor
@@ -28,7 +28,7 @@
 1 Roaming Throne
 1 Scheming Aspirant
 1 Gold Myr
-1 Vraan, Executioner Thane
+1 Norn's Choirmaster
 1 Vulpine Harvester
 1 Yawgmoth, Thran Physician
 1 Sol Ring
@@ -40,7 +40,7 @@
 1 Phyrexian Altar
 1 Throne of Geth
 1 Skullclamp
-1 Ichor Wellspring
+1 Patchwork Banner
 1 Idol of Oblivion
 1 Urza's Incubator
 1 Spawning Pit

@@ -5,22 +5,30 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
-## Brimaz V4 B3 — liste de jeu, pas une IA V44
+## Brimaz V4 B3 — gagner par le board, pas par le drain
 
-**Nouvelle liste Commander de 100 cartes destinée au playgroup Bracket 3.**
-Huit échanges V3→V4 renforcent la pioche, la conversion des sacrifices
-d'Incubateurs en drain et les réponses aux permanents.
-**Aucune supériorité sur V3 n'est encore établie** par de vraies parties.
-La V3 et les sept decks Forge canoniques sont inchangés.
+**Liste Commander de 100 cartes pour le playgroup Bracket 3.**
+**Plan principal : incubateurs → marqueurs/prolifération → transformation
+en Phyrexians → évasion / anthem → dégâts de combat.**
+La V4 est corrigée pour retirer plusieurs payoffs de drain et introduire
+**Abzan Falconer, Mirror Entity, Akroma's Will, Norn's Choirmaster,
+Patchwork Banner**. La version actuelle fait **11 changements par rapport
+à la V3**, contre 8 dans la première ébauche V4 non prouvée.
+Le drain via Scheming Aspirant / Marionette Apprentice / Elas il-Kor est
+un **plan secondaire**, plus un motif de sacrifier toute notre armée.
+**Aucune supériorité de V4 sur V3 n'est démontrée en parties.**
+La V3 et les sept decks Forge canoniques restent inchangés.
 
 - [V4 Moxfield / Archidekt (texte)](decks/Brimaz_V4_B3.txt) ;
   [V4 Forge DCK](deck_candidates/Brimaz_V4_B3.dck).
-- [Huit décisions et protocole](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
-  [justification des 100 cartes](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
+- [Onze échanges, plan de combat, timing et protocole](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
+  [justification de chaque carte](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
 - `python3 tests/test_audit_brimaz_v4.py` vérifie les 100 cartes,
-  les huit échanges et les seules probabilités **de voir** des cartes.
-  Aucun match Magic simulé ni victoire fictive.
-- Revalider la légalité Oracle/Game Changers avant la table.
+  11 changements, la répartition board/drain et la probabilité
+  hypergéométrique **de voir** les cartes — pas un test de victoire.
+- Légalité Oracle / zéro Game Changer revérifiés en direct dans
+  `.github/workflows/commander-legality.yml` ; interaction et qualité
+  stratégique à confirmer sur une table réelle.
 
 ## Groupes de parties — mise à jour du 12 octobre 2026
 

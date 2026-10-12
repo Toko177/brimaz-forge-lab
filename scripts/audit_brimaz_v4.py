@@ -25,14 +25,19 @@ FORGE_V3=ROOT/"forge_decks/Brimaz_V3.dck"
 COMMANDER="Brimaz, Blight of Oreskos"
 
 SWAPS=(
-    ("Darksteel Splicer", "Nadier's Nightblade"),
+    # V4 board/attack revision: combat is the primary win condition;
+    # incidental aristocrats drain remains a backup payoff only.
+    ("Darksteel Splicer", "Abzan Falconer"),
     ("Chronomancer", "Myr Sire"),
     ("Phyrexian Delver", "Morbid Opportunist"),
     ("Tortured Existence", "Braids, Arisen Nightmare"),
     ("Inspiring Statuary", "Idol of Oblivion"),
-    ("Norn's Wellspring", "Ichor Wellspring"),
+    ("Norn's Wellspring", "Patchwork Banner"),
     ("Etchings of the Chosen", "Rite of Oblivion"),
     ("Vault of the Archangel", "War Room"),
+    ("Marionette Master", "Mirror Entity"),
+    ("Mirkwood Bats", "Akroma's Will"),
+    ("Vraan, Executioner Thane", "Norn's Choirmaster"),
 )
 # Explicit conservative tags: a card listed is capable of the role under
 # some conditions, not necessarily at that turn or without mana/other cards.
@@ -46,7 +51,7 @@ BRIMAZ_CASTS={
     "Phyrexian Delver", "Phyrexian Fleshgorger", "Phyrexian Missionary",
     "Progenitor Exarch", "Roaming Throne", "Scheming Aspirant",
     "Gold Myr", "Vraan, Executioner Thane", "Vulpine Harvester",
-    "Myr Sire",
+    "Myr Sire", "Mirror Entity", "Norn's Choirmaster",
 }
 # Deliberately exclude one-shot draw (Deadly Dispute/Ichor) and the
 # uncertain triggers on cards that require other resources to function.
@@ -66,7 +71,22 @@ SACRIFICE_ACCESS={
 SACRIFICE_PAYOFF={
     "Marionette Apprentice", "Marionette Master", "Mirkwood Bats",
     "Vraan, Executioner Thane", "Elas il-Kor, Sadistic Pilgrim",
-    "Nadier's Nightblade", "Athreos, God of Passage",
+    "Athreos, God of Passage",
+    "The Meathook Massacre",
+}
+# Approximate cards providing combat evasion, an anthem, a mass pump,
+# or a substantial combat board. Count = cards seen, NOT a board won.
+BOARD_PRESSURE={
+    "Darksteel Splicer","Grafted Butcher","Vault of the Archangel",
+    "Abzan Falconer","Mirror Entity","Akroma's Will",
+    "Norn's Choirmaster","Patchwork Banner",
+}
+# Major repeatable or noncombat life-loss engines, not every minor drain.
+# Do not interpret this count as damage per turn or a win probability.
+DRAIN_ENGINES={
+    "Mirkwood Bats","Marionette Apprentice","Marionette Master",
+    "Nadier's Nightblade","Vraan, Executioner Thane",
+    "Scheming Aspirant","Elas il-Kor, Sadistic Pilgrim",
     "The Meathook Massacre",
 }
 LAND_SOURCES={
@@ -138,12 +158,17 @@ def rows(deck):
     casts=subset(BRIMAZ_CASTS)
     outlet=subset(SACRIFICE_ACCESS)
     payoff=subset(SACRIFICE_PAYOFF)
+    board=subset(BOARD_PRESSURE)
+    drain=subset(DRAIN_ENGINES)
     return {
         "possible_land_cards":len(land),
         "brimaz_eligible_cast_names":len(casts),
         "repeatable_draw_source_names":len(draw),
         "sacrifice_access_names":len(outlet),
         "sacrifice_payoff_names":len(payoff),
+        "combat_support_or_finisher_cards":len(board),
+        "explicit_drain_engine_cards":len(drain),
+        "p_1plus_combat_support_seen_in_13":round(hypergeom_at_least(100,len(board),seen13),6),
         "p_3plus_land_sources_seen_in_10":round(hypergeom_at_least(100,len(land),seen10,3),6),
         "p_1plus_repeatable_draw_source_seen_in_10":round(hypergeom_at_least(100,len(draw),seen10),6),
         "p_2plus_brimaz_eligible_casts_seen_in_13":round(hypergeom_at_least(100,len(casts),seen13,2),6),
@@ -162,7 +187,8 @@ def report():
         "not_measured":["mana payment","land drop sequencing","colored sources",
                         "MDFCs entering tapped","mulligan strategy",
                         "casting and resolved effects","four-player interactions",
-                        "games and wins","winrate","bracket certification"],
+                        "games and wins","winrate","bracket certification",
+                        "combat board feasibility","combat evasion blockers","effect resolution"],
     }
 if __name__=="__main__":
     print("BRIMAZ_V4_STATIC_VISIBILITY_AUDIT",json.dumps(report(),ensure_ascii=False))

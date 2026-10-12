@@ -251,3 +251,16 @@ partagé entre les deux groupes**, jamais deux fois dans un match.
 Ne jamais attribuer les résultats des anciennes parties Amalia à
 Dungeon ; nouveaux runs/retests nécessaires. Doc complète :
 `docs/ACTIVE_COMMANDER_PODS_2026-10-12.md`.
+
+## 12/10/2026 — priorité utilisateur explicite : gagner par les attaques et le board
+
+L'utilisateur préfère **gagner par le board et les blessures de combat**,
+**pas** par les payoffs de drain. La V4 initiale non validée a été
+réorientée dans **les mêmes fichiers** (ne pas créer de V5 ni V44 d'IA) :
+Nadier's Nightblade→Abzan Falconer, Marionette Master→Mirror Entity,
+Mirkwood Bats→Akroma's Will, Vraan→Norn's Choirmaster,
+Ichor Wellspring→Patchwork Banner. V4 actuelle : **11 remplacements
+par rapport à V3**. Le drain restant est secondaire.
+Voir `docs/BRIMAZ_V4_B3_DECISIONS.md`,
+`decks/Brimaz_V4_B3.txt`, `scripts/audit_brimaz_v4.py`.
+**V3 et sept DCK canoniques intacts, aucune victoire en parties prouvée.**

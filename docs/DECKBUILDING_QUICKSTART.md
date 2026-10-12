@@ -1,5 +1,14 @@
 # Commander Deckbuilder — passer d'une idée de cartes à des parties Forge réelles
 
+**Priorité de deckbuilding (12/10/2026)** : la liste
+[Brimaz V4](../decks/Brimaz_V4_B3.txt) est orientée vers les
+**dégâts de combat d'une armée d'Incubateurs transformés**, et non
+vers les drains aristocrats. Les 11 échanges V3→V4,
+les cartes de soutien et les compromis sont audités dans
+[la stratégie de board](BRIMAZ_V4_B3_DECISIONS.md). Ne pas évaluer
+le succès uniquement par les drain-triggers ou les simulations Forge.
+
+
 ## Politique Commander générique V43 (opt-in)
 
 L'ancienne IA V13 reste le **mode par défaut** des comparaisons
