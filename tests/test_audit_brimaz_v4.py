@@ -34,7 +34,6 @@ assert data["v4"]["explicit_drain_engine_cards"]<data["v3"]["explicit_drain_engi
 assert data["v4"]["combat_support_or_finisher_cards"]>=7
 assert data["v4"]["brimaz_eligible_cast_names"]>=data["v3"]["brimaz_eligible_cast_names"]
 assert data["v4"]["p_1plus_combat_support_seen_in_13"]>data["v3"]["p_1plus_combat_support_seen_in_13"]
-assert data["v4"]["brimaz_eligible_cast_names"]<data["v3"]["brimaz_eligible_cast_names"]
 assert data["v4"]["p_1plus_repeatable_draw_source_seen_in_10"]>data["v3"]["p_1plus_repeatable_draw_source_seen_in_10"]
 assert data["v4"]["p_3plus_land_sources_seen_in_10"]==data["v3"]["p_3plus_land_sources_seen_in_10"]
 assert hypergeom_at_least(100,0,10)==0
