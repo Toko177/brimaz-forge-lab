@@ -98,3 +98,40 @@ d'avoir un meilleur taux de victoire global.
 - `deck_candidates/Brimaz_V4_B3.dck` (Forge).
 - `docs/BRIMAZ_V4_B3_CARD_BY_CARD.md` (audit des 100 cartes).
 - `scripts/audit_brimaz_v4.py` et `tests/test_audit_brimaz_v4.py` (preuve structurelle, non gameplay).
+
+## Validation factuelle de la révision orientée combat
+
+La campagne **[GitHub Actions santé / structure](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38305895661)**
+a terminé avec succès sous Python 3.10 et 3.12. Les 100 cartes,
+les 11 changements V3→V4 et les sept DCK canoniques non modifiés
+sont confirmés par des contrôles reproductibles.
+La campagne **[légalité Scryfall live](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38305895743)**
+a aussi terminé avec succès : 100 cartes, 94 noms, commandant Brimaz,
+identité blanc/noir, **zéro erreur, zéro avertissement et zéro
+Game Changer détecté**, avec `--require-no-game-changers`.
+
+L'audit hypergéométrique repose sur des **catégories de cartes
+annotées**, ne tient pas compte du mana, de la table ou des adversaires
+et ne doit jamais être présenté comme un taux de victoire :
+
+| Mesure structurelle ou cartes vues | V3 | V4 board |
+|---|---:|---:|
+| Cartes de soutien/finisher de combat identifiées | 3 | 6 |
+| ≥1 de ces cartes vues dans les 13 premières cartes | 34,45 % | 57,64 % |
+| Principaux moteurs de drain identifiés | 7 | 4 |
+| Sources potentielles de pioche répétable identifiées | 5 | 8 |
+| ≥1 moteur de pioche vu dans les 10 premières cartes | 41,62 % | 58,34 % |
+| Sorts pouvant déclencher Brimaz au lancement | 26 | 25 |
+| ≥2 de ces sorts vus parmi les 13 premières cartes | 90,50 % | 89,03 % |
+| ≥1 exutoire + ≥1 payoff de sacrifice vus dans 13 cartes | 51,89 % | 37,27 % |
+| Cartes jouables comme terrain, dont MDFC | 38 | 38 |
+
+**Trade-off volontaire** : moins d'accès aux moteurs de drain
+(et un sort incubant de moins) pour davantage de combat.
+La capacité à **transformer suffisamment d'Incubateurs** et à
+faire passer les dégâts **reste non mesurée**. Ces chiffres ne
+permettent aucune prédiction de winrate humain.
+
+Aucune partie réelle V3/V4 n'a été certifiée dans ce changement :
+la réussite du workflow de légalité n'est pas une preuve de supériorité
+stratégique.
