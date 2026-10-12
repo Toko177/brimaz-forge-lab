@@ -306,3 +306,11 @@ Trois dernières modifications V4 :
 - **Activated Sleeper -> Scrap Trawler** : déclenche Brimaz au lancement MV3, récupère des **cartes d'artefact moins chères** après morts d'artefacts ; **ne remonte pas les jetons Incubateur** et leur MV0 ne peut cibler aucune carte moins chère.
 
 Total **21 changements nets V3 -> V4**, V3 et 7 DCK canoniques intacts. Mana précoce repéré 6->7, sources de terrain possibles 38 dont trois MDFC. Ne pas annoncer des résultats de match inexistants. Lire `docs/BRIMAZ_V4_B3_DECISIONS.md`, la liste actuelle `decks/Brimaz_V4_B3.txt` et le script `scripts/audit_brimaz_v4.py`.
+
+## 13 octobre 2026 — dernier état prioritaire : commander dépendance
+
+Retour utilisateur : Brimaz arrive souvent T4 sans effet immédiat, puis est détruit et coûte {6}/{8} depuis la zone de commandement ; problème de **dépendance au commandant** potentiellement plus important que le ramp seul. **Ne plus forcer Brimaz T4 sans protection ou second sort**.
+
+Cinq remplacements appliqués à la V4 : Norn's Choirmaster→**Sculpted Perfection**, Gixian Infiltrator→**Phyrexian Rager**, Elas il-Kor→**Selfless Spirit**, Resourceful Defense→**Lightning Greaves**, Vault of the Archangel→**Command Beacon**. **23 changements nets** V3→V4, 100 cartes ; le V3 et les sept DCK adverses sont immuables.
+
+Détails et précisions de règles : `docs/BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md`. Selfless Spirit ne cible pas, protège même les créatures avec shroud des Greaves ; Greaves empêchent Malakir Rebirth de cibler Brimaz tant que le shroud est actif. Beacon permet un cast depuis la main au coût de base MAIS on sacrifie un terrain. Sculpted Perfection incube à son ETB même en absence de Brimaz ; Rager pioche à l'arrivée sans dépendance. **Aucune carte toxic/poison/infect ajoutée** (Skrelv envisagée puis rejetée). Pas de victoire Forge ni humaine prouvée.

@@ -3,9 +3,9 @@
 **Priorité de deckbuilding (12/10/2026)** : la liste
 [Brimaz V4](../decks/Brimaz_V4_B3.txt) est orientée vers les
 **dégâts de combat d'une armée d'Incubateurs transformés**, et non
-vers les drains aristocrats. Les 16 changements nets V3→V4,
+vers les drains aristocrats. Les 23 changements nets V3→V4,
 les cartes de soutien et les compromis sont audités dans
-[la stratégie de board](BRIMAZ_V4_B3_DECISIONS.md), avec
+[la stratégie de board](BRIMAZ_V4_B3_DECISIONS.md) et [l'audit de dépendance à Brimaz](BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md), avec
 la [politique de cartes synergiques et socialement appropriées](BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md). Ne pas évaluer
 le succès uniquement par les drain-triggers ou les simulations Forge.
 

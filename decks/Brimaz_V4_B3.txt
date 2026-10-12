@@ -7,13 +7,13 @@
 1 Myr Sire
 1 Compleated Huntmaster
 1 Abzan Falconer
-1 Elas il-Kor, Sadistic Pilgrim
+1 Selfless Spirit
 1 Elesh Norn
 1 Essence of Orthodoxy
 1 Filigree Vector
 1 Grafted Butcher
 1 Lurrus of the Dream-Den
-1 Gixian Infiltrator
+1 Phyrexian Rager
 1 Mirror Entity
 1 Metastatic Evangel
 1 Akroma's Will
@@ -28,7 +28,7 @@
 1 Roaming Throne
 1 Banner of Kinship
 1 Gold Myr
-1 Norn's Choirmaster
+1 Sculpted Perfection
 1 Vulpine Harvester
 1 Yawgmoth, Thran Physician
 1 Sol Ring
@@ -53,7 +53,7 @@
 1 Phyrexian Awakening
 1 Anguished Unmaking
 1 Clever Concealment
-1 Resourceful Defense
+1 Lightning Greaves
 1 Flare of Fortitude
 1 Phyrexian Scriptures
 1 Sunfall
@@ -87,7 +87,7 @@
 1 The Mycosynth Gardens
 1 The Seedcore
 1 Urborg, Tomb of Yawgmoth
-1 Vault of the Archangel
+1 Command Beacon
 1 Vault of Champions
 1 War Room
 4 Plains

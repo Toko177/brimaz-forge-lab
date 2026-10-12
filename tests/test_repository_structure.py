@@ -39,6 +39,7 @@ expected = {
     "docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md",
     "docs/BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md",
     "docs/BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md",
+    "docs/BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md",
 }
 assert all((ROOT / p).is_file() for p in expected), "Active source or documentation was removed"
 hashes = validate_decks(

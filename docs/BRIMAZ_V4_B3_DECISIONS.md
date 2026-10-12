@@ -15,6 +15,8 @@ pour la justification des cinq nouvelles exclusions.
 
 ## Plan de jeu
 
+**Mise à jour du 13 octobre 2026** : ne pas forcer Brimaz T4 sans plan de protection ni sort compatible derrière. Les moteurs autonomes (Norn's Inquisitor, Phyrexian Awakening, Sculpted Perfection, Gix, Phyrexian Rager et Steel Overseer) doivent permettre de jouer plusieurs tours sans Brimaz. Consulter [l'audit explicite de dépendance](BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md), qui est **prioritaire** sur les historiques d'échanges ci-dessous.
+
 1. Développer le mana et lancer **Brimaz**, puis des Phyrexians et
    créatures-artefacts ; les Incubateurs non transformés sont des
    **artefacts non-créatures** avec marqueurs +1/+1.
@@ -24,7 +26,7 @@ pour la justification des cinq nouvelles exclusions.
    présent à cette étape. Détruire un Incubateur non transformé ne
    compte pas comme la mort d'une créature Phyrexian.
 3. Faire grossir les marqueurs sur les Incubateurs et les créatures
-   (Steel Overseer, Norn's Choirmaster, Gixian Infiltrator, Filigree Vector,
+   (Steel Overseer, Sculpted Perfection, Filigree Vector,
    Throne of Geth, Karn's Bastion, Brimaz).
 4. Payer {2} pour transformer **les bons** Incubateurs ; ils restent
    sur le champ et deviennent des créatures-artefacts Phyrexian.
@@ -53,11 +55,11 @@ figurait déjà dans **V3**. Elle avait été retirée dans une première
 ébauche V4 pour War Room. Ce dernier reste dans V4.
 Par rapport à **V3**, le changement net des terrains est donc
 **Urza's Saga → War Room**, avec Vault conservée. On compte
-**21 cartes retirées et 21 ajoutées** relativement à V3, et non
+**23 cartes retirées et 23 ajoutées** relativement à V3, et non
 17 : la liste « cinq échanges V4 précédente » mesure un autre
 point de référence. Les tests comparent les ensembles finaux.
 
-## 21 modifications nettes par rapport à V3 immuable
+## 23 modifications nettes par rapport à V3 immuable
 
 | Retirée de V3 | Ajoutée dans V4 | Axe |
 |---|---|---|
@@ -71,17 +73,19 @@ point de référence. Les tests comparent les ensembles finaux.
 | Urza's Saga | War Room | Terrain de pioche sans tuteur automatique |
 | Marionette Master | Mirror Entity | Pompe toute l'armée, changeling |
 | Mirkwood Bats | Akroma's Will | Finisher de combat |
-| Vraan, Executioner Thane | Norn's Choirmaster | Vol + prolifération |
-| Marionette Apprentice | Gixian Infiltrator | Croissance en marqueurs via sacrifices |
+| Vraan, Executioner Thane | Sculpted Perfection | Incubation 2 + anthem Phyrexian autonome, même sans Brimaz |
+| Marionette Apprentice | Phyrexian Rager | Pioche et cast Phyrexian autonomes, sans dépendre de Brimaz |
 | Scheming Aspirant | Banner of Kinship | Anthems proliférable à la place de drain |
 | Phyrexian Altar | Steel Overseer | Boost de créatures-artefacts sans coût de mana après la pose, et incubation sur le lancement |
-| Diabolic Intent | Resourceful Defense | Conservation des marqueurs |
+| Diabolic Intent | Lightning Greaves | Protection préposée, shroud, équipement gratuit ; pas de tutor générique |
 | The Meathook Massacre | Phyrexian Awakening | Vigilance/incubation plutôt que drain/wipe |
 | Krark-Clan Ironworks | Sunder the Gateway | Retirer artefact/enchantement adverse + Incubation 2, plutôt que convertir toute l'armée en mana |
 | Spawning Pit | Stroke of Midnight | Réponse éphémère universelle contre permanent non-terrain, plutôt qu'un outlet redondant |
 | Living Death | Phyrexian Scriptures | Wrath asymétrique qui épargne nos créatures-artefacts, cimetière adverse exilé ; perte de réanimation massive |
 | Anointed Procession | Everflowing Chalice | Mana pour payer les transformations, exploitable avec prolifération ; perte du doublement de jetons |
 | Activated Sleeper | Scrap Trawler | Artefact-créature à lancer pour incuber 3, récupération des artefacts après pertes ; abandon du clone à flash conditionnel |
+| Elas il-Kor, Sadistic Pilgrim | Selfless Spirit | Protection de l'armée contre destruction, utilisable sans le commandant, sans poison |
+| Vault of the Archangel | Command Beacon | Sacrifice du terrain pour relancer Brimaz depuis la main sans taxe |
 
 ## Exceptions « chères mais thématiques » et compromis
 
@@ -108,7 +112,7 @@ probabilité de gagner une vraie partie multijoueur.
 - [Les 100 cartes commentées](BRIMAZ_V4_B3_CARD_BY_CARD.md) /
   [les 78 cartes de la liste considering](BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
 - `python3 tests/test_audit_brimaz_v4.py` : les **100 cartes
-  physiques**, la correspondance Moxfield/Forge, les **21
+  physiques**, la correspondance Moxfield/Forge, les **23
   différences nettes** et les SHA256 canoniques. L'audit
   hypergéométrique mesure des **cartes vues**, pas la résolution
   des sorts ni des combats.
@@ -153,3 +157,9 @@ Diagnostic pour notre plan de victoire : **incuber sans payer les {2} des transf
 - La V4 garde 38 cartes **jouables comme terrains** (dont trois MDFC) et la gestion/protection déjà réintroduites. La table réelle et les catégories de decks adverses devront décider si la mana base blanche/noire, la pioche et les transformations sont assez régulières.
 
 **Priorité de validation** : comparer des parties humaines à quatre joueurs en relevant, dans cet ordre, mana disponible pour transformations aux tours 5–8, créatures réellement transformées et capables d'attaquer, blessures de combat, protections disponibles face aux wipes, puis résultat de partie. Les parties Forge de tests d'IA ne sont **pas** un remplacement de cette validation.
+
+## 13 octobre 2026 — correction prioritaire de dépendance au commandant
+
+La V4 ajoute **Sculpted Perfection, Phyrexian Rager, Selfless Spirit, Lightning Greaves et Command Beacon** à la place de **Norn's Choirmaster, Gixian Infiltrator, Elas il-Kor, Resourceful Defense et Vault of the Archangel**. La différence nette finale avec V3 est **23 cartes**, car trois des anciennes sorties étaient déjà des ajouts V4. Cette révision privilégie une croissance et une pioche **sans Brimaz**, des protections à coût initial faible et une relance du commandant depuis la main en évitant une nouvelle taxe. **Selfless Spirit ne cible pas : elle protège Brimaz équipé des Lightning Greaves malgré shroud.** Toutes les limites sont exposées dans [l'audit autonome](BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md).
+
+**Important** : les tableaux décrivant les « cinq échanges de l'ébauche antérieure » dans ce document sont conservés **comme historique**. L'inventaire actuel exact est `decks/Brimaz_V4_B3.txt` et les 23 différences réelles sont vérifiées automatiquement par `scripts/audit_brimaz_v4.py`. Ne pas présenter les anciennes cartes historiques comme présentes dans la V4 actuelle.

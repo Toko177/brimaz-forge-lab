@@ -36,11 +36,11 @@ SWAPS=(
     ("Etchings of the Chosen", "Rite of Oblivion"),
     ("Marionette Master", "Mirror Entity"),
     ("Mirkwood Bats", "Akroma's Will"),
-    ("Vraan, Executioner Thane", "Norn's Choirmaster"),
-    ("Marionette Apprentice", "Gixian Infiltrator"),
+    ("Vraan, Executioner Thane", "Sculpted Perfection"),
+    ("Marionette Apprentice", "Phyrexian Rager"),
     ("Scheming Aspirant", "Banner of Kinship"),
     ("Phyrexian Altar", "Steel Overseer"),
-    ("Diabolic Intent", "Resourceful Defense"),
+    ("Diabolic Intent", "Lightning Greaves"),
     ("The Meathook Massacre", "Phyrexian Awakening"),
     ("Urza's Saga", "War Room"),
     ("Krark-Clan Ironworks", "Sunder the Gateway"),
@@ -48,6 +48,8 @@ SWAPS=(
     ("Living Death", "Phyrexian Scriptures"),
     ("Anointed Procession", "Everflowing Chalice"),
     ("Activated Sleeper", "Scrap Trawler"),
+    ("Elas il-Kor, Sadistic Pilgrim", "Selfless Spirit"),
+    ("Vault of the Archangel", "Command Beacon"),
 )
 # Explicit conservative tags: a card listed is capable of the role under
 # some conditions, not necessarily at that turn or without mana/other cards.
@@ -64,6 +66,7 @@ BRIMAZ_CASTS={
     "Myr Sire", "Mirror Entity", "Norn's Choirmaster",
     "Solemn Simulacrum", "Gix, Yawgmoth Praetor",
     "Gixian Infiltrator", "Steel Overseer",
+    "Phyrexian Rager",
 }
 # Deliberately exclude one-shot draw (Deadly Dispute/Ichor) and the
 # uncertain triggers on cards that require other resources to function.
@@ -91,6 +94,7 @@ SACRIFICE_PAYOFF={
 BOARD_PRESSURE={
     "Darksteel Splicer","Grafted Butcher","Vault of the Archangel",
     "Abzan Falconer","Mirror Entity","Akroma's Will",
+    "Sculpted Perfection",
     "Banner of Kinship", "Steel Overseer",
     "Gixian Infiltrator", "Phyrexian Awakening",
     "Norn's Choirmaster","Patchwork Banner",
@@ -114,8 +118,21 @@ BOARD_SWEEPS={
 }
 BOARD_PROTECTIONS={
     "Clever Concealment","Flare of Fortitude","Restoration Magic",
+    "Selfless Spirit","Lightning Greaves",
     "Akroma's Will","Malakir Rebirth",
 }
+# Effects that can develop Incubators without Brimaz on the battlefield.
+# Progenitor Exarch requires X>=1, Sunfall depends on exiled creatures,
+# and Sunder the Gateway chooses an incubate mode.
+STANDALONE_INCUBATORS={
+    "Norn's Inquisitor", "Phyrexian Awakening", "Sculpted Perfection",
+    "Sunder the Gateway", "Sunfall", "Essence of Orthodoxy",
+    "Progenitor Exarch",
+}
+# Already deployed protection the turn Brimaz is cast. Greaves has shroud
+# (also blocks our own targeting), while Selfless Spirit sacrifices to protect against destruction.
+PREDEPLOY_COMMANDER_GUARDS={"Lightning Greaves","Selfless Spirit"}
+COMMANDER_TAX_RELIEF={"Command Beacon"}
 # Physically present affordable early mana sources. Sol Ring is a 1-drop,
 # the others typically cost 2, and Everflowing Chalice MUST be kicked once.
 # Seeing these cards is NOT proof of colored mana or of casting Brimaz T3.
@@ -138,7 +155,7 @@ LAND_SOURCES={
     "Shattered Sanctum","Silent Clearing","Tainted Field",
     "Takenuma, Abandoned Mire","The Mycosynth Gardens","The Seedcore",
     "Urborg, Tomb of Yawgmoth","Urza's Saga","Vault of Champions",
-    "Vault of the Archangel","War Room","Plains","Swamp",
+    "Vault of the Archangel","Command Beacon","War Room","Plains","Swamp",
     # These are modal spells: count as possible sources, not confirmed mana.
     "Agadeem's Awakening","Malakir Rebirth","Witch Enchanter",
 }
@@ -205,8 +222,15 @@ def rows(deck):
     drain=subset(DRAIN_ENGINES)
     early_ramp=subset(EARLY_MANA_ACCEL)
     transform_ramp=subset(TRANSFORM_MANA)
+    standalone_incubation=subset(STANDALONE_INCUBATORS)
+    predeployed_protectors=subset(PREDEPLOY_COMMANDER_GUARDS)
+    tax_relief=subset(COMMANDER_TAX_RELIEF)
     return {
         "possible_land_cards":len(land),
+        "commander_independent_incubation_options":len(standalone_incubation),
+        "predeployable_commander_guards":len(predeployed_protectors),
+        "commander_tax_relief_land_cards":len(tax_relief),
+        "p_1plus_commander_independent_incubator_seen_in_13":round(hypergeom_at_least(100,len(standalone_incubation),seen13),6),
         "early_mana_accelerator_cards":len(early_ramp),
         "ramp_sources_that_can_help_pay_transforms":len(transform_ramp),
         "p_1plus_early_mana_accelerator_seen_in_10":round(hypergeom_at_least(100,len(early_ramp),seen10),6),

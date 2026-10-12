@@ -16,13 +16,13 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Myr Sire | **V4** : créature-artefact à deux manas qui déclenche Brimaz ; à la mort crée un second corps à sacrifier ou équiper de Skullclamp. |
 | 1 | Compleated Huntmaster | Sacrifie artefact ou créature pour générer de nouveaux Incubateurs ; outlet répétable sous réserve de son coût et de l'engagement. |
 | 1 | Abzan Falconer | **V4 combat** : accorde le vol à toutes nos créatures avec un marqueur +1/+1 ; les Incubateurs transformés conservent leurs marqueurs et peuvent traverser des défenses terrestres. Non phyrexian lui-même. |
-| 1 | Elas il-Kor, Sadistic Pilgrim | Gagne des points de vie sur les arrivées de créatures et fait perdre des points de vie à chaque adversaire lorsque tes créatures meurent ; excellent avec jetons transformés. |
+| 1 | Selfless Spirit | **V4 protection de l'armée sans poison** : créature {1}{W}, 2/1 volante, jouable avant Brimaz. On peut la sacrifier à vitesse d'éphémère pour rendre **toutes nos créatures indestructibles** jusqu'à la fin du tour ; protège contre destroy et dégâts, pas contre exile ni bounce. Ce n'est pas un Phyrexian ni une créature-artefact : son lancement ne déclenche pas Brimaz. |
 | 1 | Elesh Norn | Phyrexian à lancer ; sa transformation en saga génère puis transforme plusieurs Incubateurs et menace les plateaux opposés. |
 | 1 | Essence of Orthodoxy | Incubateur sur ses propres déclenchements et soutien des Phyrexians ; renforce les ressources produites après Brimaz. |
 | 1 | Filigree Vector | Créature-artefact phyrexiane génératrice de marqueurs et capable de sacrifier un artefact pour proliférer ; relie tous les sous-moteurs. |
 | 1 | Grafted Butcher | Phyrexian bon marché, bonus de combat aux Phyrexians ; peut revenir du cimetière en sacrifiant artefact/créature à vitesse rituel. |
 | 1 | Lurrus of the Dream-Den | Recaste chaque tour un permanent de coût deux ou moins depuis le cimetière ; rejouer Myr Sire ou Myr Retriever produit des déclenchements de Brimaz. |
-| 1 | Gixian Infiltrator | **V4 synergie/budget** : créature Phyrexian à {1}{B}, incube 2 au lancement et gagne un marqueur +1/+1 quand tu sacrifies un **autre permanent**. Abzan Falconer lui donne le vol dès le premier marqueur. Moins de pioche générique mais plus de présence réelle. |
+| 1 | Phyrexian Rager | **V4 pioche autonome** : Phyrexian {2}{B}, pioche une carte et perd 1 PV à l'arrivée, sans exiger de sacrifice ou de Brimaz. Lancé après Brimaz, incube 3 au lancement, puis fait piocher à sa résolution. |
 | 1 | Mirror Entity | **V4 combat** : changeling, donc Phyrexian au lancement et déclenche Brimaz ; son activation {X} donne une force/endurance de base X/X à toutes nos créatures, AVANT leurs marqueurs ; exige du mana pour un assaut final. |
 | 1 | Metastatic Evangel | Phyrexian de coût deux ; prolifère aux arrivées des créatures non-jetons, utile même quand l'Incubation a déjà créé des marqueurs. |
 | 1 | Akroma's Will | **V4 combat** : éphémère {3}{W}, deux modes si Brimaz est contrôlé au lancement ; vol, vigilance, double initiative, lien de vie, indestructible et protection contre toutes les couleurs jusqu'à la fin du tour. Priorité aux attaques décisives plutôt qu'aux dégâts automatiques. |
@@ -37,7 +37,7 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Roaming Throne | Choisit Phyrexian, amplifie les déclenchements de Brimaz et des autres Phyrexians ; créature-artefact qui déclenche elle-même Brimaz. |
 | 1 | Banner of Kinship | **V4 combat** : choisit Phyrexian, obtient un marqueur fellowship par créature Phyrexian présente lors de son arrivée. Chaque marqueur donne +1/+1 à toute l'armée Phyrexian et est proliférable par Brimaz ; coûte cinq manas. |
 | 1 | Gold Myr | Caillou de mana blanc sur une créature-artefact : déclenche Brimaz au lancement et soutient les coûts blancs. |
-| 1 | Norn's Choirmaster | **V4 combat** : Phyrexian Angel 5/4 vol/initiative à {3}{W}{W}, déclenche Brimaz au lancement et prolifère quand Brimaz arrive ou attaque ; augmente les marqueurs +1/+1 de l'armée. |
+| 1 | Sculpted Perfection | **V4 sans Brimaz** : enchantement {2}{W}{B} ; incube 2 dès son arrivée, puis donne +1/+1 à nos créatures Phyrexian même quand Brimaz est absent. Renforce les Incubateurs **transformés**, pas les artefacts non-créatures. Remplace un payoff conditionné à l'ETB/attaque du commandant. |
 | 1 | Vulpine Harvester | Phyrexian qui remonte un artefact du cimetière directement en jeu après une attaque de Phyrexians ; préservé comme vraie récursion répétable. |
 | 1 | Yawgmoth, Thran Physician | Sacrifice à vitesse éphémère contre pioche et marqueurs -1/-1 ; pilier du moteur, même s'il n'est pas lui-même Phyrexian. |
 | 1 | Sol Ring | Accélérateur neutre à un mana ; aide à lancer Brimaz puis à payer les transformations d'Incubateurs. |
@@ -62,7 +62,7 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Phyrexian Awakening | **V4 synergie/budget** : enchantement qui incube 4 en entrant et donne vigilance aux créatures Phyrexian, y compris Incubateurs transformés. Développe une vraie attaque/défense de board sans le sweeper/drain générique de Meathook. |
 | 1 | Anguished Unmaking | Exil de presque n'importe quel permanent non-terrain à vitesse éphémère ; essentiel contre moteurs ou combos. |
 | 1 | Clever Concealment | Phase out les permanents choisis pour préserver le plateau contre un retrait massif, sans déclencher leur mort. |
-| 1 | Resourceful Defense | **V4 synergie/budget** : récupère sur un autre permanent les marqueurs d'un permanent qui quitte le champ, y compris un Incubateur artefact non transformé. Favorise la conservation des marqueurs plutôt qu'un tuteur générique ; activation complémentaire {4}{W} pour les déplacer. |
+| 1 | Lightning Greaves | **V4 protection proactive** : artefact équipement {2}, équipement gratuit {0}. Shroud et haste sur le porteur. Peut protéger Brimaz dès qu'il arrive si les bottes ont été posées avant, mais **shroud empêche aussi nos propres sorts et Skrelv de cibler Brimaz**. Les équipements peuvent être ciblés au moment de leur activation. |
 | 1 | Flare of Fortitude | Protection globale à vitesse éphémère avec coût alternatif ; permet de garder des permanents moteurs face aux wraths. |
 | 1 | Phyrexian Scriptures | **V4 reset de board** : saga {2}{B}{B}, premier chapitre donne un marqueur +1/+1 et le type artefact à une créature (souvent Brimaz), chapitre II détruit les créatures non-artefacts, chapitre III exile les cimetières adverses. Préserve les Incubateurs transformés (créatures-artefacts), mais le nettoyage est retardé. |
 | 1 | Sunfall | Exile les créatures et crée un Incubateur ; solide contre stratégies cimetière, sans déclenchements de mort sur les exils. |
@@ -96,16 +96,16 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | The Mycosynth Gardens | Terrain de mana incolore pouvant copier un artefact non-jeton contrôlé ; utile pour dupliquer un moteur. |
 | 1 | The Seedcore | Terrain incolore ou fixe les Phyrexians ; ne répare pas les sorts non-Phyrexians. |
 | 1 | Urborg, Tomb of Yawgmoth | Toutes les terres deviennent aussi des marais ; corrige les multiples terrains utilitaires incolores. |
-| 1 | Vault of the Archangel | **V4 synergie/budget** : terrain utilitaire {C}, activation {2}{W}{B}+engagement pour donner contact mortel et lien de vie à l'armée jusqu'à la fin du tour. Soutient les attaques et blocs sans moteur tuteur d'artefact à coût 0/1. |
+| 1 | Command Beacon | **V4 récupération anti-taxe** : terrain incolore, {T}+sacrifice met Brimaz dans notre main depuis la zone de commandement, ce qui permet de le lancer au coût de base sans nouvelle taxe. Perd une source de terrain à l'utilisation et l'option défensive de lifelink/deathtouch du Vault. |
 | 1 | Vault of Champions | Bicolore généralement dégagé dans une table de quatre joueurs. |
 | 1 | War Room | **V4** : pioche répétable depuis un terrain pour trois manas, engagement et PV selon l'identité de couleur ; remplace un terrain de combat coûteux. |
 | 4 | Plains | Quatre basiques blancs ; sûrs face à Blood Moon et recherchables via Marsh Flats. |
 | 4 | Swamp | Quatre basiques noirs ; activent Tainted Field et supportent les symboles noirs fréquents. |
 | 1 | Brimaz, Blight of Oreskos | Commandant. Les sorts phyrexians et créatures-artefacts incubent au lancement ; la mort d'un Phyrexian autorise une prolifération au début de chaque étape de fin, si Brimaz est présent. |
 
-**Lecture** : les vingt-et-une entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
+**Lecture** : les vingt-trois entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
 
-Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les vingt-et-un remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.
+Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les vingt-trois remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.
 
 
 ### Critère additionnel : puissance contextualisée, pas carte auto-include
@@ -134,3 +134,7 @@ suffisant seul contre un board d'artefacts, raison de conserver Sunfall.
 La priorité passe des multiplicateurs de jetons supplémentaires à **la capacité réelle de payer {2} pour transformer**. Anointed Procession (multiplicateur générique coûteux, environ 33 € tendance Cardmarket) est retirée ; Mondrak reste l'exception Phyrexian qui double le nombre de jetons. Everflowing Chalice gagne plusieurs manas incolores **uniquement lorsque des marqueurs charge supplémentaires y sont placés**, pas grâce aux marqueurs +1/+1 des Incubateurs. La carte n'est pas du mana fixe pour les coûts blancs/noirs.
 
 Steel Overseer doit survivre assez longtemps pour engager et pose ses marqueurs **seulement** sur les créatures-artefacts. Scrap Trawler peut aider à récupérer après une destruction simultanée de plusieurs artefacts, sans récupérer directement les tokens d'Incubateur ; ses capacités ne comptent pas comme de véritables copies supplémentaires de Brimaz.
+
+### 13 octobre 2026 — audit dépendance commandant
+
+La V4 retire cinq cartes conditionnelles face au problème **Brimaz coûte quatre, ne génère rien à l'arrivée, coûte six puis huit en recast depuis la zone de commandement**. La stratégie corrigée et les réserves de règles sont dans [l'audit complet du commandant](BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md). Les cinq ajouts sont : Sculpted Perfection (Incubation/buff autonome), Phyrexian Rager (pioche au T3, avec ou sans Brimaz), Selfless Spirit (protection collective à sacrifier avant ou après Brimaz), Lightning Greaves (shroud préposé, avec inconvénient de nos propres cibles), Command Beacon (retour en main et aucun nouveau coût de taxe au lancement). Cette liste reste orientée dégâts de combat, pas poison ; **Selfless Spirit ne possède ni poison, ni toxic, ni infect.
