@@ -43,6 +43,9 @@ SWAPS=(
     ("Diabolic Intent", "Resourceful Defense"),
     ("The Meathook Massacre", "Phyrexian Awakening"),
     ("Urza's Saga", "War Room"),
+    ("Krark-Clan Ironworks", "Sunder the Gateway"),
+    ("Spawning Pit", "Stroke of Midnight"),
+    ("Living Death", "Phyrexian Scriptures"),
 )
 # Explicit conservative tags: a card listed is capable of the role under
 # some conditions, not necessarily at that turn or without mana/other cards.
@@ -97,6 +100,19 @@ DRAIN_ENGINES={
     "Nadier's Nightblade","Vraan, Executioner Thane",
     "Scheming Aspirant","Elas il-Kor, Sadistic Pilgrim",
     "The Meathook Massacre",
+}
+# Include efficient single-target answers and cards with creature/board
+# removal modes. Not all targets, costs or timing are interchangeable.
+TARGETED_ANSWERS={
+    "Swords to Plowshares", "Anguished Unmaking", "Rite of Oblivion",
+    "Witch Enchanter", "Sunder the Gateway", "Stroke of Midnight",
+}
+BOARD_SWEEPS={
+    "Sunfall", "Living Death", "Phyrexian Scriptures", "Elesh Norn",
+}
+BOARD_PROTECTIONS={
+    "Clever Concealment","Flare of Fortitude","Restoration Magic",
+    "Akroma's Will","Malakir Rebirth",
 }
 LAND_SOURCES={
     "Bleachbone Verge","Bojuka Bog","Brightclimb Pathway","Caves of Koilos",
@@ -167,6 +183,9 @@ def rows(deck):
     casts=subset(BRIMAZ_CASTS)
     outlet=subset(SACRIFICE_ACCESS)
     payoff=subset(SACRIFICE_PAYOFF)
+    answers=subset(TARGETED_ANSWERS)
+    wipes=subset(BOARD_SWEEPS)
+    protections=subset(BOARD_PROTECTIONS)
     board=subset(BOARD_PRESSURE)
     drain=subset(DRAIN_ENGINES)
     return {
@@ -175,8 +194,12 @@ def rows(deck):
         "repeatable_draw_source_names":len(draw),
         "sacrifice_access_names":len(outlet),
         "sacrifice_payoff_names":len(payoff),
+        "targeted_interaction_names":len(answers),
+        "board_sweeper_names":len(wipes),
+        "board_protection_names":len(protections),
         "combat_support_or_finisher_cards":len(board),
         "explicit_drain_engine_cards":len(drain),
+        "p_1plus_targeted_interaction_seen_in_13":round(hypergeom_at_least(100,len(answers),seen13),6),
         "p_1plus_combat_support_seen_in_13":round(hypergeom_at_least(100,len(board),seen13),6),
         "p_3plus_land_sources_seen_in_10":round(hypergeom_at_least(100,len(land),seen10,3),6),
         "p_1plus_repeatable_draw_source_seen_in_10":round(hypergeom_at_least(100,len(draw),seen10),6),

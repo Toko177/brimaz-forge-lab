@@ -45,14 +45,14 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Talisman of Hierarchy | Rampe à deux manas et produit les deux couleurs nécessaires, au prix de quelques PV selon le mode. |
 | 1 | Orzhov Signet | Rampe/fixing à deux manas ; transforme du mana générique en blanc/noir. |
 | 1 | Ashnod's Altar | Sacrifie gratuitement **des créatures**, fournit du mana incolore ; transformer d'abord les Incubateurs avant de les sacrifier. |
-| 1 | Krark-Clan Ironworks | Sacrifie même les Incubateurs artefacts non transformés pour produire du mana incolore ; moteur de tempo après une incubation. |
+| 1 | Sunder the Gateway | **V4 gestion synergique** : rituel {1}{W}, détruit un artefact non-jeton ou un enchantement adverse **en incubant 2**, ou incube 2 puis transforme gratuitement un Incubateur. Ne répond pas à une pile/combo instantané, mais enlève une pièce de moteur tout en avançant le plan. |
 | 1 | Aron, Benalia's Ruin | **V4 synergie/budget** : Phyrexian à {W}{W}{B} qui incube 3 ; {W}{B}, engagement et sacrifice d'une autre **créature** placent un marqueur +1/+1 sur chaque créature alliée. Procure un moteur de croissance d'armée, avec coût, timing et vulnérabilité explicites. Les Incubateurs encore non-créatures ne reçoivent pas ces marqueurs. |
 | 1 | Throne of Geth | Engagement + sacrifice d'un artefact pour proliférer ; accepte les Incubateurs non transformés et rend les marqueurs menaçants. |
 | 1 | Skullclamp | Pioche explosive avec de petites créatures sacrifiables ; nécessite une cible créature (jeton incubateur transformé, Myr, etc.). |
 | 1 | Patchwork Banner | **V4 combat** : artefact de mana à {3}, choisir Phyrexian ; donne +1/+1 aux Incubateurs transformés et aux autres Phyrexians, accélère les activations et joue le rôle d'anthem. Perd la pioche directe d'Ichor. |
 | 1 | Idol of Oblivion | **V4** : pioche une carte par tour où un jeton a été créé, très souvent après une incubation ; exige de s'engager. |
 | 1 | Urza's Incubator | Réduit les coûts génériques des créatures du type choisi (Phyrexian) ; soutient les relances des vrais Phyrexians depuis la main. |
-| 1 | Spawning Pit | Outlet gratuit d'une **créature** pour prendre des marqueurs ; les marqueurs se prolifèrent et peuvent se convertir en jetons. |
+| 1 | Stroke of Midnight | **V4 gestion défensive** : éphémère {2}{W}, détruit un permanent non-terrain problématique, au prix d'un jeton Humain 1/1 donné à son contrôleur. Très polyvalent et bon marché, pour gérer une menace avant qu'elle gagne. |
 | 1 | Athreos, God of Passage | La mort d'un Phyrexian non-jeton peut le ramener en main si l'adversaire ne paie pas 3 PV ; donne des relances plutôt que de simples ETB. |
 | 1 | Anointed Procession | Double les jetons d'Incubation pour constituer une armée plus nombreuse ; les jetons restent des artefacts non-créatures tant qu'ils ne sont pas transformés. |
 | 1 | Caretaker's Talent | Pioche conditionnelle sur création de jetons ; offre plus tard un avantage de taille aux jetons ; moteur à pérenniser. |
@@ -64,7 +64,7 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Clever Concealment | Phase out les permanents choisis pour préserver le plateau contre un retrait massif, sans déclencher leur mort. |
 | 1 | Resourceful Defense | **V4 synergie/budget** : récupère sur un autre permanent les marqueurs d'un permanent qui quitte le champ, y compris un Incubateur artefact non transformé. Favorise la conservation des marqueurs plutôt qu'un tuteur générique ; activation complémentaire {4}{W} pour les déplacer. |
 | 1 | Flare of Fortitude | Protection globale à vitesse éphémère avec coût alternatif ; permet de garder des permanents moteurs face aux wraths. |
-| 1 | Living Death | Reset de créatures et retour du cimetière ; puissant finisher de valeur mais ne déclenche **pas** l'incubation par cast. |
+| 1 | Phyrexian Scriptures | **V4 reset de board** : saga {2}{B}{B}, premier chapitre donne un marqueur +1/+1 et le type artefact à une créature (souvent Brimaz), chapitre II détruit les créatures non-artefacts, chapitre III exile les cimetières adverses. Préserve les Incubateurs transformés (créatures-artefacts), mais le nettoyage est retardé. |
 | 1 | Sunfall | Exile les créatures et crée un Incubateur ; solide contre stratégies cimetière, sans déclenchements de mort sur les exils. |
 | 1 | Restoration Magic | Protection à un mana donnant hexproof et indestructible à un permanent ; mode large plus coûteux pour sauver la table. |
 | 1 | Swords to Plowshares | Exile presque toute créature problématique pour un mana et un coût de vie offert à l'adversaire. |
@@ -103,11 +103,27 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 4 | Swamp | Quatre basiques noirs ; activent Tainted Field et supportent les symboles noirs fréquents. |
 | 1 | Brimaz, Blight of Oreskos | Commandant. Les sorts phyrexians et créatures-artefacts incubent au lancement ; la mort d'un Phyrexian autorise une prolifération au début de chaque étape de fin, si Brimaz est présent. |
 
-**Lecture** : les seize entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
+**Lecture** : les dix-neuf entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
 
-Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les seize remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.
+Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les dix-neuf remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.
 
 
 ### Critère additionnel : puissance contextualisée, pas carte auto-include
 
 Les cinq remplacements ci-dessus retirent des incontournables coûteux (Esper Sentinel, Urza's Saga, Phyrexian Altar, Diabolic Intent, The Meathook Massacre). Ils les remplacent par des permanents ou terrains qui n'ont d'intérêt optimal **qu'avec nos marqueurs, Incubateurs, Phyrexians ou attaques**. Mondrak et Yawgmoth restent des exceptions de forte puissance pour leur synergie thématique ; aucune limite absolue en euros n'est imposée. Les prix Cardmarket cités dans `docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md` sont ponctuels et ne constituent pas un coût total de deck vérifié.
+
+### Vérification de la défense et de la gestion
+
+La V4 conserve Swords to Plowshares, Anguished Unmaking, Rite of Oblivion,
+Witch Enchanter, Sunfall, les protections Clever Concealment / Flare of
+Fortitude / Restoration Magic et ajoute deux gestionnaires ciblés
+**Sunder the Gateway** et **Stroke of Midnight**, ainsi que la saga
+**Phyrexian Scriptures**. L'inventaire exhaustif du pool Oracle est
+documenté dans `BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md`.
+
+Avertissement : **le chapitre II de Phyrexian Scriptures détruit aussi Brimaz
+s'il n'est pas devenu artefact**, d'où la valeur du premier chapitre sur
+Brimaz. Les Incubateurs non transformés sont des artefacts non-créatures
+et restent présents ; les transformés sont des créatures-artefacts et
+survivent également à ce nettoyage. En revanche l'effet n'est pas
+suffisant seul contre un board d'artefacts, raison de conserver Sunfall.

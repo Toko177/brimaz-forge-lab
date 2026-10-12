@@ -35,7 +35,7 @@ pour la justification des cinq nouvelles exclusions.
    via Elas il-Kor reste occasionnel, pas une condition principale.
 6. Contre un boardwipe, préserver les permanents avec
    **Clever Concealment, Flare of Fortitude ou Restoration Magic**,
-   recycler via **Lurrus, Phyrexian Reclamation, Myr Retriever, Living Death**
+   recycler via **Lurrus, Phyrexian Reclamation, Myr Retriever, Agadeem's Awakening**
    et protéger les marqueurs avec **Resourceful Defense**.
 
 ## Cinq échanges depuis la V4 précédente
@@ -53,11 +53,11 @@ figurait déjà dans **V3**. Elle avait été retirée dans une première
 ébauche V4 pour War Room. Ce dernier reste dans V4.
 Par rapport à **V3**, le changement net des terrains est donc
 **Urza's Saga → War Room**, avec Vault conservée. On compte
-**16 cartes retirées et 16 ajoutées** relativement à V3, et non
+**19 cartes retirées et 19 ajoutées** relativement à V3, et non
 17 : la liste « cinq échanges V4 précédente » mesure un autre
 point de référence. Les tests comparent les ensembles finaux.
 
-## 16 modifications nettes par rapport à V3 immuable
+## 19 modifications nettes par rapport à V3 immuable
 
 | Retirée de V3 | Ajoutée dans V4 | Axe |
 |---|---|---|
@@ -77,6 +77,9 @@ point de référence. Les tests comparent les ensembles finaux.
 | Phyrexian Altar | Aron, Benalia's Ruin | Sacrifice/boost de board plutôt que mana |
 | Diabolic Intent | Resourceful Defense | Conservation des marqueurs |
 | The Meathook Massacre | Phyrexian Awakening | Vigilance/incubation plutôt que drain/wipe |
+| Krark-Clan Ironworks | Sunder the Gateway | Retirer artefact/enchantement adverse + Incubation 2, plutôt que convertir toute l'armée en mana |
+| Spawning Pit | Stroke of Midnight | Réponse éphémère universelle contre permanent non-terrain, plutôt qu'un outlet redondant |
+| Living Death | Phyrexian Scriptures | Wrath asymétrique qui épargne nos créatures-artefacts, cimetière adverse exilé ; perte de réanimation massive |
 
 ## Exceptions « chères mais thématiques » et compromis
 
@@ -105,7 +108,7 @@ probabilité de gagner une vraie partie multijoueur.
 - [Les 100 cartes commentées](BRIMAZ_V4_B3_CARD_BY_CARD.md) /
   [les 78 cartes de la liste considering](BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
 - `python3 tests/test_audit_brimaz_v4.py` : les **100 cartes
-  physiques**, la correspondance Moxfield/Forge, les **16
+  physiques**, la correspondance Moxfield/Forge, les **19
   différences nettes** et les SHA256 canoniques. L'audit
   hypergéométrique mesure des **cartes vues**, pas la résolution
   des sorts ni des combats.
@@ -121,3 +124,11 @@ probabilité de gagner une vraie partie multijoueur.
 
 La PR reste expérimentale, `main` stable,
 les sept decks Forge canoniques **inchangés**.
+
+## Audit exhaustif des cartes Commander éligibles
+
+[Inventaire live Oracle du 12 octobre 2026](BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md) : **38 751** enregistrements examinés, **12 763** cartes Commander légales à identité Orzhov/incolore sans Game Changer. Index de tous les noms dans les artefacts du [workflow GitHub](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38311544321).
+
+La V4 ajoute Sunder the Gateway, Stroke of Midnight et Phyrexian Scriptures pour corriger une carence en gestion. Le scan lexical est une aide à la découverte, pas une preuve de liste optimale.
+
+Avec Phyrexian Scriptures, il faut idéalement transformer Brimaz en artefact au chapitre I pour qu'il survive au chapitre II. Sunfall reste la réponse aux boards d'artefacts ou lorsque l'exil immédiat est nécessaire.
