@@ -145,3 +145,10 @@ resterait à confronter à de vraies parties humaines.
 La sélection 19 swaps est une **proposition stratégique
 cohérente et légalement vérifiable**, pas « la meilleure
 mathématiquement prouvée parmi les 12 763 cartes ».
+
+## Dernières vérifications réalisées pour cette V4 (19 échanges)
+
+- [CI structure et tests Python 3.10/3.12](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38312050886) : **SUCCESS**, 100 cartes, 19 changements nets, contrôle des sept decks canoniques, et test offline de l'énumération Oracle.
+- [CI Scryfall live, légalité et catalogue complet](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38312050893) : **SUCCESS** pour les deux jobs. La V4 compte 100 cartes physiques, 94 noms différents, identité W/B, **0 erreur, 0 avertissement et aucun Game Changer détecté**.
+- Selon les étiquettes manuelles et les tirages aveugles du script d'audit, la V3 avait **3 réponses ciblées** et la V4 **6** ; chacune contient trois cartes/suites capables de faire office de nettoyages selon le contexte, et la V4 possède cinq cartes de protection identifiées. Ces comptages ne mesurent pas les capacités de résolution ou l'efficacité tactique.
+- Les 19 modifications et les trois cartes de gestion sont documentées carte par carte. **Aucune simulation de victoire V3 contre V4 ni partie humaine n'a été exécutée dans ce changement**.

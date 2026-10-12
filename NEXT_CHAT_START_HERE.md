@@ -252,31 +252,40 @@ Ne jamais attribuer les résultats des anciennes parties Amalia à
 Dungeon ; nouveaux runs/retests nécessaires. Doc complète :
 `docs/ACTIVE_COMMANDER_PODS_2026-10-12.md`.
 
-## 12/10/2026 — objectif de la V4, état le plus récent
+## 12 octobre 2026 — état actuel V4 / pool légal complet
 
-L'utilisateur veut une liste Brimaz pour gagner **par le board et
-les dégâts de combat** (Incubateurs transformés, marqueurs +1/+1,
-prolifération, vol, anthems), **pas** par le drain.
+Priorité de l'utilisateur : **gagner par l'attaque et le board**,
+avec Incubation et prolifération, ET interaction/défense/résilience
+suffisantes pour tenir tête au playgroup Bracket 3.
 
-Préférence sociale explicite : éviter autant que possible les
-cartes génériques chères et individuellement écrasantes
-comme Esper Sentinel, Rhystic Study ou Smothering Tithe.
-Pas de plafond budgétaire strict ; Mondrak et Yawgmoth peuvent
-rester car leur synergie avec Brimaz est exceptionnelle.
+Ne pas ajouter de staples universels chers/broken par défaut
+(Esper Sentinel, Smothering Tithe, Rhystic Study). Exceptions
+thématiques assumées : Mondrak et Yawgmoth. Pas de plafond
+budget strict, pas de poison plan A.
 
-Dans la V4 actuelle, cinq dernières substitutions :
-Esper Sentinel -> Gixian Infiltrator ;
-Phyrexian Altar -> Aron, Benalia's Ruin ;
-Diabolic Intent -> Resourceful Defense ;
-The Meathook Massacre -> Phyrexian Awakening ;
-Urza's Saga -> Vault of the Archangel.
-**16 changements nets V3->V4**. V3 contenait déjà Vault :
-elle reste finalement présente, War Room remplace donc Urza's Saga
-dans la comparaison nette V3/V4.
-Voir `docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md`,
-`docs/BRIMAZ_V4_B3_DECISIONS.md` et
-`decks/Brimaz_V4_B3.txt`.
+**État Git actuel :** Brimaz V4 : 100 cartes, **19 différences
+nettes V3→V4**, V3 et sept DCK canoniques inchangés.
+Derniers 3 échanges :
+Krark-Clan Ironworks -> Sunder the Gateway ;
+Spawning Pit -> Stroke of Midnight ;
+Living Death -> Phyrexian Scriptures.
+But : mieux répondre aux menaces, tout en préservant
+la production d'Incubateurs et les créatures-artefacts.
+Voir `docs/BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md`
+et `docs/BRIMAZ_V4_B3_DECISIONS.md`.
 
-Tous les sept DCK canoniques restent SHA256 inchangés.
-Aucune preuve de winrate V4 par jeu réel ou humain.
-Ne pas repartir sur une IA V44 sans démonstration réelle.
+**Recherche exhaustive réelle :** sur GitHub Actions
+workflow 38311544321, scan de **38 751** objets Oracle et
+index de **12 763** cartes Commander légales blanc/noir/incolores
+sans Game Changer (7 216 portaient les tags de recherche).
+`scripts/scan_commander_oracle_pool.py` sauvegarde la liste
+complète des candidats dans un artefact zip sur ce run.
+Tous les nombres sont des comptes de cartes ou de **tirages
+hypergéométriques**, PAS des résultats de parties.
+
+V4 a **6 réponses ciblées** (contre 3 en V3 selon tagging
+conservateur), **3 outils de nettoyage de table**,
+**5 protections** et **38 cartes pouvant être jouées comme
+terrains** (3 MDFC). Scanner tous les noms ne prouve pas que
+la V4 est mathématiquement la meilleure : validation de règles
+et parties humaines restent nécessaires.
