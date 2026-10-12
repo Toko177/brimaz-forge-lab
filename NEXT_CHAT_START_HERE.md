@@ -252,15 +252,31 @@ Ne jamais attribuer les résultats des anciennes parties Amalia à
 Dungeon ; nouveaux runs/retests nécessaires. Doc complète :
 `docs/ACTIVE_COMMANDER_PODS_2026-10-12.md`.
 
-## 12/10/2026 — priorité utilisateur explicite : gagner par les attaques et le board
+## 12/10/2026 — objectif de la V4, état le plus récent
 
-L'utilisateur préfère **gagner par le board et les blessures de combat**,
-**pas** par les payoffs de drain. La V4 initiale non validée a été
-réorientée dans **les mêmes fichiers** (ne pas créer de V5 ni V44 d'IA) :
-Nadier's Nightblade→Abzan Falconer, Marionette Master→Mirror Entity,
-Mirkwood Bats→Akroma's Will, Vraan→Norn's Choirmaster,
-Ichor Wellspring→Patchwork Banner. V4 actuelle : **11 remplacements
-par rapport à V3**. Le drain restant est secondaire.
-Voir `docs/BRIMAZ_V4_B3_DECISIONS.md`,
-`decks/Brimaz_V4_B3.txt`, `scripts/audit_brimaz_v4.py`.
-**V3 et sept DCK canoniques intacts, aucune victoire en parties prouvée.**
+L'utilisateur veut une liste Brimaz pour gagner **par le board et
+les dégâts de combat** (Incubateurs transformés, marqueurs +1/+1,
+prolifération, vol, anthems), **pas** par le drain.
+
+Préférence sociale explicite : éviter autant que possible les
+cartes génériques chères et individuellement écrasantes
+comme Esper Sentinel, Rhystic Study ou Smothering Tithe.
+Pas de plafond budgétaire strict ; Mondrak et Yawgmoth peuvent
+rester car leur synergie avec Brimaz est exceptionnelle.
+
+Dans la V4 actuelle, cinq dernières substitutions :
+Esper Sentinel -> Gixian Infiltrator ;
+Phyrexian Altar -> Aron, Benalia's Ruin ;
+Diabolic Intent -> Resourceful Defense ;
+The Meathook Massacre -> Phyrexian Awakening ;
+Urza's Saga -> Vault of the Archangel.
+**16 changements nets V3->V4**. V3 contenait déjà Vault :
+elle reste finalement présente, War Room remplace donc Urza's Saga
+dans la comparaison nette V3/V4.
+Voir `docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md`,
+`docs/BRIMAZ_V4_B3_DECISIONS.md` et
+`decks/Brimaz_V4_B3.txt`.
+
+Tous les sept DCK canoniques restent SHA256 inchangés.
+Aucune preuve de winrate V4 par jeu réel ou humain.
+Ne pas repartir sur une IA V44 sans démonstration réelle.

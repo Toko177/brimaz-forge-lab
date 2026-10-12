@@ -108,3 +108,21 @@
 Textes consultés : [Wizards Brackets](https://magic.wizards.com/en/formats/commander), [Brimaz](https://mtg.wtf/card/moc/2/Brimaz-Blight-of-Oreskos), [Banner](https://mtg.wtf/card/fdn/127/Banner-of-Kinship), [Gix](https://mtg.wtf/card/tdc/181/Gix-Yawgmoth-Praetor), [Esper Sentinel](https://mtg.wtf/card/mh2/328/Esper-Sentinel), [Solemn Simulacrum](https://mtg.wtf/card/m21/239/Solemn-Simulacrum), [The Ozolith](https://mtg.wtf/card/iko/237/The-Ozolith), [Resourceful Defense](https://mtg.wtf/card/fic/251/Resourceful-Defense), [Weatherlight Compleated](https://mtg.wtf/card/dmu/242/Weatherlight-Compleated). Un workflow distinct contrôle la légalité Commander et les Game Changers en direct via Scryfall, **pas la compétence des IA**.
 
 **Aucun winrate ni avantage V3→V4 n'est prouvé** par cet audit.
+
+## Mise à jour après l'audit : contrainte sociale « pas d'auto-includes chers »
+
+L'audit original de 78 cartes reste archivé tel quel afin d'expliquer
+les décisions prises à ce moment. **La liste V4 actuellement retenue
+a évolué depuis cette première passe** : Esper Sentinel, Urza's
+Saga, Phyrexian Altar, Diabolic Intent et The Meathook Massacre
+ont été écartés au profit de Gixian Infiltrator, Vault of the
+Archangel, Aron, Benalia's Ruin, Resourceful Defense et
+Phyrexian Awakening. Le but reste de gagner par les Incubateurs
+transformés et les combats, avec des synergies accessibles, plutôt
+que par une collection de staples génériques individuellement forts.
+
+**Référence actuelle** :
+[les 16 différences V3→V4](BRIMAZ_V4_B3_DECISIONS.md)
+et [politique sociale et financière](BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md).
+Les anciens « Ajout V4 » de cette archive décrivent **l'état
+historique**, pas nécessairement les 100 cartes présentes maintenant.

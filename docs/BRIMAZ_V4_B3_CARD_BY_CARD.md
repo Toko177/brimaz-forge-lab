@@ -103,9 +103,9 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 4 | Swamp | Quatre basiques noirs ; activent Tainted Field et supportent les symboles noirs fréquents. |
 | 1 | Brimaz, Blight of Oreskos | Commandant. Les sorts phyrexians et créatures-artefacts incubent au lancement ; la mort d'un Phyrexian autorise une prolifération au début de chaque étape de fin, si Brimaz est présent. |
 
-**Lecture** : les dix-sept entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
+**Lecture** : les seize entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
 
-Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les dix-sept remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.
+Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les seize remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.
 
 
 ### Critère additionnel : puissance contextualisée, pas carte auto-include
