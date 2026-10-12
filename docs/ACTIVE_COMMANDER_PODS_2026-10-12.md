@@ -69,3 +69,14 @@ python3 tests/test_repository_structure.py
 
 Historique conservé, une seule PR expérimentale ouverte,
 aucun changement de `main` sans revue et résultats valides.
+
+
+### Rapport V43 stratifié (extension d'audit)
+
+L'auditeur `scripts/audit_v42_generic_commander.py` expose désormais
+`roster_version`, `shared_opponents_across_pods` et `by_pod`
+(nombres de paires, fins naturelles, censures, victoires
+**uniquement** du candidat ou de la référence). Il refuse un résultat
+où les métadonnées de roster diffèrent entre expérience et témoin.
+Ce n'est pas une preuve de supériorité de l'IA : les intervalles
+et nouvelles cohortes de vrais matchs restent nécessaires.

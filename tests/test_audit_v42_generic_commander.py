@@ -28,6 +28,8 @@ with tempfile.TemporaryDirectory() as d:
     refp={"policy":"v37_stock_control","patches":["same-real-source"],
           "canonical_seven_deck_sha256":{"pinned":"hash"},
           "java_tool_options":"-Dbrimaz.v37ControlledDuel=true"}
+    refp["roster_version"]="synthetic-roster-contract"
+    refp["active_pods"]={"aristo":seats}
     expp={**refp,"policy":"v42_commander_general",
           "java_tool_options":"-Dbrimaz.v37ControlledDuel=true "
                               "-Dcommander.v42GeneralPolicy=true"}
@@ -43,6 +45,9 @@ with tempfile.TemporaryDirectory() as d:
     assert r["four_seat_observed_distinct_decks"]==sorted(seats)
     assert r["approved_not_resolved_by_deck"]=={seats[1]:1}
     assert r["natural_pairs"]==1 and not r["skill_gain_proven"]
+    assert r["roster_version"]=="synthetic-roster-contract"
+    assert r["by_pod"]["aristo"]["natural"]==1
+    assert r["by_pod"]["aristo"]["censored"]==0
     ref.write_text(window.format(displays[0]),encoding="utf-8")
     try:audit(obj);raise AssertionError("control contamination passed")
     except ValueError:pass
@@ -69,6 +74,7 @@ with tempfile.TemporaryDirectory() as d:
     assert isolated["distinct_rotated_target_decks"]==[seats[0]]
     assert isolated["natural_both_candidate_win_pairs"]==1
     assert isolated["natural_candidate_only_wins"]==0
+    assert isolated["by_pod"]["aristo"]["both_candidate_wins"]==1
     exp.write_text(window.format(displays[1])+approval.format(displays[1]),
                    encoding="utf-8")
     try:audit(obj,min_distinct_decks=1);raise AssertionError("wrong seat got V43")
@@ -81,4 +87,10 @@ with tempfile.TemporaryDirectory() as d:
                    encoding="utf-8")
     try:audit(obj,min_distinct_decks=3);raise AssertionError("one target deck called multideck")
     except ValueError:pass
+    obj["experiment_provenance"]["roster_version"]="forged-other-opponents"
+    try:
+        audit(obj,min_distinct_decks=1)
+        raise AssertionError("Incompatible pod roster accepted")
+    except ValueError as exc:
+        assert "roster" in str(exc)
 print("V42_GENERIC_AUDIT_FIXTURE_PASS synthetic_only=true")

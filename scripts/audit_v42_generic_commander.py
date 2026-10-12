@@ -40,6 +40,9 @@ def audit(report, *, min_distinct_decks=3, require_approvals=True):
         raise ValueError("Asymmetric Java patches: cannot compare decisions")
     if ref.get("canonical_seven_deck_sha256")!=exp.get("canonical_seven_deck_sha256"):
         raise ValueError("Canonical decks changed across arms")
+    for field in ("roster_version","active_pods"):
+        if ref.get(field)!=exp.get(field):
+            raise ValueError("Reference/experiment pod roster mismatch: "+field)
     ro=ref.get("java_tool_options","")
     eo=exp.get("java_tool_options","")
     if "commander.v42GeneralPolicy=true" not in eo or "brimaz.v37ControlledDuel=true" not in eo:
@@ -56,10 +59,16 @@ def audit(report, *, min_distinct_decks=3, require_approvals=True):
     deck_dir=Path(__file__).resolve().parents[1]/"forge_decks"
     windows=Counter(); approvals=Counter(); refusals=Counter(); reasons=Counter()
     statuses=Counter(); seen_keys=set(); natural=[]
+    by_pod={}
     candidate_only_wins=0; reference_only_wins=0; both_candidate_wins=0
     distinct_target_decks=set()
     for pair in pairs:
         a,b=pair["reference"],pair["experiment"]
+        pod=pair["pod"]
+        segment=by_pod.setdefault(pod,{"pairs":0,"natural":0,"censored":0,
+             "candidate_only_wins":0,"reference_only_wins":0,
+             "both_candidate_wins":0})
+        segment["pairs"]+=1
         if a.get("seats")!=b.get("seats") or len(a.get("seats",[]))!=4:
             raise ValueError("Four identical seats required in both Forge arms")
         if len(set(a["seats"]))!=4:
@@ -92,6 +101,7 @@ def audit(report, *, min_distinct_decks=3, require_approvals=True):
             refusals[deck]+=int(count)
         statuses[(a["status"],b["status"])]+=1
         if a["status"]=="complete" and b["status"]=="complete":
+            segment["natural"]+=1
             natural.append((a.get("winner"),b.get("winner")))
             if isolated:
                 target=b["seats"][0]
@@ -100,13 +110,26 @@ def audit(report, *, min_distinct_decks=3, require_approvals=True):
                 candidate_only_wins+=new_won and not old_won
                 reference_only_wins+=old_won and not new_won
                 both_candidate_wins+=old_won and new_won
+                segment["candidate_only_wins"]+=bool(new_won and not old_won)
+                segment["reference_only_wins"]+=bool(old_won and not new_won)
+                segment["both_candidate_wins"]+=bool(old_won and new_won)
+        else:
+            segment["censored"]+=1
     if isolated and len(distinct_target_decks)<min_distinct_decks:
         raise ValueError("Not enough rotated target decks for V43 head-to-head")
     if len(windows)<min_distinct_decks:
         raise ValueError("Generic AI did not observe enough distinct deck controllers")
     if require_approvals and not sum(approvals.values()):
         raise ValueError("V42 made no native-Forge-approved action: no proven behavior")
+    active=exp.get("active_pods") or {}
+    shared=[]
+    if "aristo" in active and "artifact" in active:
+        shared=sorted((set(active["aristo"]) & set(active["artifact"])) -
+                      {"Brimaz_V3"})
     return {
+        "roster_version":exp.get("roster_version"),
+        "shared_opponents_across_pods":shared,
+        "by_pod":dict(sorted(by_pod.items())),
         "evidence":"Actual Forge 2.0.15 paired four-seat logs, not simulated",
         "real_process_pairs":len(pairs),
         "natural_pairs":len(natural),
