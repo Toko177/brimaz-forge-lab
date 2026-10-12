@@ -46,6 +46,8 @@ assert data["v4"]["targeted_interaction_names"]>data["v3"]["targeted_interaction
 assert data["v4"]["board_sweeper_names"]>=2
 assert data["v4"]["board_protection_names"]>=4
 assert data["v4"]["brimaz_eligible_cast_names"]>=data["v3"]["brimaz_eligible_cast_names"]
+assert data["v3"]["brimaz_eligible_cast_names"]==26
+assert data["v4"]["brimaz_eligible_cast_names"]==28
 assert data["v4"]["p_1plus_combat_support_seen_in_13"]>data["v3"]["p_1plus_combat_support_seen_in_13"]
 assert data["v4"]["p_1plus_repeatable_draw_source_seen_in_10"]>data["v3"]["p_1plus_repeatable_draw_source_seen_in_10"]
 assert data["v4"]["p_3plus_land_sources_seen_in_10"]==data["v3"]["p_3plus_land_sources_seen_in_10"]

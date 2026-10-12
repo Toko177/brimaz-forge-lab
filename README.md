@@ -14,7 +14,7 @@ Le drain est secondaire. La construction évite volontairement les
 staples génériques chers ou socialement oppressifs (Esper Sentinel,
 Urza's Saga, Phyrexian Altar, Diabolic Intent, The Meathook Massacre),
 remplacés par des outils qui dépendent du plan Brimaz :
-**Gixian Infiltrator, Aron, Benalia's Ruin, Resourceful Defense,
+**Gixian Infiltrator, Steel Overseer, Resourceful Defense,
 Phyrexian Awakening, Vault of the Archangel**.
 **Mondrak et Yawgmoth** restent des exceptions chères mais
 fortement synergiques, sans plafond de prix rigide.

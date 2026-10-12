@@ -152,3 +152,8 @@ mathématiquement prouvée parmi les 12 763 cartes ».
 - [CI Scryfall live, légalité et catalogue complet](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38312050893) : **SUCCESS** pour les deux jobs. La V4 compte 100 cartes physiques, 94 noms différents, identité W/B, **0 erreur, 0 avertissement et aucun Game Changer détecté**.
 - Selon les étiquettes manuelles et les tirages aveugles du script d'audit, la V3 avait **3 réponses ciblées** et la V4 **6** ; chacune contient trois cartes/suites capables de faire office de nettoyages selon le contexte, et la V4 possède cinq cartes de protection identifiées. Ces comptages ne mesurent pas les capacités de résolution ou l'efficacité tactique.
 - Les 19 modifications et les trois cartes de gestion sont documentées carte par carte. **Aucune simulation de victoire V3 contre V4 ni partie humaine n'a été exécutée dans ce changement**.
+
+
+## Mise à jour ciblée depuis l'inventaire global
+
+La V4 actuelle a **21 changements nets** relativement à la V3 figée, après ajustement au niveau de jeu décrit pour KaalDeagle : Anointed Procession → Everflowing Chalice, Aron → Steel Overseer, Activated Sleeper → Scrap Trawler. **La validation globale de 38 751 cartes et 12 763 admissibles demeure valable comme inventaire de découverte**, mais les statistiques de la V4 actuelle et ses tests sont dans `docs/BRIMAZ_V4_B3_DECISIONS.md` ; la CI du run 38312050886 citée plus haut concerne la **version antérieure à 19 changements** et demeure volontairement historisée.

@@ -19,7 +19,7 @@ pas des promesses de vente ni un calcul de budget complet.
 | Retrait V4 (prix tendance approx.) | Remplacement (prix tendance approx.) | Raisonnement de deckbuilding |
 |---|---|---|
 | **Esper Sentinel** (~38,72 €) | **Gixian Infiltrator** (~0,36 €) | Retire une taxe/pioche universelle à {W}. Phyrexian à {1}{B}, incube 2 au lancement, accumule un marqueur +1/+1 **quand un autre permanent est sacrifié**, puis vole avec Abzan Falconer. **Vrai coût** : moins de pioche et un défenseur plus fragile. |
-| **Phyrexian Altar** (~34,11 €) | **Aron, Benalia's Ruin** (~0,06 €) | Retire un autel générique très fort et source possible de boucles. Ce Phyrexian {W}{W}{B}, une fois posé et dégagé, sacrifie une **autre créature** avec {W}{B} et engagement pour donner un marqueur +1/+1 à chaque créature alliée. **Vrai coût** : ne produit plus de mana, n'active qu'une fois sans effet de dégagement, impose deux blancs au lancement et ne renforce pas les Incubateurs avant transformation. |
+| **Phyrexian Altar** (~34,11 €) | **Aron, Benalia's Ruin** (~0,06 €), **depuis remplacé par Steel Overseer** | Retire un autel générique très fort et source possible de boucles. Ce Phyrexian {W}{W}{B}, une fois posé et dégagé, sacrifie une **autre créature** avec {W}{B} et engagement pour donner un marqueur +1/+1 à chaque créature alliée. **Vrai coût** : ne produit plus de mana, n'active qu'une fois sans effet de dégagement, impose deux blancs au lancement et ne renforce pas les Incubateurs avant transformation. |
 | **Diabolic Intent** (~11,03 €) | **Resourceful Defense** (~0,43 €) | Retire un tuteur générique très efficace. Si un permanent à marqueurs quitte le champ de bataille, récupère ces marqueurs sur un permanent ciblé, **y compris lorsqu'on sacrifie un Incubateur non transformé**. **Vrai coût** : aucune recherche de réponse dans le deck et un effet dépendant d'un plateau existant. |
 | **The Meathook Massacre** (~22,13 €) | **Phyrexian Awakening** (~0,15 €) | Retire une wrath modulable associée à un drain générique. L'enchantement crée un Incubateur 4 et donne vigilance aux **créatures** phyrexianes, y compris les Incubateurs transformés. **Vrai coût** : moins de gestion de board adverse ; Sunfall reste une vraie wrath. |
 | **Urza's Saga** (~39,19 €) | **Vault of the Archangel** (~1,14 €) | Retire une terre tutorisant les artefacts coût 0/1 et créant de gros Constructs, forte dans beaucoup de decks artefacts. Vault donne deathtouch/lifelink **à toute notre armée** pour {2}{W}{B} et engagement ; nécessite un vrai board et représente aussi une source incolore sans fixing initial. |
@@ -41,9 +41,12 @@ du groupe ; les retirer sert le contrat social de *ce* deck.
   composent une vraie architecture Brimaz. Peut devenir trop
   dominant en interaction avec certains combos ; dans ce deck,
   aucune boucle infinie intentionnelle n'est recherchée.
-- **Anointed Procession** : puissante dans tout deck de jetons,
-  mais double la matière première particulière de Brimaz ;
-  variante à examiner si la table n'apprécie pas les duplications.
+- **Anointed Procession** (environ 33 € en tendance Cardmarket) était un
+  multiplicateur puissant mais générique. **Elle a été retirée** dans
+  la passe suivante pour **Everflowing Chalice**, afin de payer les
+  transformations des Incubateurs sans ajouter un second doubleur
+  de jetons coûteux. **Mondrak est conservé** car c'est un Phyrexian
+  qui déclenche Brimaz et reste un payoff identitaire.
 - **Roaming Throne** : multiplie les capacités déclenchées
   pertinentes des Phyrexians et **incube aussi au lancement**
   en tant que créature-artefact. Puissant, mais dépend réellement
@@ -116,3 +119,8 @@ passer le contrôle Oracle/Game Changer live et le contrôle
 des 100 cartes dans la CI du dépôt. Les prix ne sont pas
 un total de dépenses, et les exceptions peuvent être modifiées
 selon les réactions du playgroup.
+
+
+## Décision ultérieure documentée (12/10/2026)
+
+Après la comparaison avec les decks budget de KaalDeagle qui **battent effectivement des listes Bracket 3**, Aron a été **remplacé par Steel Overseer**, et Anointed Procession a été **remplacée par Everflowing Chalice**. Activated Sleeper a également été échangée contre Scrap Trawler pour la reconstruction des artefacts. Ces trois nouvelles cartes ont des éditions courantes bon marché ; les prix indicatifs des versions non premium sont de l'ordre de 0,20–1,50 € chacun selon l'édition, avec transport non compté. La V4 courante est la liste sous `decks/Brimaz_V4_B3.txt` ; ce rapport conserve la trace historique des échanges précédents et **ne doit pas être interprété comme l'inventaire actuel des 100 cartes**.

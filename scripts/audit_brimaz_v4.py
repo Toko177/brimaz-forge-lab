@@ -52,7 +52,7 @@ SWAPS=(
 # Explicit conservative tags: a card listed is capable of the role under
 # some conditions, not necessarily at that turn or without mana/other cards.
 BRIMAZ_CASTS={
-    "Scrap Trawler", "Arcbound Ravager", "Bloated Processor",
+    "Activated Sleeper", "Scrap Trawler", "Arcbound Ravager", "Bloated Processor",
     "Priest of Gix", "Chronomancer", "Compleated Huntmaster",
     "Darksteel Splicer", "Elas il-Kor, Sadistic Pilgrim",
     "Elesh Norn", "Essence of Orthodoxy", "Filigree Vector",
