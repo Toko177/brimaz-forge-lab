@@ -27,7 +27,7 @@ la légalité Oracle **doit être revérifiée** avant l'achat ou la partie.
 | **Phyrexian Delver** | **Morbid Opportunist** | Pioche de valeur **une fois par tour** où une autre créature meurt : idéal avec quatre étapes de fin et les sacrifices sur les tours adverses. Coût : perdre une réanimation immédiate et un sort Phyrexian qui déclenche Brimaz ; conserver Athreos, Phyrexian Reclamation, Vulpine Harvester et Living Death. |
 | **Tortured Existence** | **Braids, Arisen Nightmare** | Braids sacrifie volontiers un Incubateur **non transformé** à notre étape de fin ; chaque adversaire qui ne sacrifie pas le même type nous fait piocher et perd 2 PV. Coût : sacrifier le recyclage récurrent en main de Tortured Existence, ainsi que l'accès direct aux casts réitérés. Braids ne fonctionne que **sur notre tour**. |
 | **Inspiring Statuary** | **Idol of Oblivion** | Avec incubation ou Myr Sire, une carte supplémentaire par tour avec engagement, au lieu d'une accélération qui ne profite qu'aux **sorts non-artefacts** et ne couvre pas les symboles colorés. Coût : moins de mana virtuel pour Brimaz et les sorts blancs/noirs. |
-| **Norn's Wellspring** | **Ichor Wellspring** | Une pioche immédiate à l'arrivée puis une pioche à la mort, pas de besoin d'accumuler marqueurs huile ni de payer/engager pour la carte. Coût : moins de valeur répétable via prolifération et un peu moins de thème Phyrexian. |
+| **Norn's Wellspring** | **Ichor Wellspring** | Une pioche immédiate à l'arrivée puis une pioche quand l'artefact va au cimetière, pas de besoin d'accumuler marqueurs huile ni de payer/engager pour la carte. Coût : moins de valeur répétable via prolifération et un peu moins de thème Phyrexian. |
 | **Etchings of the Chosen** | **Rite of Oblivion** | Notre manque d'interaction avec les permanents non-terrains est corrigé par un exil pour **1W + sacrifice** (Incubateur non transformé accepté), et une seconde utilisation flashback. Coût : la protection ponctuelle de Brimaz par sacrifice et le bonus tribal disparaissent. Reste Restoration Magic, Flare of Fortitude et Clever Concealment. |
 | **Vault of the Archangel** | **War Room** | Un terrain qui fournit des cartes sans board en place plutôt qu'une option de combat à {2}{W}{B} + engagement. **War Room** coûte 3 manas, engagement et **2 PV** avec l'identité blanc/noir de Brimaz. Coût : la menace de deathtouch/lifelink sur une attaque ou un bloc massif. |
 
@@ -146,3 +146,13 @@ gain de ressources contrebalance la perte de déclenchements d'Incubation.
 sur le papier. **Aucun avantage de taux de victoire** n'est
 démontré ; aucune des versions V41/V43 ne peut nous le fournir
 tant que l'IA Forge ne sait pas activer correctement les moteurs.
+
+### Cas limite important : sacrifice au début de l'étape de fin
+
+**Braids ne déclenche pas automatiquement la prolifération de Brimaz.**
+Si aucun Phyrexian n'était mort avant le début de cette étape,
+le sacrifice fait à la résolution de Braids arrive trop tard
+pour satisfaire la condition de déclenchement de Brimaz.
+Sacrifier un Phyrexian **avant le passage en étape de fin**
+avec Ravager, Bartolomé, Yawgmoth ou un autel si on veut
+proliférer pendant notre tour.

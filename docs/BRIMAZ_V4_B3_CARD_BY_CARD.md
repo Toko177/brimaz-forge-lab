@@ -49,7 +49,7 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Phyrexian Altar | Sacrifice gratuit **des créatures** vers le mana coloré ; meilleur que l'autel incolore pour les relances Phyrexians. |
 | 1 | Throne of Geth | Engagement + sacrifice d'un artefact pour proliférer ; accepte les Incubateurs non transformés et rend les marqueurs menaçants. |
 | 1 | Skullclamp | Pioche explosive avec de petites créatures sacrifiables ; nécessite une cible créature (jeton incubateur transformé, Myr, etc.). |
-| 1 | Ichor Wellspring | **V4** : pioche en arrivant, puis à la mort ; cible parfaite pour Krark-Clan Ironworks, Ravager, Bartolomé ou Braids. |
+| 1 | Ichor Wellspring | **V4** : pioche en arrivant, puis quand elle va au cimetière depuis le champ ; cible parfaite pour Krark-Clan Ironworks, Ravager, Bartolomé ou Braids. |
 | 1 | Idol of Oblivion | **V4** : pioche une carte par tour où un jeton a été créé, très souvent après une incubation ; exige de s'engager. |
 | 1 | Urza's Incubator | Réduit les coûts génériques des créatures du type choisi (Phyrexian) ; soutient les relances des vrais Phyrexians depuis la main. |
 | 1 | Spawning Pit | Outlet gratuit d'une **créature** pour prendre des marqueurs ; les marqueurs se prolifèrent et peuvent se convertir en jetons. |

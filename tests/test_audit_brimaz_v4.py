@@ -34,7 +34,7 @@ assert data["v4"]["p_1plus_repeatable_draw_source_seen_in_10"]>data["v3"]["p_1pl
 assert data["v4"]["p_3plus_land_sources_seen_in_10"]==data["v3"]["p_3plus_land_sources_seen_in_10"]
 assert hypergeom_at_least(100,0,10)==0
 assert hypergeom_at_least(100,100,10)==1
-assert both_seen(100,set(range(3)),set(range(3)),10)==hypergeom_at_least(100,3,10)
+assert abs(both_seen(100,set(range(3)),set(range(3)),10)-hypergeom_at_least(100,3,10))<1e-12
 for source in (REFERENCE,CANDIDATE,FORGE_V4):
     assert source.is_file()
     assert source.read_text().endswith("\n")

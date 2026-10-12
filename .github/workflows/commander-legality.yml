@@ -3,11 +3,20 @@ on:
   push:
     paths: [".github/workflows/commander-legality.yml", "scripts/validate_commander_legality.py"]
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "deck_candidates/Brimaz_V4_B3.dck"
+      - "decks/Brimaz_V4_B3.txt"
+      - "docs/BRIMAZ_V4_B3_*.md"
+      - "scripts/validate_commander_legality.py"
+      - ".github/workflows/commander-legality.yml"
 permissions:
   contents: read
   actions: read
 jobs:
   verify:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -54,4 +63,25 @@ jobs:
         with:
           name: legality-audit-all-playgroup-pods
           path: results/legality/
+          if-no-files-found: ignore
+
+  verify-brimaz-v4:
+    name: Brimaz V4 live Oracle, color identity and zero Game Changers
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate entire V4 against live Scryfall; fail closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/validate_commander_legality.py \
+            --deck deck_candidates/Brimaz_V4_B3.dck \
+            --require-no-game-changers \
+            --out results/legality/brimaz-v4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-v4-scryfall-legality
+          path: results/legality/brimaz-v4/
           if-no-files-found: ignore
