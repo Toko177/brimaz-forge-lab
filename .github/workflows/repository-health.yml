@@ -37,5 +37,6 @@ jobs:
           python tests/test_analyze_v41_sacrifice_bottlenecks.py
           python tests/test_deckbuild_pipeline.py
           python tests/test_deckbuild_cache.py
+          python tests/test_commander_pods.py
           python tests/test_audit_v42_generic_commander.py
           python tests/test_forge_seat_identity.py

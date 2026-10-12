@@ -48,8 +48,12 @@ plus de modifier le Java Forge ni de créer un nouveau workflow.
   Les paires `Partner`, `Choose a Background` et assimilées
   sont **refusées pour l'instant** : la simple présence de deux cartes
   en zone de commandement ne suffit pas à vérifier leur légalité.
-- **2 pods fixes** : aristo (Radha, Dungeon/Tazri, Zimone et Dina) et artifact
-  (Lathril, Urza, Amalia).
+- **2 pods fixes** : aristo (Radha, Dungeon Party Time, Zimone et Dina) et
+  artifact (Lathril, Urza, Dungeon Party Time). **Amalia a été retirée
+  des adversaires actifs**, mais son deck d'origine est conservé et épinglé.
+  Le partage de Dungeon entre les pods est intentionnel : les cinq Kaal
+  restants occupent six places entre les deux groupes.
+  [Version des groupes et limites](ACTIVE_COMMANDER_PODS_2026-10-12.md).
 - **Quatre sièges équilibrés** pour chaque liste : Brimaz ou le nouveau
   commandant occupe tour à tour les quatre places.
 - Le vrai moteur **Forge 2.0.15** applique les règles du jeu, avec le

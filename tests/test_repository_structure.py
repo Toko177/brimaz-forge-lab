@@ -11,6 +11,7 @@ from run_local_four_ai import validate_decks, CANONICAL_DECK_SHA256
 expected = {
     "README.md", "NEXT_CHAT_START_HERE.md",
     "docs/REPOSITORY_STRUCTURE.md", "docs/RUN_LOCAL_4AI_COMMANDER.md",
+    "docs/ACTIVE_COMMANDER_PODS_2026-10-12.md",
     "docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md",
     "docs/V35_STRATEGIC_SEARCH.md",
     "scripts/run_local_four_ai.py", "scripts/run_paired_four_ai.py",

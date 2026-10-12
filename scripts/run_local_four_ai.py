@@ -8,6 +8,7 @@ Independent Forge JVMs run concurrently; each receives the SAME AI policy.
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime,timezone
+from commander_pods import ROSTER_VERSION, PODS as ACTIVE_PODS
 import hashlib
 import json
 import os
@@ -309,6 +310,7 @@ def main():
         "title":"Genuine independent Forge 2.0.15 four-AI Commander games",
         "policy":args.policy,"profile_applied_identically_to_all_four_seats":args.profile,
         "pods":list(pods),"four_seat_rotations":[0,1,2,3],
+        "roster_version":ROSTER_VERSION,"active_pods":ACTIVE_PODS,
         "games_per_rotation":args.games_per_rotation,
         "planned_independent_jvms":len(pods)*4*args.games_per_rotation,
         "clock_seconds":args.clock,"base_seed":args.seed_base,

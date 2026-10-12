@@ -72,3 +72,14 @@ Les anciennes PR sont fermées, 30 branches devenues redondantes ont été
 supprimées après contrôle de leur inclusion dans `main`. La branche
 `archive/experimental-branches-20261011` conserve un point de contrôle
 explicite. [Preuves et audit](GLOBAL_GITHUB_REPOSITORY_AUDIT_2026-10-11.md).
+
+### Groupes de decks actifs (12 octobre 2026)
+
+Les rosters expérimentaux sont définis à un seul endroit :
+`scripts/commander_pods.py`. `scripts/batch.py` et
+`scripts/deckbuild_run.py` l'utilisent tous deux, avec tests
+`tests/test_commander_pods.py`. La liste Amalia reste canonique
+et immuable, mais l'adversaire actif du pod artifact est maintenant
+Dungeon Party Time. Les versions de rosters et les sept SHA256 de
+référence permettent de distinguer sans ambiguïté les campagnes.
+[Politique de composition](ACTIVE_COMMANDER_PODS_2026-10-12.md).

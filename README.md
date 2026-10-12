@@ -5,6 +5,17 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
+## Groupes de parties — mise à jour du 12 octobre 2026
+
+**Amalia est remplacée dans le groupe artifact par Dungeon Party Time**,
+une des sept listes déjà épinglées. Brimaz, Lathril, Urza et Dungeon
+Party Time composent désormais ce groupe. Le groupe aristo ne change
+pas. Les sept fichiers DCK restent strictement identiques et Amalia
+n'est pas supprimée. Les deux groupes partagent désormais Dungeon ;
+leurs archives et résultats antérieurs ne doivent pas être mélangés
+avec les nouveaux.
+[Compositions, source de vérité et règles de comparaison](docs/ACTIVE_COMMANDER_PODS_2026-10-12.md).
+
 ## Politique active et parcours utilisateur
 
 Le moteur Commander **V43 expérimental** propose des décisions de

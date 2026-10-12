@@ -216,7 +216,7 @@ jobs:
             --reference-policy v37_stock_control \
             --experiment-policy v43_commander_single_seat \
             --profile Default --games-per-rotation 1 --parallel 2 \
-            --clock 420 --seed-base 20261221 \
+            --clock 420 --seed-base 20270123 \
             --out "results/v43_head_to_head_pairs_${{ matrix.pod }}"
       - name: Audit genuine V42 actions on multiple unrelated decks
         run: |

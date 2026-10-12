@@ -237,3 +237,17 @@ politique et les SHA256 des vraies classes Java compilées, afin
 qu'aucune référence V13 ne soit réutilisée en V43.
 Tests : `test_deckbuild_pipeline.py`, `test_deckbuild_cache.py`.
 Guide : `docs/DECKBUILDING_QUICKSTART.md`. Garder PR #29 draft.
+
+## 12/10/2026 — remplacement d'Amalia dans les groupes actifs
+
+L'utilisateur demande un autre adversaire issu de la liste existante
+à la place d'Amalia. Le groupe artifact devient : Brimaz_V3,
+Kaal_23328062 (Lathril), Kaal_11485202 (Urza) et Kaal_10347090
+(Dungeon Party Time). Le groupe aristo conserve Radha, Dungeon,
+Zimone/Dina. Les 7 fichiers DCK canoniques restent intacts ; Amalia
+est exclue des matchs futurs, pas de l'archive. **Dungeon est donc
+partagé entre les deux groupes**, jamais deux fois dans un match.
+`scripts/commander_pods.py` est la source unique des pods actifs.
+Ne jamais attribuer les résultats des anciennes parties Amalia à
+Dungeon ; nouveaux runs/retests nécessaires. Doc complète :
+`docs/ACTIVE_COMMANDER_PODS_2026-10-12.md`.

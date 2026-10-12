@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Strict real-Forge AI seat-to-deck identity resolver.
 
-The simulator's deck file is e.g. Kaal_22193355.dck but the JVM logs
-"player=Ai(4)-EDH Amalia". Identity is a two-part contract: seat number
+The simulator's deck file is e.g. Kaal_10347090.dck but the JVM logs
+"player=Ai(4)-EDH Dungeon Party Time". Identity is a two-part contract: seat number
 and exact [metadata] Name from the corresponding deck. Never substitute
 a substring match or guess the winner from a name alone.
 """

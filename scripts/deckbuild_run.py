@@ -15,11 +15,8 @@ import subprocess
 import sys
 import time
 from forge_result_evidence import inspect_ai_quality_signatures
+from commander_pods import OPPONENTS, ROSTER_VERSION
 
-OPPONENTS={
-    "aristo":["Kaal_9594008","Kaal_10347090","Kaal_21930525"],
-    "artifact":["Kaal_23328062","Kaal_11485202","Kaal_22193355"],
-}
 RESULT=re.compile(r"Game Result: Game\s+\d+\s+ended in\s+(\d+)\s*ms\.\s*Ai\((\d+)\)-(.+?) has won!")
 V13_POLICY="V13-incubate-adaptive"
 V43_POLICY="V43-single-seat-generic"
@@ -144,7 +141,8 @@ def run_games(*,jar,directory,manifest,arm,pod,rotation,seed_base,repeats,clock,
         game_ms=int(matches[0][0]) if matches else None
         item={
             "arm":arm,"candidate_deck":label,"candidate_seat":seat,"candidate_win":(winner_seat==seat if winner_seat else None),
-            "pod":pod,"rotation":rotation,"repeat":rep,"seed":seed,
+             "pod":pod,"roster_version":ROSTER_VERSION,
+            "rotation":rotation,"repeat":rep,"seed":seed,
             "seats":seats,"policy":policy,"profiles":[profile]*4,
             "policy_target_seat":seat if policy==V43_POLICY else None,
             "policy_real_log_evidence":policy_evidence,

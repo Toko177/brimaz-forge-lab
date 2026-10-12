@@ -37,6 +37,15 @@ def load_campaign(root):
                 raise ValueError("Not four distinct real Commander seats")
             if r["seats"].count("Brimaz_V3")!=1:
                 raise ValueError("Missing unique Brimaz seat")
+            if "active_pods" in provenance:
+                roster=provenance["active_pods"].get(r["pod"])
+                if roster is None or len(roster)!=4:
+                    raise ValueError("Missing pinned four-deck pod roster")
+                expected_seats=roster[r["rotation"]:] + roster[:r["rotation"]]
+                if r["seats"]!=expected_seats:
+                    raise ValueError("Game seats differ from declared pod roster")
+                if r.get("roster_version")!=provenance.get("roster_version"):
+                    raise ValueError("Game roster version differs from provenance")
             log=manifest.parent/Path(r["log"]).name
             if not log.is_file():
                 raise ValueError("Actual Forge game log missing "+str(log))
@@ -96,7 +105,8 @@ def compare(root_a,root_b):
     meta_b,games_b=load_campaign(root_b)
     for key in ("original_forge_sha256","canonical_seven_deck_sha256",
                 "profile_applied_identically_to_all_four_seats","pods",
-                "games_per_rotation","base_seed","clock_seconds","jfr_enabled"):
+                "roster_version","active_pods",
+                 "games_per_rotation","base_seed","clock_seconds","jfr_enabled"):
         if meta_a.get(key)!=meta_b.get(key):
             raise ValueError("Not a fair canonical Forge A/B: "+key)
     if games_a.keys()!=games_b.keys():

@@ -15,12 +15,14 @@ import json
 from pathlib import Path
 
 from deckbuild_run import OPPONENTS,POLICIES,V13_POLICY,V43_POLICY,policy_trace_evidence
+from commander_pods import ROSTER_VERSION
 
 VERSION = 2
 FILES = (
     "scripts/patch_forge_charm_context.py",
     "scripts/patch_forge_brimaz_v13.py",
     "scripts/deckbuild_run.py",
+    "scripts/commander_pods.py",
     "scripts/forge_result_evidence.py",
     # Every Java source compiled by patch_forge_brimaz_v13.py contributes
     # to the actual JAR identity, even if the patch script itself is stable.
@@ -82,6 +84,8 @@ def stamp(root, decks, manifest, *, seed_base, repeats, clock=360,
         "reference_commander":ref["commander"],
         "reference_source_sha256":ref["source_sha256"],
         "opponent_sha256":dict(sorted(opponents.items())),
+        "pod_roster_version":ROSTER_VERSION,
+        "active_opponent_pods":OPPONENTS,
         "runtime_source_sha256":runtime,
         "seat_rotations":[0,1,2,3],
         "pods":sorted(OPPONENTS),
@@ -123,7 +127,8 @@ def validate_reference_logs(root, expected, *, expected_games=None):
             deck_order=["Deck_Reference"]+OPPONENTS[pod]
             deck_order=deck_order[rotation:]+deck_order[:rotation]
             seed=inp["seed_base"]+(100000 if pod=="artifact" else 0)+10000*rotation+rep
-            if (g.get("seats")!=deck_order or g.get("candidate_seat")!=deck_order.index("Deck_Reference")+1
+            if (g.get("roster_version")!=inp["pod_roster_version"]
+                or g.get("seats")!=deck_order or g.get("candidate_seat")!=deck_order.index("Deck_Reference")+1
                 or g.get("seed")!=seed or g.get("clock_seconds")!=inp["clock_seconds"]
                 or g.get("policy")!=inp["policy"]
                 or g.get("profiles")!=[inp["ai_profile"]]*4

@@ -10,6 +10,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from run_local_four_ai import (validate_decks,policy_flags,patch_jar,sha,PODS,POLICIES,
                                CANONICAL_DECK_SHA256)
+from commander_pods import PODS as MATCHUP_PODS, OPPONENTS as MATCHUP_OPPONENTS, verify_rosters
 
 DECKS=("Brimaz_V3","Kaal_9594008","Kaal_10347090","Kaal_21930525",
        "Kaal_23328062","Kaal_11485202","Kaal_22193355")
@@ -17,6 +18,9 @@ orig=ROOT/"canonical/results/forge_normalization/report.json"
 existing=ROOT/"forge_decks"
 assert orig.is_file()
 assert len(PODS)==2 and len(DECKS)==7
+assert verify_rosters()
+assert all("Kaal_22193355" not in seats for seats in MATCHUP_PODS.values())
+assert "Kaal_10347090" in MATCHUP_OPPONENTS["artifact"]
 assert set(DECKS)==set(CANONICAL_DECK_SHA256)
 verified=validate_decks(existing,orig)
 assert verified==CANONICAL_DECK_SHA256

@@ -143,3 +143,7 @@ python3 scripts/run_paired_four_ai.py \
   --clock 420 --seed-base 20261221 \
   --out results/v43_head_to_head_pairs
 ```
+
+**Attention :** cette note décrit la nouvelle composition active ;
+les mentions d'Amalia plus haut concernent les anciens journaux réels
+et restent volontairement conservées comme preuve historique.
