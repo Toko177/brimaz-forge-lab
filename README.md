@@ -5,32 +5,34 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
-## Brimaz V4 B3 — gagner par le board, pas par le drain
+## Brimaz V4 B3 — victoire par le board, pas les cartes « auto-include »
 
 **Liste Commander de 100 cartes pour le playgroup Bracket 3.**
-**Plan principal : incubateurs → marqueurs/prolifération → transformation
-en Phyrexians → évasion / anthem → dégâts de combat.**
-La V4 intègre **Abzan Falconer, Mirror Entity, Akroma's Will,
-Norn's Choirmaster, Patchwork Banner**, puis quatre arbitrages après
-l'audit **exhaustif des 78 cartes « considering »** :
-**Banner of Kinship, Gix, Yawgmoth Praetor, Esper Sentinel et
-Solemn Simulacrum**. La version actuelle fait **13 échanges par rapport
-à V3** et privilégie les attaques de masse et la pioche sur le combat.
-Le drain résiduel (Elas il-Kor, Meathook) reste secondaire.
-**Aucune supériorité de V4 sur V3 n'est démontrée en parties.**
-La V3 et les sept decks Forge canoniques restent inchangés.
+Plan principal : **Incubation → prolifération des marqueurs →
+transformation des Phyrexians → anthems/évasion → dégâts de combat**.
+Le drain est secondaire. La construction évite volontairement les
+staples génériques chers ou socialement oppressifs (Esper Sentinel,
+Urza's Saga, Phyrexian Altar, Diabolic Intent, The Meathook Massacre),
+remplacés par des outils qui dépendent du plan Brimaz :
+**Gixian Infiltrator, Aron, Benalia's Ruin, Resourceful Defense,
+Phyrexian Awakening, Vault of the Archangel**.
+**Mondrak et Yawgmoth** restent des exceptions chères mais
+fortement synergiques, sans plafond de prix rigide.
+La V4 comporte **16 différences nettes** par rapport à V3 ;
+la V3 et les sept DCK originaux ne changent pas.
+**La V4 n'est pas démontrée supérieure en partie.**
 
-- [V4 Moxfield / Archidekt (texte)](decks/Brimaz_V4_B3.txt) ;
+- [V4 importable Moxfield / Archidekt](decks/Brimaz_V4_B3.txt) ;
   [V4 Forge DCK](deck_candidates/Brimaz_V4_B3.dck).
-- [Treize échanges, plan de combat, timing et protocole](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
-  [justification de chaque carte](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md) ;
-  [audit des 78 cartes considering](docs/BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
-- `python3 tests/test_audit_brimaz_v4.py` vérifie les 100 cartes,
-  13 changements, la répartition board/drain et la probabilité
-  hypergéométrique **de voir** les cartes — pas un test de victoire.
-- Légalité Oracle / zéro Game Changer revérifiés en direct dans
-  `.github/workflows/commander-legality.yml` ; interaction et qualité
-  stratégique à confirmer sur une table réelle.
+- [Les 16 changements et le plan de jeu](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
+  [les 100 cartes individuellement](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
+- [Politique playgroup / auto-includes / prix sourcés](docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md) ;
+  [les 78 cartes considering](docs/BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
+- `python3 tests/test_audit_brimaz_v4.py` vérifie les 100 cartes
+  et les 16 changements. Les probabilités de cartes vues ne sont
+  **pas** des simulations de parties ni une preuve de winrate.
+- Vérifier Oracle / Game Changers en direct avec
+  `.github/workflows/commander-legality.yml` avant achat.
 
 ## Groupes de parties — mise à jour du 12 octobre 2026
 

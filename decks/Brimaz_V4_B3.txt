@@ -13,7 +13,7 @@
 1 Filigree Vector
 1 Grafted Butcher
 1 Lurrus of the Dream-Den
-1 Esper Sentinel
+1 Gixian Infiltrator
 1 Mirror Entity
 1 Metastatic Evangel
 1 Akroma's Will
@@ -37,7 +37,7 @@
 1 Orzhov Signet
 1 Ashnod's Altar
 1 Krark-Clan Ironworks
-1 Phyrexian Altar
+1 Aron, Benalia's Ruin
 1 Throne of Geth
 1 Skullclamp
 1 Patchwork Banner
@@ -50,10 +50,10 @@
 1 Rite of Oblivion
 1 Phyrexian Reclamation
 1 Solemn Simulacrum
-1 The Meathook Massacre
+1 Phyrexian Awakening
 1 Anguished Unmaking
 1 Clever Concealment
-1 Diabolic Intent
+1 Resourceful Defense
 1 Flare of Fortitude
 1 Living Death
 1 Sunfall
@@ -87,7 +87,7 @@
 1 The Mycosynth Gardens
 1 The Seedcore
 1 Urborg, Tomb of Yawgmoth
-1 Urza's Saga
+1 Vault of the Archangel
 1 Vault of Champions
 1 War Room
 4 Plains

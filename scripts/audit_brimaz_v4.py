@@ -34,12 +34,15 @@ SWAPS=(
     ("Inspiring Statuary", "Idol of Oblivion"),
     ("Norn's Wellspring", "Patchwork Banner"),
     ("Etchings of the Chosen", "Rite of Oblivion"),
-    ("Vault of the Archangel", "War Room"),
     ("Marionette Master", "Mirror Entity"),
     ("Mirkwood Bats", "Akroma's Will"),
     ("Vraan, Executioner Thane", "Norn's Choirmaster"),
-    ("Marionette Apprentice", "Esper Sentinel"),
+    ("Marionette Apprentice", "Gixian Infiltrator"),
     ("Scheming Aspirant", "Banner of Kinship"),
+    ("Phyrexian Altar", "Aron, Benalia's Ruin"),
+    ("Diabolic Intent", "Resourceful Defense"),
+    ("The Meathook Massacre", "Phyrexian Awakening"),
+    ("Urza's Saga", "War Room"),
 )
 # Explicit conservative tags: a card listed is capable of the role under
 # some conditions, not necessarily at that turn or without mana/other cards.
@@ -54,14 +57,15 @@ BRIMAZ_CASTS={
     "Progenitor Exarch", "Roaming Throne", "Scheming Aspirant",
     "Gold Myr", "Vraan, Executioner Thane", "Vulpine Harvester",
     "Myr Sire", "Mirror Entity", "Norn's Choirmaster",
-    "Solemn Simulacrum", "Gix, Yawgmoth Praetor", "Esper Sentinel",
+    "Solemn Simulacrum", "Gix, Yawgmoth Praetor",
+    "Gixian Infiltrator", "Aron, Benalia's Ruin",
 }
 # Deliberately exclude one-shot draw (Deadly Dispute/Ichor) and the
 # uncertain triggers on cards that require other resources to function.
 REPEATABLE_DRAW={
     "Skullclamp", "Caretaker's Talent", "Norn's Wellspring",
     "Castle Locthwain", "Yawgmoth, Thran Physician",
-    "Idol of Oblivion", "Gix, Yawgmoth Praetor", "Esper Sentinel",
+    "Idol of Oblivion", "Gix, Yawgmoth Praetor",
     "War Room",
 }
 SACRIFICE_ACCESS={
@@ -69,7 +73,7 @@ SACRIFICE_ACCESS={
     "Compleated Huntmaster", "Ashnod's Altar", "Krark-Clan Ironworks",
     "Phyrexian Altar", "Throne of Geth", "Spawning Pit",
     "Yawgmoth, Thran Physician", "High Market", "Phyrexian Tower",
-    "Rite of Oblivion",
+    "Rite of Oblivion", "Aron, Benalia's Ruin",
 }
 SACRIFICE_PAYOFF={
     "Marionette Apprentice", "Marionette Master", "Mirkwood Bats",
@@ -82,7 +86,8 @@ SACRIFICE_PAYOFF={
 BOARD_PRESSURE={
     "Darksteel Splicer","Grafted Butcher","Vault of the Archangel",
     "Abzan Falconer","Mirror Entity","Akroma's Will",
-    "Banner of Kinship",
+    "Banner of Kinship", "Aron, Benalia's Ruin",
+    "Gixian Infiltrator", "Phyrexian Awakening",
     "Norn's Choirmaster","Patchwork Banner",
 }
 # Major repeatable or noncombat life-loss engines, not every minor drain.

@@ -19,10 +19,13 @@ from audit_brimaz_v4 import (SWAPS,BRIMAZ_CASTS,REPEATABLE_DRAW,
 from run_local_four_ai import CANONICAL_DECK_SHA256
 assert hashlib.sha256(FORGE_V3.read_bytes()).hexdigest()==CANONICAL_DECK_SHA256["Brimaz_V3"]
 assert len(CANONICAL_DECK_SHA256)==7
-assert len(SWAPS)==13 and len({a for a,b in SWAPS})==13 and len({b for a,b in SWAPS})==13
+assert len(SWAPS)==16 and len({a for a,b in SWAPS})==16 and len({b for a,b in SWAPS})==16
 a,b=validate()
 assert len(a)==len(b)==94 and len(b)!=100 # Plains / Swamp quantities >1.
 assert a!=b
+assert all(b[name]==0 for name in ("Esper Sentinel","Urza's Saga","Phyrexian Altar","Diabolic Intent","The Meathook Massacre"))
+assert all(b[name]==1 for name in ("Gixian Infiltrator","Aron, Benalia's Ruin","Resourceful Defense","Phyrexian Awakening","Vault of the Archangel"))
+assert all(b[name]==1 for name in ("Mondrak, Glory Dominus","Yawgmoth, Thran Physician"))
 data=report()
 assert data["method"].startswith("EXACT HYPERGEOMETRIC")
 assert set(data["removed"])=={x for x,_ in SWAPS}
