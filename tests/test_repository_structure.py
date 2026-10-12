@@ -33,6 +33,7 @@ expected = {
     ".github/workflows/commander-four-ai-simulator.yml",
     "docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md",
     "scripts/audit_brimaz_v4.py", "tests/test_audit_brimaz_v4.py",
+    "scripts/scan_commander_oracle_pool.py", "tests/test_scan_commander_oracle_pool.py",
     "decks/Brimaz_V4_B3.txt", "deck_candidates/Brimaz_V4_B3.dck",
     "docs/BRIMAZ_V4_B3_DECISIONS.md", "docs/BRIMAZ_V4_B3_CARD_BY_CARD.md",
     "docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md",

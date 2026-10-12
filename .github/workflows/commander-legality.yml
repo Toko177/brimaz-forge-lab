@@ -10,6 +10,8 @@ on:
       - "decks/Brimaz_V4_B3.txt"
       - "docs/BRIMAZ_V4_B3_*.md"
       - "scripts/validate_commander_legality.py"
+      - "scripts/scan_commander_oracle_pool.py"
+      - "tests/test_scan_commander_oracle_pool.py"
       - ".github/workflows/commander-legality.yml"
 permissions:
   contents: read
@@ -85,3 +87,29 @@ jobs:
           name: brimaz-v4-scryfall-legality
           path: results/legality/brimaz-v4/
           if-no-files-found: ignore
+
+  research-all-legal-orzhov:
+    name: Enumerate the full live Commander-legal Orzhov and colorless Oracle pool
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline discovery regression tests
+        run: python tests/test_scan_commander_oracle_pool.py
+      - name: Enumerate every real Oracle card, then filter Commander/Orzhov
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/scan_commander_oracle_pool.py --out results/oracle-pool --top 65
+      - name: Preserve full legal pool, method, scores and candidate list
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-current-full-oracle-pool
+          path: results/oracle-pool/
+          if-no-files-found: ignore
+          retention-days: 30
