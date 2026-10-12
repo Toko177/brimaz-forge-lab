@@ -10,21 +10,23 @@ certification et comparaisons de politiques.
 **Liste Commander de 100 cartes pour le playgroup Bracket 3.**
 **Plan principal : incubateurs → marqueurs/prolifération → transformation
 en Phyrexians → évasion / anthem → dégâts de combat.**
-La V4 est corrigée pour retirer plusieurs payoffs de drain et introduire
-**Abzan Falconer, Mirror Entity, Akroma's Will, Norn's Choirmaster,
-Patchwork Banner**. La version actuelle fait **11 changements par rapport
-à la V3**, contre 8 dans la première ébauche V4 non prouvée.
-Le drain via Scheming Aspirant / Marionette Apprentice / Elas il-Kor est
-un **plan secondaire**, plus un motif de sacrifier toute notre armée.
+La V4 intègre **Abzan Falconer, Mirror Entity, Akroma's Will,
+Norn's Choirmaster, Patchwork Banner**, puis quatre arbitrages après
+l'audit **exhaustif des 78 cartes « considering »** :
+**Banner of Kinship, Gix, Yawgmoth Praetor, Esper Sentinel et
+Solemn Simulacrum**. La version actuelle fait **13 échanges par rapport
+à V3** et privilégie les attaques de masse et la pioche sur le combat.
+Le drain résiduel (Elas il-Kor, Meathook) reste secondaire.
 **Aucune supériorité de V4 sur V3 n'est démontrée en parties.**
 La V3 et les sept decks Forge canoniques restent inchangés.
 
 - [V4 Moxfield / Archidekt (texte)](decks/Brimaz_V4_B3.txt) ;
   [V4 Forge DCK](deck_candidates/Brimaz_V4_B3.dck).
-- [Onze échanges, plan de combat, timing et protocole](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
-  [justification de chaque carte](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md).
+- [Treize échanges, plan de combat, timing et protocole](docs/BRIMAZ_V4_B3_DECISIONS.md) ;
+  [justification de chaque carte](docs/BRIMAZ_V4_B3_CARD_BY_CARD.md) ;
+  [audit des 78 cartes considering](docs/BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
 - `python3 tests/test_audit_brimaz_v4.py` vérifie les 100 cartes,
-  11 changements, la répartition board/drain et la probabilité
+  13 changements, la répartition board/drain et la probabilité
   hypergéométrique **de voir** les cartes — pas un test de victoire.
 - Légalité Oracle / zéro Game Changer revérifiés en direct dans
   `.github/workflows/commander-legality.yml` ; interaction et qualité

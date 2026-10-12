@@ -19,7 +19,7 @@ from audit_brimaz_v4 import (SWAPS,BRIMAZ_CASTS,REPEATABLE_DRAW,
 from run_local_four_ai import CANONICAL_DECK_SHA256
 assert hashlib.sha256(FORGE_V3.read_bytes()).hexdigest()==CANONICAL_DECK_SHA256["Brimaz_V3"]
 assert len(CANONICAL_DECK_SHA256)==7
-assert len(SWAPS)==11 and len({a for a,b in SWAPS})==11 and len({b for a,b in SWAPS})==11
+assert len(SWAPS)==13 and len({a for a,b in SWAPS})==13 and len({b for a,b in SWAPS})==13
 a,b=validate()
 assert len(a)==len(b)==94 and len(b)!=100 # Plains / Swamp quantities >1.
 assert a!=b
@@ -31,6 +31,8 @@ assert data["v3"]["possible_land_cards"]==data["v4"]["possible_land_cards"]==38
 assert data["v4"]["repeatable_draw_source_names"]>data["v3"]["repeatable_draw_source_names"]
 assert data["v4"]["combat_support_or_finisher_cards"]>data["v3"]["combat_support_or_finisher_cards"]
 assert data["v4"]["explicit_drain_engine_cards"]<data["v3"]["explicit_drain_engine_cards"]
+assert data["v4"]["combat_support_or_finisher_cards"]>=7
+assert data["v4"]["brimaz_eligible_cast_names"]>=data["v3"]["brimaz_eligible_cast_names"]
 assert data["v4"]["p_1plus_combat_support_seen_in_13"]>data["v3"]["p_1plus_combat_support_seen_in_13"]
 assert data["v4"]["brimaz_eligible_cast_names"]<data["v3"]["brimaz_eligible_cast_names"]
 assert data["v4"]["p_1plus_repeatable_draw_source_seen_in_10"]>data["v3"]["p_1plus_repeatable_draw_source_seen_in_10"]

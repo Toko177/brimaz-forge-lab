@@ -4,7 +4,7 @@
 
 **Commande** : Brimaz, Blight of Oreskos ; noir/blanc, aucun poison comme condition de victoire voulue, zéro Game Changer voulu, aucun combo infini précoce intentionnel. Exactement 100 cartes, original V3 et 7 adversaires originaux conservés.
 
-Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, **transformation en créature** et **mort d'un Phyrexian**. **Plan principal : développer puis transformer des Incubateurs, proliférer leurs marqueurs, donner vol/bonus de masse et attaquer.** Le drain de Scheming Aspirant, Marionette Apprentice, Elas il-Kor et Meathook reste un plan secondaire. Un Incubateur non transformé ne satisfait pas les coûts de sacrifice d'une créature et sa destruction seule ne prolifère pas avec Brimaz. La plupart des moteurs décrits exigent une vraie présence en jeu, de quoi payer leurs coûts et des fenêtres de priorité.
+Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, **transformation en créature** et **mort d'un Phyrexian**. **Plan principal : développer puis transformer des Incubateurs, proliférer leurs marqueurs, donner vol/bonus de masse et attaquer.** Le drain résiduel d'Elas il-Kor et Meathook reste un plan secondaire : la bannière, Gix et Esper Sentinel sont là pour rendre le combat dominant. Un Incubateur non transformé ne satisfait pas les coûts de sacrifice d'une créature et sa destruction seule ne prolifère pas avec Brimaz. La plupart des moteurs décrits exigent une vraie présence en jeu, de quoi payer leurs coûts et des fenêtres de priorité.
 
 | Qté | Carte | Justification dans la V4 |
 |---:|---|---|
@@ -22,7 +22,7 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Filigree Vector | Créature-artefact phyrexiane génératrice de marqueurs et capable de sacrifier un artefact pour proliférer ; relie tous les sous-moteurs. |
 | 1 | Grafted Butcher | Phyrexian bon marché, bonus de combat aux Phyrexians ; peut revenir du cimetière en sacrifiant artefact/créature à vitesse rituel. |
 | 1 | Lurrus of the Dream-Den | Recaste chaque tour un permanent de coût deux ou moins depuis le cimetière ; rejouer Myr Sire ou Myr Retriever produit des déclenchements de Brimaz. |
-| 1 | Marionette Apprentice | Fait perdre 1 point de vie à chacun des trois adversaires quand tes artefacts ou créatures passent au cimetière ; paie directement le sacrifice des Incubateurs. |
+| 1 | Esper Sentinel | **V4 combat/constance** : artefact-créature à {W}, déclenche Incubation 1 au lancement ; taxe la première réponse non-créature de chaque adversaire chaque tour, sinon pioche. Source de cartes sans sacrifier le board. |
 | 1 | Mirror Entity | **V4 combat** : changeling, donc Phyrexian au lancement et déclenche Brimaz ; son activation {X} donne une force/endurance de base X/X à toutes nos créatures, AVANT leurs marqueurs ; exige du mana pour un assaut final. |
 | 1 | Metastatic Evangel | Phyrexian de coût deux ; prolifère aux arrivées des créatures non-jetons, utile même quand l'Incubation a déjà créé des marqueurs. |
 | 1 | Akroma's Will | **V4 combat** : éphémère {3}{W}, deux modes si Brimaz est contrôlé au lancement ; vol, vigilance, double initiative, lien de vie, indestructible et protection contre toutes les couleurs jusqu'à la fin du tour. Priorité aux attaques décisives plutôt qu'aux dégâts automatiques. |
@@ -30,12 +30,12 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Myr Retriever | Créature-artefact à deux manas qui ramène un artefact du cimetière à la main lorsqu'elle meurt ; recastable avec Lurrus. |
 | 1 | Norn's Inquisitor | Phyrexian peu coûteux qui produit et exploite l'Incubation ; plusieurs triggers utiles pour le plan marqueurs. |
 | 1 | Ornithopter of Paradise | Créature-artefact mana-fixer, déclenche Brimaz lorsqu'elle est lancée ; accélère le tour du commandant. |
-| 1 | Morbid Opportunist | **V4** : pioche dès qu'une ou plusieurs autres créatures meurent, une fois **par tour** ; profite des sacrifices pendant les tours adverses. |
+| 1 | Gix, Yawgmoth Praetor | **V4 combat/pioche** : Phyrexian 3/3 à {1}{B}{B} déclenchant l'Incubation 3 ; peut faire piocher chaque fois que nos créatures touchent un adversaire contre 1 PV. Les adversaires peuvent également piocher en s'attaquant entre eux. |
 | 1 | Phyrexian Fleshgorger | Créature-artefact phyrexiane avec prototype ; déclenche Brimaz en version rapide et reste menaçante en haut de courbe. |
 | 1 | Phyrexian Missionary | Phyrexian peu cher ; son kicker peut récupérer une créature en main, donc permettre une nouvelle incubation lors de sa relance. |
 | 1 | Progenitor Exarch | Phyrexian qui incube selon le mana X investi ; excellent moteur de jetons et de marqueurs avant une prolifération. |
 | 1 | Roaming Throne | Choisit Phyrexian, amplifie les déclenchements de Brimaz et des autres Phyrexians ; créature-artefact qui déclenche elle-même Brimaz. |
-| 1 | Scheming Aspirant | Fait perdre 2 points de vie à chaque adversaire lorsqu'on prolifère ; une des meilleures conditions de victoire propres au commandant. |
+| 1 | Banner of Kinship | **V4 combat** : choisit Phyrexian, obtient un marqueur fellowship par créature Phyrexian présente lors de son arrivée. Chaque marqueur donne +1/+1 à toute l'armée Phyrexian et est proliférable par Brimaz ; coûte cinq manas. |
 | 1 | Gold Myr | Caillou de mana blanc sur une créature-artefact : déclenche Brimaz au lancement et soutient les coûts blancs. |
 | 1 | Norn's Choirmaster | **V4 combat** : Phyrexian Angel 5/4 vol/initiative à {3}{W}{W}, déclenche Brimaz au lancement et prolifère quand Brimaz arrive ou attaque ; augmente les marqueurs +1/+1 de l'armée. |
 | 1 | Vulpine Harvester | Phyrexian qui remonte un artefact du cimetière directement en jeu après une attaque de Phyrexians ; préservé comme vraie récursion répétable. |
@@ -58,7 +58,7 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 1 | Caretaker's Talent | Pioche conditionnelle sur création de jetons ; offre plus tard un avantage de taille aux jetons ; moteur à pérenniser. |
 | 1 | Rite of Oblivion | **V4** : exil ciblé de permanent non-terrain en sacrifiant même un Incubateur non transformé ; flashback offre une seconde interaction. |
 | 1 | Phyrexian Reclamation | Récupération en main pour deux manas et 2 PV ; relancer la créature fait proc Brimaz à nouveau. |
-| 1 | Braids, Arisen Nightmare | **V4** : à sa propre étape de fin, sacrifie un Incubateur ou autre permanent pour forcer le choix de chaque adversaire et piocher jusqu'à trois cartes. |
+| 1 | Solemn Simulacrum | **V4 combat/mana** : créature-artefact à quatre manas qui déclenche Incubation 4, trouve un terrain de base engagé à l'arrivée et pioche à sa mort. Permet de payer les transformations d'Incubateurs. |
 | 1 | The Meathook Massacre | Effet de réduction des créatures et payoff sur les morts ; souple pour nettoyer les petites tables et convertir les sacrifices. |
 | 1 | Anguished Unmaking | Exil de presque n'importe quel permanent non-terrain à vitesse éphémère ; essentiel contre moteurs ou combos. |
 | 1 | Clever Concealment | Phase out les permanents choisis pour préserver le plateau contre un retrait massif, sans déclencher leur mort. |
@@ -103,6 +103,6 @@ Les motifs distinguent **cast Phyrexian/artefact**, **création d'Incubateur**, 
 | 4 | Swamp | Quatre basiques noirs ; activent Tainted Field et supportent les symboles noirs fréquents. |
 | 1 | Brimaz, Blight of Oreskos | Commandant. Les sorts phyrexians et créatures-artefacts incubent au lancement ; la mort d'un Phyrexian autorise une prolifération au début de chaque étape de fin, si Brimaz est présent. |
 
-**Lecture** : les onze entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
+**Lecture** : les treize entrées nouvelles par rapport à la V3 sont indiquées par **V4** ; chaque autre carte a été conservée intentionnellement. Quatre Plains et quatre Swamp comptent huit cartes physiques, pas deux.
 
-Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les huit remplacements, alternatives écartées, mise à niveau du test statistique et limites de Forge.
+Voir `BRIMAZ_V4_B3_DECISIONS.md` pour les treize remplacements, et `BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md` pour **tous les 78 candidats** apportés ensuite, les règles vérifiées et les alternatives non sélectionnées.

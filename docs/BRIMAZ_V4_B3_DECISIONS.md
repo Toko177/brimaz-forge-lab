@@ -1,137 +1,57 @@
-# Brimaz V4 Bracket 3 — révision **victoire par le board**
+# Brimaz V4 Bracket 3 — board et attaques, audit des 78 cartes « considering »
 
-**Date : 12 octobre 2026. Statut : candidat 100 cartes, légal à recontrôler en direct, pas une puissance ou un taux de victoire prouvé.**
+**Date : 12 octobre 2026. Statut : candidat de deckbuilding, non prouvé meilleur que V3 par des parties.** 100 cartes, WB, pas de plan poison, zéro Game Changer souhaité. Le projet vise avant tout une liste compétitive et synergique contre un playgroup Bracket 3, et non une nouvelle IA V44.
 
-## Objectif confirmé par le joueur
+## Plan de victoire
 
-Gagner **surtout en attaquant avec les Phyrexians et les Incubateurs transformés**,
-pas en faisant perdre 30 à 40 PV par une accumulation automatique de
-déclenchements de drain. L'axe sacrifice/prolifération subsiste car il
-**fait grandir les marqueurs +1/+1** et permet de reconstruire.
-Le drain reste une issue secondaire si le plateau est verrouillé.
+1. Jouer Brimaz dès que le mana et la situation le permettent ; lancer des créatures **Phyrexian** ou **artefact** pour incub(er) selon leur valeur de mana.
+2. Conserver des Incubateurs sous forme **d'artefacts non-créatures** pendant le développement et les renforcer par prolifération ; ne pas payer {2} pour tous sans raison.
+3. Sacrifier, au bon moment, une **créature Phyrexian** si nécessaire AVANT le début d'une étape de fin pour déclencher Brimaz ; ne pas confondre mort d'un jeton incubateur non transformé et mort d'un Phyrexian.
+4. Transformer les bons Incubateurs en créatures, leur donner le vol (Abzan Falconer), les renforcer (Patchwork Banner, **Banner of Kinship**, Grafted Butcher), accroître leur force (Mirror Entity) et achever la table au combat (Akroma's Will).
+5. Préserver le board et le commandant via Restoration Magic, Flare of Fortitude, Clever Concealment ; garder des moyens de récursion quand les wraths passent. Les pertes de vie accessoires d'Elas il-Kor/Meathook ne sont pas le plan A.
 
-Cycle tactique recherché :
-1. accélérateur puis Brimaz ; lancer des Phyrexians/créatures-artefacts pour incuber ;
-2. générer des Incubateurs, les garder comme artefacts non-créatures pendant le développement ;
-3. sacrifier si nécessaire un **Phyrexian déjà créature** avant les étapes de fin pour déclencher la prolifération de Brimaz ; choisir les Incubateurs avec leurs marqueurs ;
-4. payer {2} pour transformer les Incubateurs pertinents, et pas tous aveuglément ;
-5. leur donner **vol**, **+1/+1 tribal**, un pompage global ou double initiative afin de gagner avec de vrais dégâts de combat ;
-6. protéger l'armée contre wraths/exils et conserver du mana pour réanimer/rejouer si elle est détruite.
+**Attention à Banner of Kinship** : elle compte uniquement les créatures de type choisi présentes lorsqu'elle entre, donc pas les artefacts Incubateur non transformés. Les marqueurs fellowship déjà placés sont proliférables, et les Phyrexians transformés ultérieurement bénéficient du bonus tribal existant.
 
-## Cinq corrections de la première ébauche V4
+## 13 différences entre la V3 figée et la V4 actuelle
 
-| Retirée de V4 initiale | Remplaçante | Ce que cela change vraiment |
+| Retrait V3 | Ajout V4 | Gain visé / risque |
 |---|---|---|
-| Nadier's Nightblade | **Abzan Falconer** | Le Fauconnier donne le vol aux créatures avec marqueur +1/+1, ce qui inclut les Incubateurs **transformés**. Gagne par blessures de combat plutôt que par jetons quittant le champ. Non phyrexian, donc ne déclenche pas Brimaz au lancement. |
-| Marionette Master | **Mirror Entity** | Mirror Entity est **changeling**, donc Phyrexian lorsqu'elle est lancée : déclenche Brimaz. Pour {X}, toutes tes créatures ont la F/E **de base** X/X et gardent leurs marqueurs. Offre un mana sink d'attaque de masse ; attention, X=0 peut tuer nos créatures sans marqueurs. |
-| Mirkwood Bats | **Akroma's Will** | Véritable finisher de combat. Si on contrôle **un commandant** au lancement, les deux modes donnent vol, vigilance, double initiative, lien de vie, indestructible et protection contre les couleurs à **nos créatures déjà en jeu**. Ne crée aucune armée à lui seul. |
-| Vraan, Executioner Thane | **Norn's Choirmaster** | Phyrexian volant, initiative ; son lancement déclenche Brimaz et il prolifère lorsque le commandant **arrive ou attaque**, renforçant les marqueurs des Incubateurs. Coût {3}{W}{W}, plus haut de courbe ; demande une base blanche disponible. |
-| Ichor Wellspring | **Patchwork Banner** | Fixe une couleur de mana et donne +1/+1 aux créatures du type choisi **Phyrexian**, y compris aux Incubateurs transformés, mais pas aux Incubateurs artefacts non-créatures. Perd deux sources de pioche ponctuelle potentielles de Wellspring. |
+| Darksteel Splicer | Abzan Falconer | Vol pour toute créature à marqueurs ; perte de 3 Golems indestructibles à 7 mana |
+| Chronomancer | Myr Sire | Petit artefact incubeur au tour 2 et second corps à la mort ; perte de récursion haute courbe |
+| Phyrexian Delver | **Gix, Yawgmoth Praetor** | Phyrexian incubeur + pioche sur blessures de combat ; peut donner des cartes aux autres joueurs |
+| Tortured Existence | **Solemn Simulacrum** | Incubation 4 + terrain + pioche à la mort ; recul de la récursion en main |
+| Inspiring Statuary | Idol of Oblivion | Pioche avec création de jetons ; mana virtuel perdu |
+| Norn's Wellspring | Patchwork Banner | Mana coloré + +1/+1 aux Phyrexians ; perte de pioche via prolifération |
+| Etchings of the Chosen | Rite of Oblivion | Exil de permanent non-terrain réutilisable via flashback ; perte de protection tribale |
+| Vault of the Archangel | War Room | Source de pioche terrain ; perte de lifelink/deathtouch global activable |
+| Marionette Master | Mirror Entity | Changeling : incube au lancement et boost de l'armée pour X |
+| Mirkwood Bats | Akroma's Will | Protection/vol/double initiative pour attaque décisive ; moins de dégâts indirects |
+| Vraan, Executioner Thane | Norn's Choirmaster | Prolifération lors d'ETB/attaque du commandant et créature volante |
+| Marionette Apprentice | **Esper Sentinel** | Incubeur à {W} + draw/taxe multijoueur ; baisse du drain sur artefacts morts |
+| Scheming Aspirant | **Banner of Kinship** | Prolifération devenue buff tribal de masse au lieu de perte de vie |
 
-La **première V4 orientée drain n'était encore qu'une hypothèse** et n'a
-jamais démontré un meilleur taux de victoire. La présente révision garde
-le même fichier candidat V4 dans la branche expérimentale ; le commit
-précédent dans Git permet de retrouver la première proposition.
-Aucune modification du témoin V3 ni des sept `.dck` canoniques.
+**Les quatre décisions de cette dernière passe** sont marquées en gras (Gix, Simulacrum, Esper Sentinel et Banner). Les arbitrages individuels sur **les 78 cartes soumises** figurent dans [BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md](BRIMAZ_CONSIDERING_AUDIT_2026-10-12.md).
 
-## Comparaison V3 → V4 **actuelle** : 11 échanges
+## Autres cartes à réexaminer selon les parties réelles
 
-| Retrait par rapport à V3 | Ajout V4 actuelle | Fonction |
-|---|---|---|
-| Darksteel Splicer | Abzan Falconer | Evasion pour les Incubateurs à marqueurs, contre perte de Golems indestructibles (gros payoff à 7 manas) |
-| Chronomancer | Myr Sire | Créature-artefact à deux manas lançable tôt et double corps au sacrifice |
-| Phyrexian Delver | Morbid Opportunist | Pioche sur une mort de créature au maximum **une fois par tour** |
-| Tortured Existence | Braids, Arisen Nightmare | Valeur de sacrifice/pioche à **notre seule étape de fin** ; abandon du recast depuis le cimetière |
-| Inspiring Statuary | Idol of Oblivion | Pioche de jetons contre accélération des non-artefacts |
-| Norn's Wellspring | Patchwork Banner | Anthems Phyrexians + mana contre pioche/prolifération |
-| Etchings of the Chosen | Rite of Oblivion | Exil de permanent non-terrain avec sacrifice d'artefact/créature ; perte de protection/anthem tribal |
-| Vault of the Archangel | War Room | Pioche récurrente terrain contre puissance défensive/combat lifelink-deathtouch |
-| Marionette Master | Mirror Entity | Pompage de board + sort Phyrexian contre drain ciblé |
-| Mirkwood Bats | Akroma's Will | Finisher/protection de combat contre drain de jetons |
-| Vraan, Executioner Thane | Norn's Choirmaster | Vol + prolifération par attaques du commandant contre drain de morts par tour |
+- **Resourceful Defense** : les permanents qui quittent le champ transmettent leurs marqueurs, même un Incubateur non transformé.
+- **The Ozolith** : transmet les marqueurs des **créatures** qui quittent le champ, pas des Incubateurs non transformés ; bonne synergie avec Ravager et les créatures transformées.
+- **Weatherlight Compleated** : devient 5/5 vol après quatre marqueurs phyresis ; le moteur de sacrifice et la prolifération aident à atteindre le seuil de pioche.
+- **Swiftfoot Boots** : si Brimaz meurt beaucoup, trois manas entre équipement et pose peuvent éviter de payer à répétition la taxe de commandant.
+- **Phyrexian Awakening** : incube 4 et donne la vigilance à nos Phyrexians ; outil de combat défensif fiable, mais ne remplace pas un véritable finisher.
+- **Darksteel Splicer / Elesh Norn, Grand Cenobite** : gros payoffs de board à 7 manas ; à privilégier si les parties du playgroup sont assez longues.
+- **Metallic Mimic** : déclenche Brimaz au lancement car artefact-créature, mais un Incubateur ne gagne pas de marqueur Mimic en se transformant.
+- **Skrelv, Defector Mite / Gixian Infiltrator / Aron, Benalia's Ruin** : candidats à bas coût plus axés protection/combat/marqueurs, sous réserve de ne pas faire du poison l'objectif.
 
-## Cartes de soutien délibérément conservées
+## Tests : n'affirmer que ce qu'ils prouvent
 
-- **Anointed Procession / Mondrak** : plus d'Incubateurs = plus de créatures transformables. Chaque transformation coûte normalement {2}, donc la quantité seule ne suffit pas à gagner.
-- **Grafted Butcher** : bonus aux Phyrexians ; la capacité de récursion est un filet de sécurité.
-- **Elesh Norn // The Argent Etchings** : transforme en masse des Incubateurs et favorise l'armée phyrexiane, utile lorsque {2} par jeton deviendrait trop coûteux.
-- **Roaming Throne** : double les triggers de type choisi (Phyrexian) pertinents, notamment l'Incubation et la prolifération de Brimaz, mais pas les effets qui ne sont pas déclenchés par un Phyrexian.
-- **Vulpine Harvester / Myr Retriever / Lurrus / Phyrexian Reclamation** : permettent de reconstruire et de relancer des permanents, afin de recréer le board.
-- **Ashnod's Altar / Phyrexian Altar / Krark-Clan Ironworks / Bartolomé / Ravager / Yawgmoth** : outils de tempo et de conversion des ressources ; sacrifier l'armée entière sans autre raison est désormais un contresens tactique. On privilégie les moteurs de reprise et une mort de Phyrexian par tour utile à Brimaz.
-- **Scheming Aspirant, Marionette Apprentice, Elas il-Kor, The Meathook Massacre** : drain/valeur **secondaires** (et Meathook pour un wipe). Ce n'est plus l'axe principal de victoire.
+- L'algorithme [audit_brimaz_v4.py](../scripts/audit_brimaz_v4.py) **vérifie les 100 cartes et les 13 échanges** et calcule des probabilités hypergéométriques **de voir** des catégories de cartes parmi les premiers tirages. Il ne modélise pas le mana, les mulligans, les capacités réellement lancées, les réponses, le combat ni les victoires.
+- Le workflow `commander-legality.yml` consulte les données Scryfall de manière **live**, contrôle la légalité Commander et rejette tout Game Changer déclaré dans les cartes. Légale en Commander ne signifie pas optimale en B3.
+- Le banc Forge pourra observer de vraies parties A/B, mais ses IA n'activent pas nécessairement correctement les synergies nouvelles ; un mauvais résultat ne démontre pas nécessairement qu'une carte ne fonctionne pas contre des humains.
+- Test humain souhaité : nombre d'Incubateurs créés/transformés, marqueurs et force cumulée, tour de première grosse attaque, dégâts de combat, dégâts de drain, cartes non jouées, wraths, sources de pioche et victoires. **Le critère principal est le taux de victoires obtenues par présence et combat**, pas le nombre de triggers drain.
 
-## Règles et points de vigilance
+La V3 et les **sept decks Forge canoniques** restent inchangés. La V4 est dans `decks/Brimaz_V4_B3.txt` pour Moxfield/Archidekt et `deck_candidates/Brimaz_V4_B3.dck` pour Forge. Ne pas remplacer le DCK original témoin.
 
-- Un Incubateur non transformé est **artefact non-créature** ; il a des marqueurs +1/+1 mais ne peut ni attaquer ni bénéficier des bonus réservés aux **créatures**. Sa transformation n'est pas une nouvelle arrivée sur le champ et ne déclenche pas les ETB.
-- Un Incubateur **transformé** est un **jeton créature-artefact Phyrexian**. Ses marqueurs restent, ce qui rend Abzan Falconer, Patchwork Banner et la prolifération particulièrement cohérents.
-- Mirror Entity ne transforme pas les artefacts non-créatures : son activation ne concerne que les créatures que nous contrôlons. La valeur X fixe la force/endurance de base, puis les marqueurs s'ajoutent.
-- **Akroma's Will** est un sort non-créature : ne déclenche pas Brimaz. Avec Brimaz sur le plateau lorsqu'on annonce le lancement, les deux modes sont accessibles. La protection contre les couleurs ne bloque pas nécessairement des créatures-artefacts incolores.
-- **Norn's Choirmaster** prolifère au déclenchement d'ETB/attaque d'un commandant que nous contrôlons ; les attaques de simples Incubateurs ne suffisent pas.
-- La capacité de Brimaz se déclenche au début de chaque étape de fin si un Phyrexian sous notre contrôle **est mort durant ce tour**. Sacrifier le premier Phyrexian seulement à la résolution de Braids **pendant** notre étape de fin arrive trop tard.
-- Akroma's Will et les synergies board sont plus sensibles aux wraths et à l'exil : conservation de Clever Concealment, Flare of Fortitude et Restoration Magic, et nécessité d'observer les removals du playgroup.
+### Textes Oracle utiles
 
-## À vérifier, avec méthode et sans statistiques inventées
-
-Les decks ont 100 cartes **vérifiées structurellement** contre la V3
-et les sept decklists canoniques restent inchangées. La légalité et
-l'absence de Game Changers sont testées en direct par Scryfall dans
-`.github/workflows/commander-legality.yml`. Un contrôle réussi atteste
-de la légalité **au moment de l'exécution**, pas de la qualité stratégique.
-
-`scripts/audit_brimaz_v4.py` fournit des probabilités hypergéométriques
-**exactes de voir** une pièce de soutien au combat parmi les cartes
-physiquement piochées et de voir une source de drain. Les étiquettes
-sont manuelles, les cartes vues peuvent être injouables et rien
-ne simule les combats, les décisions des adversaires ou les victoires.
-
-Une vraie démonstration devra comparer V3/V4 en jeu **humain** à quatre,
-contre les archétypes et brackets habituels, en notant : nombre
-d'Incubateurs créés/transformés, taille des créatures en attaque,
-blessures **de combat** infligées vs pertes de vie par drain,
-cartes adverses tuées, nombre de wraths, tours de victoire et morts.
-Le but est de gagner davantage **par dégâts de combat**, pas seulement
-d'avoir un meilleur taux de victoire global.
-
-### Liens
-
-- `decks/Brimaz_V4_B3.txt` (import de deck).
-- `deck_candidates/Brimaz_V4_B3.dck` (Forge).
-- `docs/BRIMAZ_V4_B3_CARD_BY_CARD.md` (audit des 100 cartes).
-- `scripts/audit_brimaz_v4.py` et `tests/test_audit_brimaz_v4.py` (preuve structurelle, non gameplay).
-
-## Validation factuelle de la révision orientée combat
-
-La campagne **[GitHub Actions santé / structure](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38305895661)**
-a terminé avec succès sous Python 3.10 et 3.12. Les 100 cartes,
-les 11 changements V3→V4 et les sept DCK canoniques non modifiés
-sont confirmés par des contrôles reproductibles.
-La campagne **[légalité Scryfall live](https://github.com/Toko177/brimaz-forge-lab/actions/runs/38305895743)**
-a aussi terminé avec succès : 100 cartes, 94 noms, commandant Brimaz,
-identité blanc/noir, **zéro erreur, zéro avertissement et zéro
-Game Changer détecté**, avec `--require-no-game-changers`.
-
-L'audit hypergéométrique repose sur des **catégories de cartes
-annotées**, ne tient pas compte du mana, de la table ou des adversaires
-et ne doit jamais être présenté comme un taux de victoire :
-
-| Mesure structurelle ou cartes vues | V3 | V4 board |
-|---|---:|---:|
-| Cartes de soutien/finisher de combat identifiées | 3 | 6 |
-| ≥1 de ces cartes vues dans les 13 premières cartes | 34,45 % | 57,64 % |
-| Principaux moteurs de drain identifiés | 7 | 4 |
-| Sources potentielles de pioche répétable identifiées | 5 | 8 |
-| ≥1 moteur de pioche vu dans les 10 premières cartes | 41,62 % | 58,34 % |
-| Sorts pouvant déclencher Brimaz au lancement | 26 | 25 |
-| ≥2 de ces sorts vus parmi les 13 premières cartes | 90,50 % | 89,03 % |
-| ≥1 exutoire + ≥1 payoff de sacrifice vus dans 13 cartes | 51,89 % | 37,27 % |
-| Cartes jouables comme terrain, dont MDFC | 38 | 38 |
-
-**Trade-off volontaire** : moins d'accès aux moteurs de drain
-(et un sort incubant de moins) pour davantage de combat.
-La capacité à **transformer suffisamment d'Incubateurs** et à
-faire passer les dégâts **reste non mesurée**. Ces chiffres ne
-permettent aucune prédiction de winrate humain.
-
-Aucune partie réelle V3/V4 n'a été certifiée dans ce changement :
-la réussite du workflow de légalité n'est pas une preuve de supériorité
-stratégique.
+[Brimaz](https://mtg.wtf/card/moc/2/Brimaz-Blight-of-Oreskos) · [Banner](https://mtg.wtf/card/fdn/127/Banner-of-Kinship) · [Gix](https://mtg.wtf/card/tdc/181/Gix-Yawgmoth-Praetor) · [Esper Sentinel](https://mtg.wtf/card/mh2/328/Esper-Sentinel) · [Solemn Simulacrum](https://mtg.wtf/card/m21/239/Solemn-Simulacrum) · [Wizards Brackets](https://magic.wizards.com/en/formats/commander)
