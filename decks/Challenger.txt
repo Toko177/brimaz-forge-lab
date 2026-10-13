@@ -4,7 +4,7 @@
 1 Bartolomé del Presidio
 1 Bloated Processor
 1 Priest of Gix
-1 Myr Sire
+1 Changeling Outcast
 1 Compleated Huntmaster
 1 Abzan Falconer
 1 Selfless Spirit
@@ -38,7 +38,7 @@
 1 Ashnod's Altar
 1 Sunder the Gateway
 1 Steel Overseer
-1 Throne of Geth
+1 Vault Skirge
 1 Skullclamp
 1 Patchwork Banner
 1 Idol of Oblivion

@@ -1,4 +1,7 @@
 name: Fast Commander deckbuilding A/B (real Forge)
+# On push to decks/Challenger.txt, run V4 vs Challenger (V5) with repeats=6:
+# 2 pods x 4 rotations x 2 arms x 6 independent games = 96 planned games.
+# Manual workflow_dispatch keeps the previous defaults (V3 reference, repeats=1).
 on:
   push:
     paths: [decks/Challenger.txt]
@@ -90,7 +93,7 @@ jobs:
           PY
       - name: Materialize two immutable lists and explicit card swap diff
         env:
-          REFERENCE_FILE: ${{ inputs.reference_file || 'decks/Brimaz_V3.txt' }}
+          REFERENCE_FILE: ${{ github.event_name == 'push' && 'decks/Brimaz_V4_B3.txt' || inputs.reference_file || 'decks/Brimaz_V3.txt' }}
           CANDIDATE_FILE: ${{ inputs.candidate_file || 'decks/Challenger.txt' }}
           REFERENCE_COMMANDER: ${{ inputs.reference_commander || 'Brimaz, Blight of Oreskos' }}
           CANDIDATE_COMMANDER: ${{ inputs.candidate_commander || 'Brimaz, Blight of Oreskos' }}
@@ -142,8 +145,8 @@ jobs:
           PY
       - name: Create fail-closed SHA256 reference match fingerprint
         env:
-          REPEATS: ${{ inputs.repeats || '1' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
           AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           python3 scripts/deckbuild_cache.py --mode create --root . \
@@ -155,9 +158,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_RUN_ID: ${{ inputs.reference_run_id || '' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
           AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
-          REPEATS: ${{ inputs.repeats || '1' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
         run: |
           set -euo pipefail
           if [[ -n "$REQUESTED_RUN_ID" ]]; then
@@ -277,8 +280,8 @@ jobs:
           ARM: ${{ matrix.arm }}
           POD: ${{ matrix.pod }}
           ROTATION: ${{ matrix.rotation }}
-          REPEATS: ${{ inputs.repeats || '1' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
           AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           set -euo pipefail
@@ -324,8 +327,8 @@ jobs:
       - name: Recheck every reused log SHA256, pod, seat, seed and AI policy
         if: ${{ needs.prepare.outputs.reference_reused == 'true' }}
         env:
-          REPEATS: ${{ inputs.repeats || '1' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
           AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           python3 scripts/deckbuild_cache.py --mode audit-archive --root . \
@@ -341,7 +344,7 @@ jobs:
             --out results/deckbuild-report/certificate.json
       - name: Compute seat-balanced A/B analysis with uncertainty and censures
         env:
-          REPEATS: ${{ inputs.repeats || '1' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
         run: |
           python3 scripts/deckbuild_compare.py \
             --certificate results/deckbuild-report/certificate.json \
