@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
 from compare_local_four_ai_campaigns import compare,load_campaign
+from commander_pods import ROSTER_VERSION
 
 DECKS=["Brimaz_V3","Kaal_9594008","Kaal_10347090","Kaal_21930525"]
 def make_campaign(root,policy,lose_one=False,alter_status=False):
@@ -16,6 +17,7 @@ def make_campaign(root,policy,lose_one=False,alter_status=False):
        "canonical_seven_deck_sha256":{"a":"hash-a","b":"hash-b"},
        "profile_applied_identically_to_all_four_seats":"Default",
        "pods":["aristo"],"games_per_rotation":1,
+       "roster_version":ROSTER_VERSION,"active_pods":{"aristo":DECKS},
        "base_seed":50000,"clock_seconds":420,
        "planned_independent_jvms":4,
        "policy":policy,
@@ -34,6 +36,7 @@ def make_campaign(root,policy,lose_one=False,alter_status=False):
         (folder/game_name).write_text(raw)
         status="clock_censored" if alter_status and rot==1 else "complete"
         record={"pod":"aristo","rotation":rot,"repeat":0,"seed":seed,
+                "roster_version":ROSTER_VERSION,
                 "seats":seats,"brimaz_seat":seats.index("Brimaz_V3")+1,
                 "policy":policy,"clock_seconds":420,"profiles":["Default"]*4,
                 "status":status,
@@ -60,6 +63,17 @@ with tempfile.TemporaryDirectory() as temp:
         raise AssertionError("Incomplete seeded 4-seat matrix incorrectly accepted")
     except ValueError as exc:
         assert "Missing one or more" in str(exc)
+    # The same pod label and seed cannot silently mean new opponents.
+    swapped=json.loads((b/"provenance.json").read_text())
+    swapped["active_pods"]["aristo"][-1]="Kaal_23328062"
+    (b/"provenance.json").write_text(json.dumps(swapped))
+    try:
+        compare(a,b)
+        raise AssertionError("Mismatched pod roster incorrectly accepted")
+    except ValueError as exc:
+        assert "roster" in str(exc)
+    swapped["active_pods"]["aristo"][-1]=DECKS[-1]
+    (b/"provenance.json").write_text(json.dumps(swapped))
     first=b/"games/aristo/rotation0"
     games=json.loads((first/"games.json").read_text())
     games[0]["profiles"][2]="Reckless"

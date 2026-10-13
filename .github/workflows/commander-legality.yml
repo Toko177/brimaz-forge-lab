@@ -3,11 +3,25 @@ on:
   push:
     paths: [".github/workflows/commander-legality.yml", "scripts/validate_commander_legality.py"]
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "deck_candidates/Brimaz_V4_B3.dck"
+      - "decks/Brimaz_V4_B3.txt"
+      - "decks/Brimaz_V5_Tempo_Trial.txt"
+      - "scripts/brimaz_v5_tempo_audit.py"
+      - "tests/test_brimaz_v5_tempo_audit.py"
+      - "docs/BRIMAZ_V4_B3_*.md"
+      - "scripts/validate_commander_legality.py"
+      - "scripts/scan_commander_oracle_pool.py"
+      - "tests/test_scan_commander_oracle_pool.py"
+      - ".github/workflows/commander-legality.yml"
 permissions:
   contents: read
   actions: read
 jobs:
   verify:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -55,3 +69,51 @@ jobs:
           name: legality-audit-all-playgroup-pods
           path: results/legality/
           if-no-files-found: ignore
+
+  verify-brimaz-v4:
+    name: Brimaz V4 and V5 trial live Oracle, color identity and zero Game Changers
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate entire V4 against live Scryfall; fail closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/validate_commander_legality.py \
+            --deck deck_candidates/Brimaz_V4_B3.dck \
+            --deck decks/Brimaz_V5_Tempo_Trial.txt \
+            --require-no-game-changers \
+            --out results/legality/brimaz-v4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-v4-scryfall-legality
+          path: results/legality/brimaz-v4/
+          if-no-files-found: ignore
+
+  research-all-legal-orzhov:
+    name: Enumerate the full live Commander-legal Orzhov and colorless Oracle pool
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline discovery regression tests
+        run: python tests/test_scan_commander_oracle_pool.py
+      - name: Enumerate every real Oracle card, then filter Commander/Orzhov
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/scan_commander_oracle_pool.py --out results/oracle-pool --top 65
+      - name: Preserve full legal pool, method, scores and candidate list
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brimaz-current-full-oracle-pool
+          path: results/oracle-pool/
+          if-no-files-found: ignore
+          retention-days: 30

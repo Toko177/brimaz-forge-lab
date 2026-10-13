@@ -11,21 +11,38 @@ from run_local_four_ai import validate_decks, CANONICAL_DECK_SHA256
 expected = {
     "README.md", "NEXT_CHAT_START_HERE.md",
     "docs/REPOSITORY_STRUCTURE.md", "docs/RUN_LOCAL_4AI_COMMANDER.md",
+    "docs/ACTIVE_COMMANDER_PODS_2026-10-12.md",
     "docs/V33_MULTIPLAYER_STRATEGIC_PLANNER.md",
+    "docs/V35_STRATEGIC_SEARCH.md",
     "scripts/run_local_four_ai.py", "scripts/run_paired_four_ai.py",
     "scripts/batch.py", "scripts/compare_local_four_ai_campaigns.py",
     "scripts/patch_forge_brimaz_v13.py", "scripts/setup_and_run_four_ai.ps1",
     "scripts/certify_commander_games.py", "scripts/validate_commander_legality.py",
     "scripts/audit_v33_real_strategy.py",
+    "scripts/audit_v35_real_search.py",
     "patches/java/forge/ai/MultiplayerStrategicModel.java",
     "patches/java/forge/ai/MultiplayerStrategicSequencer.java",
+    "patches/java/forge/ai/MultiplayerStrategicSearchV35.java",
+    "patches/java/forge/ai/MultiplayerStrategicSequencerV35.java",
+    "patches/java/forge/ai/MultiplayerTacticalPlannerV35.java",
     "canonical/results/forge_normalization/report.json",
-    ".github/workflows/v33-strategic-compile.yml",
-    ".github/workflows/v33-real-strategy-ab.yml",
+    ".github/workflows/strategic-java21-gate.yml",
+    ".github/workflows/strategic-real-4ai-ab.yml",
     ".github/workflows/v31-operator-validation.yml",
     ".github/workflows/repository-health.yml",
     ".github/workflows/commander-four-ai-simulator.yml",
     "docs/REAL_FOUR_AI_BRIMAZ_WIN_REFERENCE.md",
+    "scripts/audit_brimaz_v4.py", "tests/test_audit_brimaz_v4.py",
+    "scripts/scan_commander_oracle_pool.py", "tests/test_scan_commander_oracle_pool.py",
+    "decks/Brimaz_V4_B3.txt", "deck_candidates/Brimaz_V4_B3.dck",
+    "docs/BRIMAZ_V4_B3_DECISIONS.md", "docs/BRIMAZ_V4_B3_CARD_BY_CARD.md",
+    "docs/BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md",
+    "docs/BRIMAZ_FULL_ORACLE_POOL_2026-10-12.md",
+    "docs/BRIMAZ_KAAL_PLAYGROUP_BENCHMARK_2026-10-12.md",
+    "docs/BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md",
+    "decks/Brimaz_V5_Tempo_Trial.txt",
+    "scripts/brimaz_v5_tempo_audit.py", "tests/test_brimaz_v5_tempo_audit.py",
+    "docs/BRIMAZ_V5_TEMPO_EVIDENCE_2026-10-13.md",
 }
 assert all((ROOT / p).is_file() for p in expected), "Active source or documentation was removed"
 hashes = validate_decks(
@@ -40,9 +57,11 @@ for version in ("", *(f"_v{i}" for i in range(2, 13))):
     assert not (ROOT / ("scripts/patch_forge_brimaz" + version + ".py")).exists(), "Legacy patch not pruned"
 
 required_code = {
-    "scripts/run_local_four_ai.py": ("v33_strategy", "patch_forge_brimaz_v13.py"),
+    "scripts/run_local_four_ai.py": ("v33_strategy", "v35_strategy", "patch_forge_brimaz_v13.py"),
     "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSequencer", "MultiplayerStrategicModel"),
     "scripts/audit_v33_real_strategy.py": ("FOUR_AI_V33_STRATEGIC_ACTION", "require-intervention"),
+    "scripts/audit_v35_real_search.py": ("FOUR_AI_V35_STOCK_APPROVED", "min-approved"),
+    "scripts/patch_forge_brimaz_v13.py": ("MultiplayerStrategicSearchV35", "MultiplayerStrategicSequencerV35", "MultiplayerTacticalPlannerV35"),
 }
 for path, markers in required_code.items():
     s = (ROOT / path).read_text(encoding="utf-8")

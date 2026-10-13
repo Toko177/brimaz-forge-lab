@@ -1,5 +1,51 @@
 # Commander Deckbuilder — passer d'une idée de cartes à des parties Forge réelles
 
+**Priorité de deckbuilding (12/10/2026)** : la liste
+[Brimaz V4](../decks/Brimaz_V4_B3.txt) est orientée vers les
+**dégâts de combat d'une armée d'Incubateurs transformés**, et non
+vers les drains aristocrats. Les 23 changements nets V3→V4,
+les cartes de soutien et les compromis sont audités dans
+[la stratégie de board](BRIMAZ_V4_B3_DECISIONS.md) et [l'audit de dépendance à Brimaz](BRIMAZ_COMMANDER_DEPENDENCY_REVIEW_2026-10-13.md), avec
+la [politique de cartes synergiques et socialement appropriées](BRIMAZ_V4_B3_SOCIAL_BUDGET_POLICY.md). Ne pas évaluer
+le succès uniquement par les drain-triggers ou les simulations Forge.
+
+
+## Politique Commander générique V43 (opt-in)
+
+L'ancienne IA V13 reste le **mode par défaut** des comparaisons
+de decklists. La variante `V43-single-seat-generic` permet de
+faire jouer les deux listes comparées avec le moteur Commander
+générique au lieu de V13. **Seul le siège de la liste évaluée**
+reçoit V43 ; les trois decks Kaal restent sur leur politique Forge
+de référence. Le siège ciblé suit la rotation des quatre places.
+
+Dans le lancement manuel du workflow `deckbuild-ab.yml`, le
+paramètre `ai_policy` accepte `V13-incubate-adaptive` ou
+`V43-single-seat-generic`. Une version de ce workflow modifiée sur
+une branche non fusionnée peut ne pas être proposée dans le menu
+GitHub Actions tant qu'elle n'est pas présente sur `main`.
+
+En ligne de commande, le pilote `scripts/deckbuild_run.py`
+accepte `--policy V43-single-seat-generic`. Il requiert un vrai
+JAR Forge 2.0.15 patché avec `patch_forge_brimaz_v13.py` et conserve
+le contrôle des cartes/légalité existant. Une partie V43 est rejetée
+(`policy_unverified`) si aucune trace du pilote n'apparaît, et
+(`policy_fault`) si l'un des trois témoins exécute la politique.
+Les journaux restent archivés ; aucune issue n'est inventée.
+
+**Cache sécurisé** : la clef de référence inclut désormais la politique
+exacte V13/V43, tous les fichiers Java compilés dans le patch V13,
+les SHA256 des decks, les graines, les places et les adversaires.
+Il est impossible de recycler une référence V13 comme comparaison V43.
+Un changement de fichier Java invalide également l'ancien cache.
+
+**Limite** : V43 ne sait pas encore jouer le Commander avec la qualité
+d'un humain confirmé. Le deckbuilding est une sélection exploratoire
+qui nécessite des campagnes multi-graines indépendantes et une
+validation finale en playgroup.
+
+
+
 ## But et périmètre
 
 La voie d'usage courante du laboratoire est désormais le **comparateur A/B de listes**
@@ -12,8 +58,12 @@ plus de modifier le Java Forge ni de créer un nouveau workflow.
   Les paires `Partner`, `Choose a Background` et assimilées
   sont **refusées pour l'instant** : la simple présence de deux cartes
   en zone de commandement ne suffit pas à vérifier leur légalité.
-- **2 pods fixes** : aristo (Radha, Dungeon/Tazri, Zimone et Dina) et artifact
-  (Lathril, Urza, Amalia).
+- **2 pods fixes** : aristo (Radha, Dungeon Party Time, Zimone et Dina) et
+  artifact (Lathril, Urza, Dungeon Party Time). **Amalia a été retirée
+  des adversaires actifs**, mais son deck d'origine est conservé et épinglé.
+  Le partage de Dungeon entre les pods est intentionnel : les cinq Kaal
+  restants occupent six places entre les deux groupes.
+  [Version des groupes et limites](ACTIVE_COMMANDER_PODS_2026-10-12.md).
 - **Quatre sièges équilibrés** pour chaque liste : Brimaz ou le nouveau
   commandant occupe tour à tour les quatre places.
 - Le vrai moteur **Forge 2.0.15** applique les règles du jeu, avec le
@@ -27,12 +77,12 @@ plus de modifier le Java Forge ni de créer un nouveau workflow.
 
 ## Utilisation immédiate sur la branche expérimentale
 
-Tant que la PR #1 est en **brouillon** et que ce workflow n'est
+Tant que la PR #29 est en **brouillon** et que ce workflow n'est
 pas présent sur la branche par défaut, la manière la plus sûre de
 le déclencher est :
 
 1. Ouvrir [decks/Challenger.txt](../decks/Challenger.txt) sur
-   la branche \`improve/realism-and-ai-diagnostics\`.
+   la branche \`feature/v35-strategic-search-20261011\`.
 2. Modifier uniquement les quantités et noms des cartes de cette
    liste. Pour commencer, remplacer **une carte par une autre**,
    en conservant les 100 cartes et \`1 Brimaz, Blight of Oreskos\`.
@@ -77,7 +127,7 @@ Run workflow, renseigner :
 
 La disponibilité de **Run workflow** pour une nouvelle définition
 GitHub Actions dépend notamment de sa présence sur la branche
-par défaut. **Ne pas fusionner automatiquement la PR #1 pour
+par défaut. **Ne pas fusionner automatiquement la PR #29 pour
 contourner cette limitation** tant que les contrôles de qualité
 et la revue du code ne sont pas satisfaits.
 

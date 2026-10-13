@@ -14,25 +14,42 @@ import hashlib
 import json
 from pathlib import Path
 
-from deckbuild_run import OPPONENTS
+from deckbuild_run import OPPONENTS,POLICIES,V13_POLICY,V43_POLICY,policy_trace_evidence
+from commander_pods import ROSTER_VERSION
 
-VERSION = 1
+VERSION = 2
 FILES = (
     "scripts/patch_forge_charm_context.py",
     "scripts/patch_forge_brimaz_v13.py",
     "scripts/deckbuild_run.py",
+    "scripts/commander_pods.py",
     "scripts/forge_result_evidence.py",
+    # Every Java source compiled by patch_forge_brimaz_v13.py contributes
+    # to the actual JAR identity, even if the patch script itself is stable.
+    "patches/java/forge/ai/AiTimeoutCooldownPolicy.java",
+    "patches/java/forge/ai/MultiplayerStrategicModel.java",
+    "patches/java/forge/ai/MultiplayerStrategicSequencer.java",
+    "patches/java/forge/ai/MultiplayerStrategicSearchV35.java",
+    "patches/java/forge/ai/MultiplayerStrategicSequencerV35.java",
+    "patches/java/forge/ai/MultiplayerTacticalPlannerV35.java",
+    "patches/java/forge/ai/MultiplayerEvidenceGateV36.java",
+    "patches/java/forge/ai/MultiplayerIncubatorTempoV38.java",
+    "patches/java/forge/ai/MultiplayerIncubatorEngineV39.java",
+    "patches/java/forge/ai/MultiplayerSacrificeAccessV41.java",
+    "patches/java/forge/ai/CommanderGenericModelV42.java",
+    "patches/java/forge/ai/CommanderGenericSequencerV42.java",
 )
 FORGE_RELEASE = "2.0.15"
 INSTALLER_SHA256 = "4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600"
-POLICY = "V13-incubate-adaptive"
+POLICY = V13_POLICY
 
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def stamp(root, decks, manifest, *, seed_base, repeats, clock=360, profile="Default"):
+def stamp(root, decks, manifest, *, seed_base, repeats, clock=360,
+          profile="Default",policy=POLICY):
     root=Path(root)
     decks=Path(decks)
     m=json.loads(Path(manifest).read_text(encoding="utf-8"))
@@ -43,6 +60,8 @@ def stamp(root, decks, manifest, *, seed_base, repeats, clock=360, profile="Defa
         raise ValueError("Current A/B workflow supports only the audited clock/profile")
     if not isinstance(seed_base,int) or seed_base<0:
         raise ValueError("Invalid predeclared RNG seed base")
+    if policy not in POLICIES:
+        raise ValueError("Unsupported cached AI policy")
     runtime={}
     for rel in FILES:
         f=root/rel
@@ -60,11 +79,13 @@ def stamp(root, decks, manifest, *, seed_base, repeats, clock=360, profile="Defa
             opponents[name]=digest(f)
     fields={
         "version":VERSION,"forge_release":FORGE_RELEASE,
-        "installer_sha256":INSTALLER_SHA256,"policy":POLICY,
+        "installer_sha256":INSTALLER_SHA256,"policy":policy,
         "reference_deck_sha256":ref["forge_sha256"],
         "reference_commander":ref["commander"],
         "reference_source_sha256":ref["source_sha256"],
         "opponent_sha256":dict(sorted(opponents.items())),
+        "pod_roster_version":ROSTER_VERSION,
+        "active_opponent_pods":OPPONENTS,
         "runtime_source_sha256":runtime,
         "seat_rotations":[0,1,2,3],
         "pods":sorted(OPPONENTS),
@@ -106,7 +127,8 @@ def validate_reference_logs(root, expected, *, expected_games=None):
             deck_order=["Deck_Reference"]+OPPONENTS[pod]
             deck_order=deck_order[rotation:]+deck_order[:rotation]
             seed=inp["seed_base"]+(100000 if pod=="artifact" else 0)+10000*rotation+rep
-            if (g.get("seats")!=deck_order or g.get("candidate_seat")!=deck_order.index("Deck_Reference")+1
+            if (g.get("roster_version")!=inp["pod_roster_version"]
+                or g.get("seats")!=deck_order or g.get("candidate_seat")!=deck_order.index("Deck_Reference")+1
                 or g.get("seed")!=seed or g.get("clock_seconds")!=inp["clock_seconds"]
                 or g.get("policy")!=inp["policy"]
                 or g.get("profiles")!=[inp["ai_profile"]]*4
@@ -117,6 +139,12 @@ def validate_reference_logs(root, expected, *, expected_games=None):
                 raise FileNotFoundError(logfile)
             if digest(logfile)!=g.get("log_sha256"):
                 raise ValueError("Raw reference Forge transcript was tampered with")
+            if inp["policy"]==V43_POLICY:
+                raw=logfile.read_text(encoding="utf-8",errors="replace")
+                actual=policy_trace_evidence(raw,inp["policy"],g["candidate_seat"])
+                if (actual != g.get("policy_real_log_evidence")
+                        or not actual["observed"] or actual["wrong_seat"]):
+                    raise ValueError("Cached V43 log lacks verified single-seat behavior")
             games.append(g)
     keys=[(g["pod"],g["rotation"],g["repeat"]) for g in games]
     if len(keys)!=n or len(set(keys))!=n:
@@ -138,11 +166,13 @@ def main():
     p.add_argument("--manifest",type=Path,default=Path("forge_decks/candidate-manifest.json"))
     p.add_argument("--seed-base",type=int,default=21410000)
     p.add_argument("--repeats",type=int,default=1)
+    p.add_argument("--policy",choices=POLICIES,default=POLICY)
     p.add_argument("--output",type=Path,default=Path("forge_decks/reference-cache-key.json"))
     p.add_argument("--previous",type=Path)
     p.add_argument("--archive",type=Path)
     a=p.parse_args()
-    current=stamp(a.root,a.decks,a.manifest,seed_base=a.seed_base,repeats=a.repeats)
+    current=stamp(a.root,a.decks,a.manifest,seed_base=a.seed_base,repeats=a.repeats,
+                  policy=a.policy)
     if a.mode=="create":
         a.output.parent.mkdir(parents=True,exist_ok=True)
         a.output.write_text(json.dumps(current,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")

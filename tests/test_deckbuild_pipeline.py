@@ -9,7 +9,8 @@ import unittest
 
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/"scripts"))
 from deckbuild_prepare import read_deck,prepare
-from deckbuild_run import verify_inputs
+from deckbuild_run import (verify_inputs,policy_environment,policy_trace_evidence,
+                                V13_POLICY,V43_POLICY)
 from deckbuild_certify import certify_one
 from deckbuild_compare import analyze,wilson
 
@@ -80,6 +81,43 @@ class Preparation(unittest.TestCase):
             r=prepare(a,b,root/"forge","Brimaz, Blight of Oreskos","Brimaz, Blight of Oreskos")
             self.assertEqual(r["delta"]["added"],{"Swamp":1})
             self.assertEqual(r["delta"]["removed"],{"Plains":1})
+
+
+class GenericPolicyIsolation(unittest.TestCase):
+    def test_v43_isolation_follows_compared_deck_after_seat_rotation(self):
+        assert policy_environment(V13_POLICY,1,{"JAVA_TOOL_OPTIONS":"unchanged"}) is None
+        inherited={"JAVA_TOOL_OPTIONS":"-Dmalicious=true",
+                   "_JAVA_OPTIONS":"-Dother=true",
+                   "JDK_JAVA_OPTIONS":"-Dthird=true","PATH":"/usr/bin"}
+        for seat in range(1,5):
+            env=policy_environment(V43_POLICY,seat,inherited)
+            self.assertEqual(env["PATH"],"/usr/bin")
+            self.assertNotIn("_JAVA_OPTIONS",env)
+            self.assertNotIn("JDK_JAVA_OPTIONS",env)
+            self.assertEqual(env["JAVA_TOOL_OPTIONS"],
+                "-Dbrimaz.v37ControlledDuel=true "
+                "-Dcommander.v42GeneralPolicy=true "
+                f"-Dcommander.v43TargetSeat={seat}")
+
+    def test_raw_forge_banner_confirms_only_selected_ai(self):
+        raw=("FOUR_AI_V42_WINDOW player=Ai(3)-Deck Candidate turn=7 "
+             "options=3 ranked=2 margin=18 pressure=false "
+             "reason=distinct_public_development_preference "
+             "nativeForgeApprovalPending=true\n"
+             "FOUR_AI_V42_STOCK_APPROVED player=Ai(3)-Deck Candidate turn=7 "
+             "card=Arcane Signet rejectedEarlier=0 "
+             "nativeForgeAIDecision=true notResolvedYet=true\n")
+        proof=policy_trace_evidence(raw,V43_POLICY,3)
+        self.assertTrue(proof["observed"])
+        self.assertFalse(proof["wrong_seat"])
+        self.assertEqual(proof["approvals"],1)
+        self.assertTrue(policy_trace_evidence(raw,V43_POLICY,1)["wrong_seat"])
+        self.assertFalse(policy_trace_evidence("",V43_POLICY,3)["observed"])
+        self.assertIsNone(policy_trace_evidence("",V13_POLICY,3)["observed"])
+        with self.assertRaisesRegex(ValueError,"Unsupported"):
+            policy_environment("unknown",1,{})
+        with self.assertRaisesRegex(ValueError,"Unrecognized"):
+            policy_trace_evidence("", "unknown",1)
 
 
 def example_outcome():

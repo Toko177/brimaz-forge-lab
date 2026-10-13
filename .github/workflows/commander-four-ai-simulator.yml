@@ -11,8 +11,8 @@ on:
       policy:
         description: Shared four-seat AI policy
         type: choice
-        options: [v17_strict, v19_removal, v20_shadow, critical_counter, v23_cooldown, v24_trigger_prune, v30_exact_rules, v30_shadow_verify, v33_strategy]
-        default: v33_strategy
+        options: [v17_strict, v19_removal, v20_shadow, critical_counter, v23_cooldown, v24_trigger_prune, v30_exact_rules, v30_shadow_verify, v33_strategy, v35_strategy, v35_brimaz_duel, forge_stock]
+        default: v35_strategy
         required: true
       reference_policy:
         description: Baseline for paired A/B

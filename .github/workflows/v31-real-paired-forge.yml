@@ -1,13 +1,5 @@
 name: V31 LIVE paired authentic four-AI Forge pilot
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - scripts/run_local_four_ai.py
-      - scripts/run_paired_four_ai.py
-      - scripts/compare_local_four_ai_campaigns.py
-      - .github/workflows/v31-real-paired-forge.yml
   workflow_dispatch:
 permissions:
   contents: read

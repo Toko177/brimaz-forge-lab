@@ -1,6 +1,6 @@
 # Utiliser localement le simulateur Forge Commander à quatre IA
 
-Branche de développement : `main`.
+Socle : `main`. Recherche V35 opt-in : `feature/v35-strategic-search-20261011`.
 Le moteur utilise **Forge 2.0.15 Java 21**, les sept decks canoniques
 versionnés et vérifiés SHA256, et de vrais processus indépendants.
 
@@ -66,3 +66,29 @@ Ne pas parler de gain stratégique démontré.
 
 Documentation de l'IA :
 [Planificateur V33](V33_MULTIPLAYER_STRATEGIC_PLANNER.md).
+
+## Tester la V35 contre la référence Forge
+
+Sur la branche V35 (après compilation réelle du patch Java21), le test
+comparatif à **quatre sièges et deux pods** est :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup_and_run_four_ai.ps1 -Paired -ReferencePolicy v17_strict -Policy v35_strategy -Pod both -GamesPerRotation 1 -Parallel 2 -Clock 420
+```
+
+La porte de mesure de cette évolution est
+`scripts/audit_v35_real_search.py` : utiliser le
+`comparison.json` produit par les vrais processus Forge, pas des sorties
+inventées. Il compte les propositions, les refus et les décisions
+acceptées par le **véritable** contrôle de jouabilité de Forge ; aucune
+approbation n'est par elle-même preuve de résolution ou de victoire.
+
+## Mesures tactiques V35
+
+L'auditeur `scripts/audit_v35_real_search.py` sépare désormais les
+interventions de développement `FOUR_AI_V35_STOCK_APPROVED` des
+interventions de retrait/nettoyage/réanimation
+`FOUR_AI_V35_TACTICAL_STOCK_APPROVED`. Ni l'une ni l'autre n'est
+une preuve de lancement ou de résolution effective du sort.
+Les propositions refusées par les critères originaux de Forge
+sont journalisées et ne sont pas comptées comme des actions.

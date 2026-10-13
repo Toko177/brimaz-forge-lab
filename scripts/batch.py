@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from forge_result_evidence import inspect_ai_quality_signatures
+from commander_pods import PODS, ROSTER_VERSION
 
 p=argparse.ArgumentParser()
 p.add_argument("--jar",required=True)
@@ -37,10 +38,6 @@ args=p.parse_args()
 assert 0 < args.clock < args.timeout
 assert 1 <= args.games_per_rotation <= 10
 
-PODS={
- "aristo": ["Brimaz_V3", "Kaal_9594008", "Kaal_10347090", "Kaal_21930525"],
- "artifact":["Brimaz_V3", "Kaal_23328062", "Kaal_11485202", "Kaal_22193355"],
-}
 decks=PODS[args.pod]
 root=pathlib.Path.cwd()
 directory=root/"forge_decks"
@@ -133,6 +130,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
         winner_index=int(winners[-1][1]) if status=="complete" else None
         record={
             "game":num,"pod":args.pod,"rotation":shift,"repeat":repeat,
+            "roster_version":ROSTER_VERSION,
             "clock_seconds":args.clock,
             "seed":seed,"profiles":profiles,"brimaz_profile":args.profile_brimaz,
             "policy":args.policy_label,"planner_decisions":raw.count("BRIMAZ_PLANNER:"),
@@ -161,7 +159,7 @@ for shift in ([args.rotation] if args.rotation is not None else range(4)):
 
 valid=[x for x in summary if x["status"]=="complete"]
 stats={
-  "pod":args.pod,"profile":args.profile_brimaz,"policy":args.policy_label,"rotation":args.rotation,"seed_base":args.seed_base,
+  "pod":args.pod,"roster_version":ROSTER_VERSION,"profile":args.profile_brimaz,"policy":args.policy_label,"rotation":args.rotation,"seed_base":args.seed_base,
   "games_total":len(summary),"games_complete":len(valid),
   "brimaz_wins":sum(x["brimaz_win"] for x in valid),
   "brimaz_win_rate":round(sum(x["brimaz_win"] for x in valid)/len(valid),4) if valid else None,

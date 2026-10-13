@@ -46,6 +46,7 @@ def write_games(root,key):
                 seats=seats[rot:]+seats[:rot]
                 games.append({
                     "arm":"reference","pod":pod,"rotation":rot,"repeat":rep,
+                    "roster_version":key["inputs"]["pod_roster_version"],
                     "seats":seats,"candidate_deck":"Deck_Reference",
                     "candidate_seat":seats.index("Deck_Reference")+1,
                     "seed":21410000+(100000 if pod=="artifact" else 0)+10000*rot+rep,
@@ -81,6 +82,16 @@ class CacheTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
             require_match(self.key,changed)
 
+    def test_switch_to_generic_ai_never_reuses_legacy_reference_games(self):
+        v43=stamp(self.root,self.root/"forge_decks",
+                  self.root/"forge_decks/candidate-manifest.json",
+                  seed_base=21410000,repeats=1,policy="V43-single-seat-generic")
+        self.assertNotEqual(self.key["inputs"]["policy"],v43["inputs"]["policy"])
+        with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
+            require_match(self.key,v43)
+        with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
+            require_match(v43,self.key)
+
     def test_seed_or_repeat_change_rejects_cache(self):
         d=copy.deepcopy(self.key)
         d["inputs"]["seed_base"]+=1
@@ -89,6 +100,19 @@ class CacheTests(unittest.TestCase):
         varied=build_fixture(self.root,repeats=2)
         with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
             require_match(self.key,varied)
+
+    def test_roster_version_mismatch_blocks_reference_reuse(self):
+        changed=copy.deepcopy(self.key)
+        changed["inputs"]["pod_roster_version"]="historical-amalia-roster"
+        with self.assertRaisesRegex(ValueError,"INCOMPATIBLE"):
+            require_match(self.key,changed)
+        archive=write_games(self.root,self.key)
+        sample=next(archive.rglob("games.json"))
+        rows=json.loads(sample.read_text())
+        rows[0]["roster_version"]="historical-amalia-roster"
+        sample.write_text(json.dumps(rows))
+        with self.assertRaisesRegex(ValueError,"immutable reference configuration"):
+            validate_reference_logs(archive,self.key)
 
     def test_other_player_deck_change_invalidates_cache(self):
         (self.root/"forge_decks"/"Kaal_9594008.dck").write_text("Different deck!")

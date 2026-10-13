@@ -1,4 +1,7 @@
 name: Fast Commander deckbuilding A/B (real Forge)
+# On push to decks/Challenger.txt, run V4 vs Challenger (V5) with repeats=6:
+# 2 pods x 4 rotations x 2 arms x 6 independent games = 96 planned games.
+# Manual workflow_dispatch keeps the previous defaults (V3 reference, repeats=1).
 on:
   push:
     paths: [decks/Challenger.txt]
@@ -29,6 +32,12 @@ on:
         required: true
         default: "Brimaz, Blight of Oreskos"
         type: string
+      ai_policy:
+        description: "AI for the evaluated deck, following its rotating seat"
+        required: true
+        default: "V13-incubate-adaptive"
+        type: choice
+        options: ["V13-incubate-adaptive", "V43-single-seat-generic"]
       repeats:
         description: "1=16 games, 2=32, 4=64, 6=96"
         required: true
@@ -84,7 +93,7 @@ jobs:
           PY
       - name: Materialize two immutable lists and explicit card swap diff
         env:
-          REFERENCE_FILE: ${{ inputs.reference_file || 'decks/Brimaz_V3.txt' }}
+          REFERENCE_FILE: ${{ github.event_name == 'push' && 'decks/Brimaz_V4_B3.txt' || inputs.reference_file || 'decks/Brimaz_V3.txt' }}
           CANDIDATE_FILE: ${{ inputs.candidate_file || 'decks/Challenger.txt' }}
           REFERENCE_COMMANDER: ${{ inputs.reference_commander || 'Brimaz, Blight of Oreskos' }}
           CANDIDATE_COMMANDER: ${{ inputs.candidate_commander || 'Brimaz, Blight of Oreskos' }}
@@ -136,20 +145,22 @@ jobs:
           PY
       - name: Create fail-closed SHA256 reference match fingerprint
         env:
-          REPEATS: ${{ inputs.repeats || '1' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           python3 scripts/deckbuild_cache.py --mode create --root . \
             --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-            --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS" --policy "$AI_POLICY" \
             --output forge_decks/reference-cache-key.json
       - name: Find reusable reference results from matching successful GitHub campaigns
         id: cache_lookup
         env:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_RUN_ID: ${{ inputs.reference_run_id || '' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
-          REPEATS: ${{ inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
         run: |
           set -euo pipefail
           if [[ -n "$REQUESTED_RUN_ID" ]]; then
@@ -177,7 +188,7 @@ jobs:
             fi
             if python3 scripts/deckbuild_cache.py --mode verify --root . \
               --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-              --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+              --seed-base "$SEED_BASE" --repeats "$REPEATS" --policy "$AI_POLICY" \
               --previous "candidate-cache/$run_id/forge_decks/reference-cache-key.json"; then
               found="$run_id"
               cp "candidate-cache/$run_id/forge_decks/reference-cache-key.json" \
@@ -269,8 +280,9 @@ jobs:
           ARM: ${{ matrix.arm }}
           POD: ${{ matrix.pod }}
           ROTATION: ${{ matrix.rotation }}
-          REPEATS: ${{ inputs.repeats || '1' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           set -euo pipefail
           JAR="$(find "$PWD/forge-dist" -type f -name 'forge-gui-desktop-*-jar-with-dependencies.jar' | head -1)"
@@ -280,7 +292,7 @@ jobs:
             --arm "$ARM" --pod "$POD" --rotation "$ROTATION" \
             --seed-base "$seed" --repeats "$REPEATS" \
             --clock 360 --timeout 445 --profile Default \
-            --policy V13-incubate-adaptive \
+            --policy "$AI_POLICY" \
             --out "results/deckbuild/$ARM/$POD/rot$ROTATION"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -315,12 +327,13 @@ jobs:
       - name: Recheck every reused log SHA256, pod, seat, seed and AI policy
         if: ${{ needs.prepare.outputs.reference_reused == 'true' }}
         env:
-          REPEATS: ${{ inputs.repeats || '1' }}
-          SEED_BASE: ${{ inputs.seed_base || '21410000' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
+          SEED_BASE: ${{ github.event_name == 'push' && '21620000' || inputs.seed_base || '21410000' }}
+          AI_POLICY: ${{ inputs.ai_policy || 'V13-incubate-adaptive' }}
         run: |
           python3 scripts/deckbuild_cache.py --mode audit-archive --root . \
             --decks forge_decks --manifest forge_decks/candidate-manifest.json \
-            --seed-base "$SEED_BASE" --repeats "$REPEATS" \
+            --seed-base "$SEED_BASE" --repeats "$REPEATS" --policy "$AI_POLICY" \
             --previous forge_decks/verified-reference-key.json \
             --archive match-artifacts/cached-reference/
       - name: Certify raw four-player game outcomes independently of launcher summary
@@ -331,7 +344,7 @@ jobs:
             --out results/deckbuild-report/certificate.json
       - name: Compute seat-balanced A/B analysis with uncertainty and censures
         env:
-          REPEATS: ${{ inputs.repeats || '1' }}
+          REPEATS: ${{ github.event_name == 'push' && '6' || inputs.repeats || '1' }}
         run: |
           python3 scripts/deckbuild_compare.py \
             --certificate results/deckbuild-report/certificate.json \

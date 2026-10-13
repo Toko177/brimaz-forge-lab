@@ -8,6 +8,7 @@ Independent Forge JVMs run concurrently; each receives the SAME AI policy.
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime,timezone
+from commander_pods import ROSTER_VERSION, PODS as ACTIVE_PODS
 import hashlib
 import json
 import os
@@ -32,9 +33,12 @@ CANONICAL_DECK_SHA256={
     "Kaal_11485202":"d713d2ad927524c5d98540a2e80aee9a1985be6c9a1711e93ffd26f722f1187f",
     "Kaal_22193355":"b47a726cdc1a4353d6008c2b3a6ac77b6d4c7870c4b197c9405bdd926cbe938e",
 }
-POLICIES=("v17_strict","v19_removal","v20_shadow","critical_counter",
+POLICIES=("forge_stock","forge_stock_compat","v17_strict","v19_removal","v20_shadow","critical_counter",
           "v23_cooldown","v24_trigger_prune","v30_exact_rules","v30_shadow_verify",
-          "v33_strategy")
+          "v33_strategy","v35_strategy","v35_brimaz_duel","v36_brimaz_challenger","v37_stock_control","v37_brimaz_challenger",
+          "v38_brimaz_challenger","v39_brimaz_challenger",
+          "v40_brimaz_challenger","v41_brimaz_challenger","v42_commander_general",
+           "v43_commander_single_seat")
 
 def sha(path):
     d=hashlib.sha256()
@@ -73,6 +77,36 @@ def java_version():
     return raw.splitlines()[0]
 
 def policy_flags(policy):
+    if policy in ("forge_stock","forge_stock_compat"):
+        return ""  # Neither baseline injects an AI-specific Java property.
+    if policy == "v37_stock_control":
+        return "-Dbrimaz.v37ControlledDuel=true"
+    if policy == "v37_brimaz_challenger":
+        return ("-Dbrimaz.v37ControlledDuel=true "
+                "-Dbrimaz.v37Challenger=true "
+                "-Dbrimaz.v35StrategicSearch=true "
+                "-Dbrimaz.v35BrimazOnly=true "
+                "-Dbrimaz.v36EvidenceGate=true")
+    if policy == "v38_brimaz_challenger":
+        return (policy_flags("v37_brimaz_challenger")
+                +" -Dbrimaz.v38IncubatorTempo=true")
+    if policy == "v39_brimaz_challenger":
+        return (policy_flags("v38_brimaz_challenger")
+                +" -Dbrimaz.v39EngineEconomics=true")
+    if policy == "v40_brimaz_challenger":
+        return (policy_flags("v39_brimaz_challenger")
+                +" -Dbrimaz.v40SeatScopedActions=true")
+    if policy == "v41_brimaz_challenger":
+        return (policy_flags("v40_brimaz_challenger")
+                +" -Dbrimaz.v41SacrificeAccess=true")
+    if policy == "v42_commander_general":
+        # Same Forge patches as V37 control, with older Brimaz policy off.
+        return ("-Dbrimaz.v37ControlledDuel=true "
+                "-Dcommander.v42GeneralPolicy=true")
+    if policy == "v43_commander_single_seat":
+        # Single experimental controller, three original-decision Forge AIs.
+        # A fixed seat number + four rotations exposes four distinct decks.
+        return policy_flags("v42_commander_general") + " -Dcommander.v43TargetSeat=1"
     base=[
       "-Dbrimaz.fourSeatCombatTarget=true",
       "-Dbrimaz.deterministicForcedAttacks=true",
@@ -86,6 +120,7 @@ def policy_flags(policy):
       "-Dbrimaz.cardPropertyShadowVerify=false",
       "-Dbrimaz.cardPropertyFastTrace=false",
       "-Dbrimaz.v33MultiplayerStrategicPlanner=false",
+      "-Dbrimaz.v35StrategicSearch=false",
     ]
     opts={
       "v17_strict":[],
@@ -102,6 +137,14 @@ def policy_flags(policy):
                             "-Dbrimaz.cardPropertyFastTrace=true",
                             "-Dbrimaz.cardPropertyShadowVerify=true"],
       "v33_strategy":["-Dbrimaz.v33MultiplayerStrategicPlanner=true"],
+      "v35_strategy":["-Dbrimaz.v35StrategicSearch=true",
+                      "-Dbrimaz.fourSeatRemovalUrgency=true",
+                      "-Dbrimaz.fourSeatCounterCritical=true"],
+      "v35_brimaz_duel":["-Dbrimaz.v35StrategicSearch=true",
+                          "-Dbrimaz.v35BrimazOnly=true"],
+      "v36_brimaz_challenger":["-Dbrimaz.v35StrategicSearch=true",
+                              "-Dbrimaz.v35BrimazOnly=true",
+                              "-Dbrimaz.v36EvidenceGate=true"],
     }
     if policy not in opts:raise ValueError("Unsupported AI policy "+policy)
     # Last Java property wins; reset flag overrides in one location.
@@ -111,11 +154,21 @@ def patch_jar(original,output,policy):
     if not original.is_file():raise FileNotFoundError(str(original))
     if output.exists():raise FileExistsError("Will not overwrite "+str(output))
     shutil.copy2(original,output)
-    scripts=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py",
-             "patch_forge_four_ai_targets.py"]
-    if policy in ("v19_removal","v20_shadow"):
+    if policy == "forge_stock":
+        # Essential distinction: the comparator JAR must be BYTE-FOR-BYTE
+        # the exact upstream original; not even the historical Charm hotfix.
+        assert sha(output) == sha(original), "Upstream Forge comparator mutated"
+        return sha(output), []
+    if policy == "forge_stock_compat":
+        # Original Forge AI, only the generic SpellAbility/Charm activator
+        # crash fix. NOT a pristine JAR; disclose this in all reports.
+        scripts=["patch_forge_charm_context.py"]
+    else:
+        scripts=["patch_forge_charm_context.py","patch_forge_brimaz_v13.py",
+                 "patch_forge_four_ai_targets.py"]
+    if policy in ("v19_removal","v20_shadow","v35_strategy"):
         scripts+=["patch_forge_multiplayer_removal.py"]
-    if policy=="critical_counter":
+    if policy in ("critical_counter","v35_strategy"):
         scripts+=["patch_forge_counter_critical.py"]
     if policy=="v24_trigger_prune":
         scripts+=["patch_forge_combat_trigger_prune.py"]
@@ -127,10 +180,54 @@ def patch_jar(original,output,policy):
                         "--jar",str(output)],check=True,cwd=ROOT)
     return sha(output),scripts
 
+def prepare_forge_shared_profile_paths(home):
+    """Precreate Forge 2.0.15 PROFILE_DIRS *before* parallel JVM start.
+
+    FModel.initialize checks isDirectory(), then calls mkdirs(). With two
+    concurrent Java processes both can observe absent and the loser throws
+    RuntimeException even if mkdirs succeeded in the other process.
+    Mirrors the Linux/Windows/macOS default ForgeConstants.PROFILE_DIRS.
+    No edits to users' decks, preferences, Magic logic or original JAR.
+    """
+    home=Path(home)
+    if os.name == "nt" and os.environ.get("APPDATA"):
+        user=Path(os.environ["APPDATA"])/"Forge"
+        cache=Path(os.environ.get("LOCALAPPDATA",os.environ["APPDATA"]))/"Forge"/"Cache"
+    elif sys.platform == "darwin":
+        user=home/"Library"/"Application Support"/"Forge"
+        cache=home/"Library"/"Caches"/"Forge"
+    else:
+        user=home/".forge"
+        cache=home/".cache"/"forge"
+    user_parts=(
+        "", "preferences", "gauntlet", "decks/constructed",
+        "decks/draft", "decks/sealed", "decks/scheme", "decks/planar",
+        "decks/commander", "decks/oathbreaker", "decks/net",
+        "decks/network-events", "quest/saves",
+    )
+    cache_parts=(
+        "", "pics/cards", "db", "pics/tokens", "pics/icons",
+        "pics/boosters", "pics/fatpacks", "pics/boosterboxes",
+        "pics/precons", "pics/tournamentpacks", "pics/planechase",
+    )
+    paths=[user/part for part in user_parts]+[cache/part for part in cache_parts]
+    for path in paths:
+        path.mkdir(parents=True,exist_ok=True)
+        if not path.is_dir():
+            raise RuntimeError("Cannot prepare Forge profile directory: "+str(path))
+    return user/"decks"/"planar"
+
+
 def run_job(campaign_root,jar,runtime_dir,pod,rotation,seed_base,count,clock,profile,policy,flags,tag,jfr):
     source_tag=f"{tag}-rot{rotation}"
     env=os.environ.copy()
-    env["JAVA_TOOL_OPTIONS"]=" ".join((env.get("JAVA_TOOL_OPTIONS",""),flags)).strip()
+    # Control and experiment must never inherit hidden user-supplied JVM
+    # options that could change Forge behavior independently of policy.
+    for injected in ("_JAVA_OPTIONS", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS"):
+        env.pop(injected,None)
+    if policy != "forge_stock":
+        env["JAVA_TOOL_OPTIONS"]=flags
+    # forge_stock intentionally launches with no JAVA_TOOL_OPTIONS variable.
     cmd=[sys.executable,str(ROOT/"scripts/batch.py"),"--jar",str(jar),
          "--runtime-dir",str(runtime_dir),
          "--pod",pod,"--rotation",str(rotation),
@@ -207,16 +304,22 @@ def main():
     jar_sha,patches=patch_jar(args.jar.resolve(),output_jar,args.policy)
     runtime_dir=args.jar.resolve().parent
     flags=policy_flags(args.policy)
+    if args.policy == "forge_stock" and (patches or jar_sha != sha(args.jar.resolve())):
+        raise RuntimeError("Stock Forge comparator is not byte-for-byte original")
     meta={
         "title":"Genuine independent Forge 2.0.15 four-AI Commander games",
         "policy":args.policy,"profile_applied_identically_to_all_four_seats":args.profile,
         "pods":list(pods),"four_seat_rotations":[0,1,2,3],
+        "roster_version":ROSTER_VERSION,"active_pods":ACTIVE_PODS,
         "games_per_rotation":args.games_per_rotation,
         "planned_independent_jvms":len(pods)*4*args.games_per_rotation,
         "clock_seconds":args.clock,"base_seed":args.seed_base,
         "java":java,"original_forge_sha256":sha(args.jar.resolve()),
         "original_forge_runtime_directory":str(runtime_dir),
         "patched_forge_sha256":jar_sha,"patches":patches,
+        "upstream_forge_unmodified": args.policy == "forge_stock",
+        "stock_ai_with_shared_charm_engine_hotfix":args.policy == "forge_stock_compat",
+        "upstream_byte_identical": jar_sha == sha(args.jar.resolve()),
         "canonical_seven_deck_sha256":deck_hashes,
         "scryfall_legality_report_file":str(args.scryfall_legality_report.resolve()) if args.scryfall_legality_report else None,
         "java_tool_options":flags,
@@ -229,6 +332,8 @@ def main():
     }
     (dest/"provenance.json").write_text(json.dumps(meta,indent=2,ensure_ascii=False)+"\n")
     tag="local-"+campaign_id
+    ready=prepare_forge_shared_profile_paths(Path.home())
+    print("FOUR_AI_PROFILE_INIT_SERIALIZED",str(ready),flush=True)
     tasks=[(pod,rot) for pod in pods for rot in range(4)]
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
         futures={pool.submit(run_job,dest,output_jar,runtime_dir,pod,rot,args.seed_base,
@@ -262,6 +367,32 @@ def main():
     if jobs_bad:
         print("Some real Forge jobs failed; logs preserved in "+str(dest),
               file=sys.stderr)
+    # Failures remain failures; expose the original JVM's reason in Actions.
+    # Otherwise the outer paired driver shows only "actions not present".
+    for manifest in sorted((dest/"games").rglob("games.json")):
+        try:
+            entries=json.loads(manifest.read_text(encoding="utf-8"))
+        except (ValueError,OSError) as exc:
+            print("FOUR_AI_MANIFEST_ERROR",str(manifest),repr(exc),flush=True)
+            continue
+        for rec in entries:
+            if rec.get("status")=="complete":
+                continue
+            local=manifest.parent/Path(rec.get("log","unknown.log")).name
+            raw=local.read_text(encoding="utf-8",errors="replace") if local.is_file() else ""
+            errwords=("Exception","RuntimeException","NullPointerException",
+                      "cannot create profile directory","out of memory",
+                      "Error","FATAL","Game Outcome")
+            critical=[line[:260] for line in raw.splitlines()
+                      if any(token in line for token in errwords)]
+            print("FOUR_AI_GAME_FAULT_EVIDENCE",json.dumps({
+                "pod":rec.get("pod"),"rotation":rec.get("rotation"),
+                "status":rec.get("status"),"seed":rec.get("seed"),
+                "log":str(local.relative_to(dest)),
+                "log_exists":local.is_file(),
+                "critical":critical[-10:],
+                "tail":raw.splitlines()[-5:],
+            },ensure_ascii=False),flush=True)
     subprocess.run([sys.executable,str(ROOT/"scripts/aggregate_four_ai_tournament.py"),
              "--input",str(dest/"games"),"--out",str(dest/"summary"),
              "--expected-jobs",str(len(tasks)),

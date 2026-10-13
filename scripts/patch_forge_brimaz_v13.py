@@ -225,6 +225,67 @@ player_controller=player_controller.replace(mulligan_anchor,mulligan_inject,1)
 
 anchor1="        SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);"
 insert1=(
+"        // V42 deck-agnostic Commander advisor. All four seats, opt-in only.\n"
+"        // Forge still owns costs, legality, targeting and stack decisions.\n"
+"        if (CommanderGenericSequencerV42.enabled()) {\n"
+"            int refusedV42 = 0;\n"
+"            for (SpellAbility candidateV42 : CommanderGenericSequencerV42.rank(player, saList)) {\n"
+"                if (canPlayAndPayFor(candidateV42) == AiPlayDecision.WillPlay) {\n"
+"                    System.out.println(\"FOUR_AI_V42_STOCK_APPROVED player=\"+player.getName()\n"
+"                        +\" turn=\"+game.getPhaseHandler().getTurn()\n"
+"                        +\" card=\"+candidateV42.getHostCard().getName()\n"
+"                        +\" rejectedEarlier=\"+refusedV42\n"
+"                        +\" nativeForgeAIDecision=true notResolvedYet=true\");\n"
+"                    return candidateV42;\n"
+"                }\n"
+"                refusedV42++;\n"
+"            }\n"
+"            if (refusedV42 > 0) System.out.println(\"FOUR_AI_V42_STOCK_REJECTED player=\"\n"
+"                +player.getName()+\" rejected=\"+refusedV42+\" fallback=originalForge\");\n"
+"        }\n"
+"        // V35 phase II: tactical emergency before proactive engine deployment.\n"
+"        if (MultiplayerStrategicSequencerV35.ENABLED) {\n"
+"            int refusedTacticsV35 = 0;\n"
+"            for (SpellAbility tacticalV35 : MultiplayerTacticalPlannerV35.rank(player, saList)) {\n"
+"                AiPlayDecision tacticalApprovalV35 = canPlayAndPayFor(tacticalV35);\n"
+"                if (tacticalApprovalV35 == AiPlayDecision.WillPlay) {\n"
+"                    System.out.println(\"FOUR_AI_V35_TACTICAL_STOCK_APPROVED player=\" + player.getName()\n"
+"                        + \" turn=\" + game.getPhaseHandler().getTurn()\n"
+"                        + \" card=\" + tacticalV35.getHostCard().getName()\n"
+"                        + \" rejectedEarlier=\" + refusedTacticsV35\n"
+"                        + \" genuineForgeAIDecision=true\");\n"
+"                    return tacticalV35;\n"
+"                }\n"
+"                refusedTacticsV35++;\n"
+"            }\n"
+"            if(refusedTacticsV35>0) {\n"
+"                System.out.println(\"FOUR_AI_V35_TACTICAL_STOCK_REJECTED player=\" + player.getName()\n"
+"                    + \" turn=\" + game.getPhaseHandler().getTurn()\n"
+"                    + \" rejected=\" + refusedTacticsV35 + \" stockFallback=true\");\n"
+"            }\n"
+"        }\n"
+"        // V35: bounded known-card strategy for all four AIs.\n"
+"        // The ORIGINAL Forge AI must approve every proposed spell.\n"
+"        if (MultiplayerStrategicSequencerV35.ENABLED) {\n"
+"            int rejectedV35 = 0;\n"
+"            for (SpellAbility v35 : MultiplayerStrategicSequencerV35.rank(player, saList)) {\n"
+"                AiPlayDecision decisionV35 = canPlayAndPayFor(v35);\n"
+"                if (decisionV35 == AiPlayDecision.WillPlay) {\n"
+"                    System.out.println(\"FOUR_AI_V35_STOCK_APPROVED player=\" + player.getName()\n"
+"                        + \" turn=\" + game.getPhaseHandler().getTurn()\n"
+"                        + \" card=\" + v35.getHostCard().getName()\n"
+"                        + \" rejectedEarlier=\" + rejectedV35\n"
+"                        + \" genuineForgeAIDecision=true\");\n"
+"                    return v35;\n"
+"                }\n"
+"                rejectedV35++;\n"
+"            }\n"
+"            if (rejectedV35>0) {\n"
+"                System.out.println(\"FOUR_AI_V35_STOCK_REJECTED player=\"+player.getName()\n"
+"                    +\" turn=\"+game.getPhaseHandler().getTurn()\n"
+"                    +\" proposed=\"+rejectedV35+\" stockFallback=true\");\n"
+"            }\n"
+"        }\n"
 "        // V33: shared, public-board two-turn planner for ALL FOUR seats.\n"
 "        // Choose only actual Forge-playable non-targeting permanent spells.\n"
 "        // Preserve stack responses and every Magic rule / cost resolution.\n"
@@ -240,6 +301,7 @@ insert1=(
 "        // OPT-IN Brimaz test policy: one affordable free Phyrexian-token sacrifice\n"
 "        // during the second main phase, strictly before that end step.\n"
 "        // Only explicitly audited sacrifice outlets with counter/proliferate payoff are eligible.\n"
+"        if (!Boolean.getBoolean(\"brimaz.v37ControlledDuel\")) {\n"
 "        BrimazTurnPlanner.diagnoseDecisionWindow(player, saList);\n"
 "        SpellAbility develop = BrimazTurnPlanner.planDevelopment(player, saList);\n"
 "        if (develop != null) {\n"
@@ -252,6 +314,33 @@ insert1=(
 "        SpellAbility brimazPlanned = BrimazTurnPlanner.plan(player, saList);\n"
 "        if (brimazPlanned != null) {\n"
 "            return brimazPlanned;\n"
+"        }\n"
+"        }\n"
+"        // True controlled duel: keep legacy Brimaz changes disabled in both\n"
+"        // arms; only the challenger may activate a positive-score end-step\n"
+"        // Phyrexian creature token sacrifice through actual Forge costs.\n"
+"        if (Boolean.getBoolean(\"brimaz.v37ControlledDuel\")\n"
+"                && Boolean.getBoolean(\"brimaz.v37Challenger\")\n"
+"                && player.getName().contains(\"Brimaz\")\n"
+"                && (!Boolean.getBoolean(\"brimaz.v37MirrorDuel\")\n"
+"                    || player.getName().contains(\"Challenger\"))) {\n"
+"            if (Boolean.getBoolean(\"brimaz.v40SeatScopedActions\")) {\n"
+"                BrimazTurnPlanner.diagnoseDecisionWindow(player,saList);\n"
+"            }\n"
+"            SpellAbility v37Sac = BrimazTurnPlanner.plan(player, saList);\n"
+"            if (v37Sac != null && canPlayAndPayFor(v37Sac) == AiPlayDecision.WillPlay) {\n"
+"                System.out.println(\"FOUR_AI_V37_POSITIVE_SAC_FORGE_APPROVED player=\"\n"
+"                    +player.getName()+\" card=\"+v37Sac.getHostCard().getName());\n"
+"                return v37Sac;\n"
+"            }\n"
+"            SpellAbility v38Transform = MultiplayerIncubatorTempoV38.choose(player, saList);\n"
+"            if (v38Transform != null\n"
+"                    && canPlayAndPayFor(v38Transform) == AiPlayDecision.WillPlay) {\n"
+"                MultiplayerIncubatorTempoV38.confirmForgeApproval(player);\n"
+"                System.out.println(\"FOUR_AI_V38_TRANSFORM_STOCK_APPROVED player=\"\n"
+"                    +player.getName()+\" card=\"+v38Transform.getHostCard().getName());\n"
+"                return v38Transform;\n"
+"            }\n"
 "        }\n\n"
 )
 if controller.count(anchor1)!=1: raise ValueError("AiController original selection anchor mismatch")
@@ -263,7 +352,13 @@ anchor2=(
 )
 replacement2=(
 "    public CardCollectionView chooseSacrificeType(String type, SpellAbility ability, boolean effect, int amount, final CardCollectionView exclude) {\n"
-"        CardCollectionView plannedSacrifice = BrimazTurnPlanner.chooseSacrifice(player, type, ability, amount);\n"
+"        CardCollectionView plannedSacrifice =\n"
+"            (!Boolean.getBoolean(\"brimaz.v37ControlledDuel\")\n"
+"                || (Boolean.getBoolean(\"brimaz.v37Challenger\")\n"
+"                    && (!Boolean.getBoolean(\"brimaz.v37MirrorDuel\")\n"
+"                        || player.getName().contains(\"Challenger\"))))\n"
+"            ? BrimazTurnPlanner.chooseSacrifice(player, type, ability, amount)\n"
+"            : null;\n"
 "        if (plannedSacrifice != null) {\n"
 "            return plannedSacrifice;\n"
 "        }\n"
@@ -277,7 +372,11 @@ remove_anchor=("return spellAbility.isLandAbility() || "
     "(spellAbility.getHostCard() != null && ComputerUtilCard.isCardRemAIDeck(spellAbility.getHostCard()));")
 remove_replacement=("return spellAbility.isLandAbility() || "
     "(spellAbility.getHostCard() != null && ComputerUtilCard.isCardRemAIDeck(spellAbility.getHostCard()) "
-    "&& !BrimazTurnPlanner.allowNormallyExcludedAbility(player, spellAbility));")
+    "&& (Boolean.getBoolean(\"brimaz.v37ControlledDuel\")\n"
+     "    && (!Boolean.getBoolean(\"brimaz.v37Challenger\")\n"
+     "        || (Boolean.getBoolean(\"brimaz.v37MirrorDuel\")\n"
+     "            && !player.getName().contains(\"Challenger\")))\n"
+     "    || !BrimazTurnPlanner.allowNormallyExcludedAbility(player, spellAbility)));")
 if controller.count(remove_anchor)!=1: raise ValueError("AiController anti-AI card filter mismatch")
 controller=controller.replace(remove_anchor,remove_replacement,1)
 
@@ -321,8 +420,20 @@ public final class BrimazTurnPlanner {
         if (ai == null || available == null || ai.getGame() == null) return null;
         var game = ai.getGame();
         var phase = game.getPhaseHandler();
+
         if (!phase.isPlayerTurn(ai) || !phase.is(PhaseType.MAIN1)
                 || !game.getStack().isEmpty()) return null;
+        // V36 correction to V17: don't FORCE economy/Brimaz into an
+        // aggregate multi-creature damage threat when Forge needs to decide
+        // which actions can actually prevent elimination.
+        if (Boolean.getBoolean("brimaz.v36EvidenceGate") &&
+                MultiplayerStrategicSearchV35.underThreat(
+                    MultiplayerStrategicSequencerV35.observe(ai))) {
+            System.out.println("FOUR_AI_V36_DEFENSIVE_ABSTAIN player="
+                +ai.getName()+" turn="+phase.getTurn()
+                +" source=legacy_development stockV17Fallback=true");
+            return null;
+        }
         boolean brimazOnField = false;
         for (Card c : ai.getCardsIn(ZoneType.Battlefield)) {
             if (c.getName().equals("Brimaz, Blight of Oreskos")) {
@@ -432,6 +543,11 @@ public final class BrimazTurnPlanner {
                 || !sa.getPayCosts().hasSpecificCostType(CostSacrifice.class)) return false;
         String name = sa.getHostCard().getName();
         int parts = sa.getPayCosts().getCostParts().size();
+        if (Boolean.getBoolean("brimaz.v41SacrificeAccess")) {
+            return MultiplayerSacrificeAccessV41.recognizedOutlet(
+                name,sa.getApi()==null?"":sa.getApi().name(),true,parts,
+                sa.getPayCosts().hasSpecificCostType(CostTap.class));
+        }
         boolean plainSac = parts == 1 && sa.getApi() == ApiType.PutCounter;
         if (plainSac && (name.equals("Arcbound Ravager")
                 || name.equals("Bartolomé del Presidio")
@@ -450,7 +566,10 @@ public final class BrimazTurnPlanner {
         if (sa == null || sa.getHostCard() == null
                 || !(sa.getHostCard().getName().equals("Spawning Pit")
                       || sa.getHostCard().getName().equals("Throne of Geth")
-                      || sa.getHostCard().getName().equals("Krark-Clan Ironworks"))
+                      || sa.getHostCard().getName().equals("Krark-Clan Ironworks")
+                      || (Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                          && (sa.getHostCard().getName().equals("Ashnod's Altar")
+                              || sa.getHostCard().getName().equals("Phyrexian Altar"))))
                 || !needEndStepDeath(ai) || !isOutlet(sa)) return false;
         CostSacrifice sac = sa.getPayCosts().getCostPartByType(CostSacrifice.class);
         return sac != null && selectToken(ai, sac.getType(), sa, sac.getAbilityAmount(sa)) != null;
@@ -484,6 +603,8 @@ public final class BrimazTurnPlanner {
         // MAIN2 is the last consistent pre-end-step priority window.
         // The ability also triggers on the controller's own end step.
         if (!phase.is(PhaseType.MAIN2) || !game.getStack().isEmpty()) return false;
+        if (Boolean.getBoolean("brimaz.v40SeatScopedActions") &&
+                !phase.isPlayerTurn(ai)) return false;
         for (Card c : ai.getCardsIn(ZoneType.Battlefield)) {
             if (!c.getName().equals("Brimaz, Blight of Oreskos")) continue;
             int deaths = AbilityUtils.calculateAmount(c, c.getSVar("X"), null);
@@ -534,9 +655,14 @@ public final class BrimazTurnPlanner {
         Card selected = null;
         int bestScore = 0; // strictly positive utility required
         for (Card c : valid) {
-            if (!c.isToken() || !c.isCreature() || !c.getType().hasCreatureType("Phyrexian")
-                    || c == source || !c.canBeSacrificedBy(sa, false)
-                    || c.getNetPower() > 4) continue;
+            boolean plausible = Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                ? MultiplayerSacrificeAccessV41.plausibleSacrificeFodder(
+                    c.isToken(),c.isCreature(),c.getType().hasCreatureType("Phyrexian"),
+                    c.getNetPower())
+                : (c.isToken() && c.isCreature()
+                   && c.getType().hasCreatureType("Phyrexian") && c.getNetPower() <= 4);
+            if (!plausible || c == source || !c.canBeSacrificedBy(sa, false))
+                continue;
             int score = evaluate(ai, c, source.getName());
             if (score > bestScore) {
                 selected = c;
@@ -558,16 +684,22 @@ public final class BrimazTurnPlanner {
     // V7 telemetry-only: first observed empty-stack MAIN2 decision in each
     // full-game turn. No game action is modified and no private opponent zone
     // is read. A token here is a candidate, NOT proof it may be sacrificed.
-    private static int diagnosticTurn = Integer.MIN_VALUE;
+    // The 2-vs-2 mirror has TWO real Brimaz challenger controllers.
+    // Logging one global turn silently suppressed the second controller.
+    private static final java.util.Map<Player,Integer> diagnosticTurns =
+        java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     public static void diagnoseDecisionWindow(Player ai, List<SpellAbility> available) {
         if (ai == null || ai.getGame() == null || !isBrimazPilot(ai)) return;
         var game = ai.getGame();
         var phase = game.getPhaseHandler();
-        if (!phase.is(PhaseType.MAIN2) || !game.getStack().isEmpty()) return;
+        if (!phase.is(PhaseType.MAIN2) || !game.getStack().isEmpty()
+                || !phase.isPlayerTurn(ai)) return;
         int turn = phase.getTurn();
-        if (diagnosticTurn == turn) return;
-        diagnosticTurn = turn;
+        synchronized (diagnosticTurns) {
+            if (java.util.Objects.equals(diagnosticTurns.get(ai),turn)) return;
+            diagnosticTurns.put(ai,turn);
+        }
         boolean hasBrimaz = false;
         int deaths = -1;
         int candidateTokens = 0;
@@ -582,13 +714,28 @@ public final class BrimazTurnPlanner {
             String n = c.getName();
             if (n.equals("Arcbound Ravager") || n.equals("Spawning Pit")
                     || n.equals("Throne of Geth") || n.equals("Krark-Clan Ironworks")
-                    || n.equals("Bartolomé del Presidio")) liveOutletCards++;
+                    || n.equals("Bartolomé del Presidio")
+                    || (Boolean.getBoolean("brimaz.v41SacrificeAccess")
+                        && (n.equals("Ashnod's Altar")
+                            || n.equals("Phyrexian Altar")))) liveOutletCards++;
         }
         int listedOutlets = 0;
         if (available != null) {
             for (SpellAbility sa : available) {
                 if (isOutlet(sa)) listedOutlets++;
             }
+        }
+        if (Boolean.getBoolean("brimaz.v41SacrificeAccess")) {
+            System.out.println("FOUR_AI_V41_SAC_WINDOW player="+ai.getName()
+                +" turn="+turn+" pilotAuthorized="
+                +MultiplayerSacrificeAccessV41.authorized(ai.getName(),
+                    Boolean.getBoolean("brimaz.v37MirrorDuel"))
+                +" commanderPresent="+hasBrimaz
+                +" alreadyDead="+(deaths>0)
+                +" phyrexianCreatureTokens="+candidateTokens
+                +" outletPermanents="+liveOutletCards
+                +" listedActualOutletAbilities="+listedOutlets
+                +" proposalNotResolution=true");
         }
         System.out.println("BRIMAZ_WINDOW: V7 turn=" + turn
                 + " active=" + phase.getPlayerTurn().getName()
@@ -710,6 +857,9 @@ public final class BrimazMulliganPolicy {
 
     public static Boolean overrideKeep(Player player, int cardsToReturn, boolean stockKeep) {
         if (player == null || player.getGame() == null) return null;
+        // A real challenger-control test must not inherit custom free
+        // mulligan decisions that are absent from original Forge AI.
+        if (Boolean.getBoolean("brimaz.v37ControlledDuel")) return null;
         boolean isBrimaz = false;
         for (Card c : player.getCardsIn(ZoneType.Command)) {
             if (c.getName().equals("Brimaz, Blight of Oreskos")) {
@@ -779,7 +929,13 @@ with tempfile.TemporaryDirectory() as d:
     ability_dir=target/"ability";ability_dir.mkdir(parents=True,exist_ok=True)
     (ability_dir/"IncubateAi.java").write_text(incubate_ai,encoding="utf-8")
     (target/"BrimazTurnPlanner.java").write_text(planner,encoding="utf-8")
-    for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java"):
+    for extra in ("MultiplayerStrategicModel.java", "MultiplayerStrategicSequencer.java",
+                  "MultiplayerStrategicSearchV35.java", "MultiplayerStrategicSequencerV35.java",
+                  "MultiplayerTacticalPlannerV35.java", "MultiplayerEvidenceGateV36.java",
+                  "MultiplayerIncubatorTempoV38.java",
+                  "MultiplayerIncubatorEngineV39.java",
+                  "MultiplayerSacrificeAccessV41.java",
+                  "CommanderGenericModelV42.java", "CommanderGenericSequencerV42.java"):
         (target/extra).write_text(
             (pathlib.Path(__file__).resolve().parents[1]/"patches/java/forge/ai"/extra).read_text(encoding="utf-8"), encoding="utf-8")
     classes=root/"classes";classes.mkdir()
@@ -788,29 +944,53 @@ with tempfile.TemporaryDirectory() as d:
              str(target/"PlayerControllerAi.java"),str(target/"BrimazMulliganPolicy.java"),
              str(target/"SpellApiToAi.java"),str(ability_dir/"IncubateAi.java"),
              str(target/"MultiplayerStrategicModel.java"),
-             str(target/"MultiplayerStrategicSequencer.java")]
+             str(target/"MultiplayerStrategicSequencer.java"),
+             str(target/"MultiplayerStrategicSearchV35.java"),
+             str(target/"MultiplayerStrategicSequencerV35.java"),
+             str(target/"MultiplayerTacticalPlannerV35.java"),
+             str(target/"MultiplayerEvidenceGateV36.java"),
+             str(target/"MultiplayerIncubatorTempoV38.java"),
+             str(target/"MultiplayerIncubatorEngineV39.java"),
+             str(target/"MultiplayerSacrificeAccessV41.java"),
+             str(target/"CommanderGenericModelV42.java"),
+             str(target/"CommanderGenericSequencerV42.java")]
     print("COMPILING",len(controller),"AiController chars, Brimaz policy",len(planner),"chars",flush=True)
     subprocess.run(command,check=True,timeout=240)
-    for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class"):
+    for name in ("MultiplayerStrategicModel.class", "MultiplayerStrategicSequencer.class",
+                 "MultiplayerStrategicSearchV35.class", "MultiplayerStrategicSequencerV35.class",
+                 "MultiplayerTacticalPlannerV35.class",
+                 "MultiplayerEvidenceGateV36.class",
+                 "MultiplayerIncubatorTempoV38.class",
+                 "MultiplayerIncubatorEngineV39.class",
+                 "MultiplayerSacrificeAccessV41.class",
+                 "CommanderGenericModelV42.class", "CommanderGenericSequencerV42.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("V33 compiled planner class missing: "+name)
     for name in ("AiController.class","AiTimeoutCooldownPolicy.class","BrimazTurnPlanner.class",
                  "PlayerControllerAi.class","BrimazMulliganPolicy.class","SpellApiToAi.class"):
         if not (classes/"forge"/"ai"/name).is_file():
             raise ValueError("Missing compiled "+name)
-    subprocess.run(["jar","uf",str(jar),"-C",str(classes),"forge/ai/AiController.class",
-                    "-C",str(classes),"forge/ai/AiTimeoutCooldownPolicy.class",
-                    "-C",str(classes),"forge/ai/BrimazTurnPlanner.class",
-                    "-C",str(classes),"forge/ai/PlayerControllerAi.class",
-                    "-C",str(classes),"forge/ai/BrimazMulliganPolicy.class",
-                    "-C",str(classes),"forge/ai/SpellApiToAi.class",
-                    "-C",str(classes),"forge/ai/ability/IncubateAi.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Option.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Snapshot.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Choice.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicModel$Role.class",
-                    "-C",str(classes),"forge/ai/MultiplayerStrategicSequencer.class"],
-                   check=True,timeout=180)
+    archive=["jar","uf",str(jar),"-C",str(classes),"forge/ai/AiController.class",
+             "-C",str(classes),"forge/ai/AiTimeoutCooldownPolicy.class",
+             "-C",str(classes),"forge/ai/BrimazTurnPlanner.class",
+             "-C",str(classes),"forge/ai/PlayerControllerAi.class",
+             "-C",str(classes),"forge/ai/BrimazMulliganPolicy.class",
+             "-C",str(classes),"forge/ai/SpellApiToAi.class",
+             "-C",str(classes),"forge/ai/ability/IncubateAi.class"]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerStrategic*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerTacticalPlannerV35*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerEvidenceGateV36*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerIncubatorTempoV38*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerIncubatorEngineV39*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("MultiplayerSacrificeAccessV41*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    for clazz in sorted((classes/"forge"/"ai").glob("CommanderGeneric*V42*.class")):
+        archive += ["-C",str(classes),"forge/ai/"+clazz.name]
+    subprocess.run(archive,check=True,timeout=180)
     print("COMPILED classes",[(x.name,x.stat().st_size) for x in (classes/"forge"/"ai").glob("*.class")],flush=True)
 print("PATCHED_BRIMAZ_JAR_SHA256",hashlib.sha256(jar.read_bytes()).hexdigest(),flush=True)
