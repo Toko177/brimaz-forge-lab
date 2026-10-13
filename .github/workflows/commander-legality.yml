@@ -8,6 +8,9 @@ on:
     paths:
       - "deck_candidates/Brimaz_V4_B3.dck"
       - "decks/Brimaz_V4_B3.txt"
+      - "decks/Brimaz_V5_Tempo_Trial.txt"
+      - "scripts/brimaz_v5_tempo_audit.py"
+      - "tests/test_brimaz_v5_tempo_audit.py"
       - "docs/BRIMAZ_V4_B3_*.md"
       - "scripts/validate_commander_legality.py"
       - "scripts/scan_commander_oracle_pool.py"
@@ -68,7 +71,7 @@ jobs:
           if-no-files-found: ignore
 
   verify-brimaz-v4:
-    name: Brimaz V4 live Oracle, color identity and zero Game Changers
+    name: Brimaz V4 and V5 trial live Oracle, color identity and zero Game Changers
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -79,6 +82,7 @@ jobs:
           set -euo pipefail
           python3 scripts/validate_commander_legality.py \
             --deck deck_candidates/Brimaz_V4_B3.dck \
+            --deck decks/Brimaz_V5_Tempo_Trial.txt \
             --require-no-game-changers \
             --out results/legality/brimaz-v4
       - uses: actions/upload-artifact@v4

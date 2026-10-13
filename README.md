@@ -5,6 +5,20 @@ Simulateur **Magic: The Gathering Commander à quatre IA** avec le vrai moteur
 indépendantes, sept decks canoniques épinglés par SHA256, journalisation,
 certification et comparaisons de politiques.
 
+## Expérience contrôlée V5 (non adoptée) — coût de lancement après Brimaz
+
+**V4 reste la référence actuelle.** Une variante isolée à deux cartes
+`decks/Brimaz_V5_Tempo_Trial.txt` compare **Throne of Geth → Vault
+Skirge** et **Myr Sire → Changeling Outcast** pour traiter l'absence
+de créature Phyrexian / artefact-créature payable pour un seul mana
+après un cast de Brimaz. La [preuve mathématique reproductible du gain
+sur ce scénario étroit](docs/BRIMAZ_V5_TEMPO_EVIDENCE_2026-10-13.md)
+montre **0 % → 12,00 %** d'avoir vu un cast jouable avec un mana
+quelconque parmi 12 cartes, **0 % → 22,67 %** avec un mana noir.
+Cela ne **prouve pas de supériorité de winrate** ni l'accès au mana en
+vraie partie. Les concessions sur la prolifération et la production
+de Myr à la mort sont explicites.
+
 ## Brimaz V4 B3 — victoire par le board, pas les cartes « auto-include »
 
 **Liste Commander de 100 cartes pour le playgroup Bracket 3.**

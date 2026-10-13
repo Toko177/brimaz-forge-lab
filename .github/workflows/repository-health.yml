@@ -38,6 +38,7 @@ jobs:
           python tests/test_deckbuild_pipeline.py
           python tests/test_deckbuild_cache.py
           python tests/test_audit_brimaz_v4.py
+          python tests/test_brimaz_v5_tempo_audit.py
           python tests/test_scan_commander_oracle_pool.py
           python tests/test_commander_pods.py
           python tests/test_audit_v42_generic_commander.py

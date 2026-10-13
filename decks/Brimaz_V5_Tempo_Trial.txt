@@ -1,0 +1,94 @@
+1 Brimaz, Blight of Oreskos
+1 Scrap Trawler
+1 Arcbound Ravager
+1 Bartolomé del Presidio
+1 Bloated Processor
+1 Priest of Gix
+1 Changeling Outcast
+1 Compleated Huntmaster
+1 Abzan Falconer
+1 Selfless Spirit
+1 Elesh Norn
+1 Essence of Orthodoxy
+1 Filigree Vector
+1 Grafted Butcher
+1 Lurrus of the Dream-Den
+1 Phyrexian Rager
+1 Mirror Entity
+1 Metastatic Evangel
+1 Akroma's Will
+1 Mondrak, Glory Dominus
+1 Myr Retriever
+1 Norn's Inquisitor
+1 Ornithopter of Paradise
+1 Gix, Yawgmoth Praetor
+1 Phyrexian Fleshgorger
+1 Phyrexian Missionary
+1 Progenitor Exarch
+1 Roaming Throne
+1 Banner of Kinship
+1 Gold Myr
+1 Sculpted Perfection
+1 Vulpine Harvester
+1 Yawgmoth, Thran Physician
+1 Sol Ring
+1 Arcane Signet
+1 Talisman of Hierarchy
+1 Orzhov Signet
+1 Ashnod's Altar
+1 Sunder the Gateway
+1 Steel Overseer
+1 Vault Skirge
+1 Skullclamp
+1 Patchwork Banner
+1 Idol of Oblivion
+1 Urza's Incubator
+1 Stroke of Midnight
+1 Athreos, God of Passage
+1 Everflowing Chalice
+1 Caretaker's Talent
+1 Rite of Oblivion
+1 Phyrexian Reclamation
+1 Solemn Simulacrum
+1 Phyrexian Awakening
+1 Anguished Unmaking
+1 Clever Concealment
+1 Lightning Greaves
+1 Flare of Fortitude
+1 Phyrexian Scriptures
+1 Sunfall
+1 Restoration Magic
+1 Swords to Plowshares
+1 Deadly Dispute
+1 Agadeem's Awakening
+1 Malakir Rebirth
+1 Witch Enchanter
+1 Bleachbone Verge
+1 Bojuka Bog
+1 Brightclimb Pathway
+1 Caves of Koilos
+1 Castle Locthwain
+1 Command Tower
+1 Concealed Courtyard
+1 Eiganjo, Seat of the Empire
+1 Exotic Orchard
+1 Fetid Heath
+1 Godless Shrine
+1 High Market
+1 Isolated Chapel
+1 Karn's Bastion
+1 Marsh Flats
+1 Path of Ancestry
+1 Phyrexian Tower
+1 Shattered Sanctum
+1 Silent Clearing
+1 Tainted Field
+1 Takenuma, Abandoned Mire
+1 The Mycosynth Gardens
+1 The Seedcore
+1 Urborg, Tomb of Yawgmoth
+1 Command Beacon
+1 Vault of Champions
+1 War Room
+4 Plains
+4 Swamp
